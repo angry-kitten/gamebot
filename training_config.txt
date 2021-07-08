@@ -3,12 +3,13 @@ Hardware and software used for training the nural net object detection.
 
 Hardware
 Alienware 17 R5
-Processor: Intel(R) Core(TM) i9-8950HK CPU @ 2.90GHz   2.90 GHz, 6 cores, 12 logical processors
+Processor: Intel(R) Core(TM) i9-8950HK CPU @ 2.90GHz, 6 cores, 12 logical processors
 RAM: 32.0 GB (31.9 GB usable)
 GPU: NVIDIA GeForce GTX 1080, 8.0 GB RAM.
 Sytem type: 64-bit operating system, x64-based processor
 
 Software
+Windows 10
 NVIDIA driver 27.21.14.6089
 pip list
 Package                 Version            
