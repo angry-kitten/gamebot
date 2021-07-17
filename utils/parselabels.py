@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+#
+# Copyright 2021 by angry-kitten
+# Parse labels from labeled images and create a list for gamebot.
+#
 
 import sys
 import os

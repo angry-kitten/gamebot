@@ -13,3 +13,5 @@ Adafruit USB toTTL Serial Cable
 
 Software
 Linux Ubuntu 20.04.2 LTS
+Teensy Loader 1.52
+gamebot-serial
