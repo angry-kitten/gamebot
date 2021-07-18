@@ -30,7 +30,8 @@ def capture_loop(vid):
         # get a frame
         ret, frame = vid.read()
 
-        scaled=scale_image_to_inside_box(frame,640,480)
+        #scaled=scale_image_to_inside_box(frame,640,480)
+        scaled=scale_image_to_inside_box(frame,1024,768)
 
         # Display the frame in a window. It will be
         # created on first call and reused from then on.
