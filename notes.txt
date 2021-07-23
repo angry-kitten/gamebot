@@ -1,0 +1,20 @@
+gamebot notes
+
+
+
+Nural net model notes
+
+starting model is from the tutorial https://www.youtube.com/watch?v=yqkISICHH-U
+ssd_mobilenet_v2_fpnlite_320x320_coco17_tpu-8
+This worked ok. But the switch resolution is 1280x720. Scaling the images down to 320x320 may
+cause a loss of detail.
+
+http://download.tensorflow.org/models/object_detection/tf2/20200711/efficientdet_d6_coco17_tpu-32.tar.gz
+This model tried to allocate too much memory at runtime.
+
+http://download.tensorflow.org/models/object_detection/tf2/20200711/ssd_resnet152_v1_fpn_1024x1024_coco17_tpu-8.tar.gz
+This model tried to allocate too much memory at runtime.
+
+http://download.tensorflow.org/models/object_detection/tf2/20200711/ssd_mobilenet_v2_fpnlite_640x640_coco17_tpu-8.tar.gz
+This trains ok with my config.
+
