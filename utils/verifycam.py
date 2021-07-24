@@ -11,27 +11,12 @@ import cv2
 # change this to select which webcam to use
 default_camera_index=2
 
-def scale_image_to_inside_box(frame,box_w,box_h):
-    scalew=box_w/frame.shape[1]
-    scaleh=box_h/frame.shape[0]
-    if scalew <= scaleh:
-        scale=scalew
-    else:
-        scale=scaleh
-    w2=int(scale*frame.shape[1])
-    h2=int(scale*frame.shape[0])
-    dim=(w2,h2)
-    scaled=cv2.resize(frame,dim)
-    return scaled
-
-
 def capture_loop(vid):
     while(True):
         # get a frame
         ret, frame = vid.read()
 
-        #scaled=scale_image_to_inside_box(frame,640,480)
-        scaled=scale_image_to_inside_box(frame,1024,768)
+        scaled=frame
 
         # Display the frame in a window. It will be
         # created on first call and reused from then on.
@@ -45,6 +30,17 @@ def capture_loop(vid):
 def verify_camera():
     # Open the capture device
     vid = cv2.VideoCapture(default_camera_index)
+
+    width=int(vid.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height=int(vid.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    print("width=",width,"height=",height)
+
+    vid.set(cv2.CAP_PROP_FRAME_WIDTH,1280)
+    vid.set(cv2.CAP_PROP_FRAME_HEIGHT,720)
+
+    width=int(vid.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height=int(vid.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    print("width=",width,"height=",height)
 
     capture_loop(vid)
 

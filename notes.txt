@@ -2,7 +2,7 @@ gamebot notes
 
 
 
-Nural net model notes
+Neural net model notes
 
 starting model is from the tutorial https://www.youtube.com/watch?v=yqkISICHH-U
 ssd_mobilenet_v2_fpnlite_320x320_coco17_tpu-8
