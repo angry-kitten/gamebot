@@ -18,11 +18,28 @@ from object_detection.utils import config_util
 import numpy
 from matplotlib import pyplot
 
+sys.path.append(os.path.join(os.getcwd(),"..","..","gamebot-serial","pylib"))
+#print(sys.path)
+import packetserial
+keydown_time_ms=250 # milliseconds
+
 # change this to select which webcam to use
 default_camera_index=2
 detect_every=5 # seconds, do an object detection with this period
-modelpath=os.path.join("model");
+modelpath=os.path.join("..","model");
 print("modelpath=",modelpath)
+
+ps=None
+
+# Set the apparently platform specific key codes.
+print("os",os.name)
+
+if "posix" == os.name:
+    keycode_numpad_8=151
+    keycode_numpad_6=152
+    keycode_numpad_4=150
+    keycode_numpad_2=153
+    
 
 def do_one_object_detect(model,frame,category_index):
 
@@ -59,7 +76,55 @@ def do_one_object_detect(model,frame,category_index):
     #cv2.imshow("verify model",cv2.resize(image_np_with_detections,(800,600)))
     cv2.imshow("verify model",image_np_with_detections)
 
-def capture_loop(vid,model,category_index):
+def process_key(key):
+    print("key=",key)
+    if ord('a') == key:
+        ps.move_left_joy_left(keydown_time_ms)
+        return 0
+    if ord('d') == key:
+        ps.move_left_joy_right(keydown_time_ms)
+        return 0
+    if ord('w') == key:
+        ps.move_left_joy_up(keydown_time_ms)
+        return 0
+    if ord('s') == key:
+        ps.move_left_joy_down(keydown_time_ms)
+        return 0
+    if ord('8') == key:
+        ps.press_X()
+        return 0
+    if ord('6') == key:
+        ps.press_A()
+        return 0
+    if ord('4') == key:
+        ps.press_Y()
+        return 0
+    if ord('2') == key:
+        ps.press_B()
+        return 0
+    if keycode_numpad_8 == key:
+        ps.press_X()
+        return 0
+    if keycode_numpad_6 == key:
+        ps.press_A()
+        return 0
+    if keycode_numpad_4 == key:
+        ps.press_Y()
+        return 0
+    if keycode_numpad_2 == key:
+        ps.press_B()
+        return 0
+    if ord('+') == key:
+        ps.press_PLUS()
+        return 0
+    if ord('-') == key:
+        ps.press_MINUS()
+        return 0
+    if ord('q') == key:
+        return -1
+    return key
+
+def main_loop(vid,model,category_index):
 
     capturetime=time.monotonic()+detect_every
 
@@ -69,7 +134,8 @@ def capture_loop(vid,model,category_index):
 
         # show the frame as captured
         # scale it down to save screen space
-        scaled=imutils.resize(frame,width=320) # maintains aspect
+        #scaled=imutils.resize(frame,width=320) # maintains aspect
+        scaled=frame
         cv2.imshow('captured',scaled)
 
         now=time.monotonic()
@@ -79,14 +145,22 @@ def capture_loop(vid,model,category_index):
             # detect_every
             capturetime=time.monotonic()+detect_every
             # object detect on the frame
-            do_one_object_detect(model,frame,category_index)
+            #do_one_object_detect(model,frame,category_index)
 
         # Exit on any key press.
         key=cv2.waitKey(2)
         if key > 0:
-            break
+            result=process_key(key)
+            print("result=",result)
+            if result < 0:
+                break
 
 def verify_model():
+    # get a packetserial object
+    global ps
+    ps=packetserial.PacketSerial()
+    ps=packetserial.PacketSerial()
+    ps.OpenAndClear()
 
     # load the object detection model
     pipeline_config=os.path.join(modelpath,"pipeline.config")
@@ -122,12 +196,13 @@ def verify_model():
     # give time for the capture device to settle
     time.sleep(5)
 
-    capture_loop(vid,detection_model,category_index)
+    main_loop(vid,detection_model,category_index)
 
     # clean up. If things stop working you may have to
     # reboot to reset the capture device.
     vid.release()
     cv2.destroyAllWindows()
+    ps.Close()
 
 def main(args):
     print("verify model")
