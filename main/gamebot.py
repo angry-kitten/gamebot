@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Copyright 2021 by angry-kitten
-# Parse labels from labeled images and create a list for gamebot.
+# Gamebot main program.
 #
 
 import sys
@@ -27,8 +27,10 @@ import packetserial
 keydown_time_ms=250 # milliseconds
 
 # change this to select which webcam to use
-default_camera_index=2
-detect_every=5 # seconds, do an object detection with this period
+#default_camera_index=2
+default_camera_index=0
+g_debug_every=10 # seconds
+g_detect_every=5 # seconds, do an object detection with this period
 modelpath=os.path.join("..","model");
 print("modelpath=",modelpath)
 
@@ -39,8 +41,6 @@ g_categgory_index=None
 g_detections=None
 
 g_tasks=taskobject.TaskThreads()
-
-g_tasks.AddThread(tasksay.TaskSay("gamebot"))
 
 # Set the apparently platform specific key codes.
 print("os",os.name)
@@ -142,6 +142,18 @@ def process_key(key):
     if ord('-') == key:
         g_ps.press_MINUS()
         return 0
+    if ord('u') == key:
+        g_ps.press_XL()
+        return 0
+    if ord('j') == key:
+        g_ps.press_L()
+        return 0
+    if ord('i') == key:
+        g_ps.press_XR()
+        return 0
+    if ord('k') == key:
+        g_ps.press_R()
+        return 0
     if ord('q') == key:
         return -1
     if ord('b') == key:
@@ -151,9 +163,13 @@ def process_key(key):
 
 def main_loop(vid):
 
-    capturetime=time.monotonic()+detect_every
+    debugtime=time.monotonic()+g_debug_every
+    capturetime=time.monotonic()+g_detect_every
 
     while(True):
+        g_tasks.Poll()
+        g_tasks.DebugRecursive()
+
         # get a frame
         ret, frame = vid.read()
 
@@ -167,11 +183,14 @@ def main_loop(vid):
         cv2.imshow('captured',scaled)
 
         now=time.monotonic()
+        if now >= debugtime:
+            debugtime=time.monotonic()+g_debug_every
+            g_tasks.DebugRecursive()
+
         if now >= capturetime:
-            # we could do capturetime=capturetime+detect_every but
+            # we could do capturetime=capturetime+g_detect_every but
             # this allows for the time to do detection to be larger than
-            # detect_every
-            capturetime=time.monotonic()+detect_every
+            capturetime=time.monotonic()+g_detect_every
             # object detect on the frame
             #do_one_object_detect()
 
@@ -227,6 +246,8 @@ def setup_run_cleanup():
 
     # give time for the capture device to settle
     time.sleep(5)
+
+    g_tasks.AddToThread(0,tasksay.TaskSay(g_ps,"gamebot"))
 
     main_loop(vid)
 
