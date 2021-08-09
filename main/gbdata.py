@@ -29,6 +29,6 @@ skbuc=[
 # Standard screen size
 stdscreen_size=[1280,720] # wxh upper left origin
 
-# continue arrow info
-contarrow_loc=[641,663] # x and y based on 1280x720 upper left origin
-contarrow_color=[246,186,8] # RGB 0-255
+# continue triangle info
+conttriangle_loc=[641,663] # x and y based on 1280x720 upper left origin
+conttriangle_color=[246,186,8] # RGB 0-255

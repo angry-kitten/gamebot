@@ -18,29 +18,25 @@ from object_detection.utils import config_util
 import numpy
 from matplotlib import pyplot
 
+import gbdata
+import gbstate
+
 import taskobject
 import tasksay
+import taskdetect
+import tasktakestock
 
 sys.path.append(os.path.join(os.getcwd(),"..","..","gamebot-serial","pylib"))
 #print(sys.path)
 import packetserial
-keydown_time_ms=250 # milliseconds
 
 # change this to select which webcam to use
 #default_camera_index=2
 default_camera_index=0
-g_debug_every=10 # seconds
-g_detect_every=5 # seconds, do an object detection with this period
-modelpath=os.path.join("..","model");
-print("modelpath=",modelpath)
 
-g_ps=None
-g_model=None
-g_frame=None
-g_categgory_index=None
-g_detections=None
+gbstate.modelpath=os.path.join("..","model");
+print("modelpath=",gbstate.modelpath)
 
-g_tasks=taskobject.TaskThreads()
 
 # Set the apparently platform specific key codes.
 print("os",os.name)
@@ -51,20 +47,67 @@ if "posix" == os.name:
     keycode_numpad_4=150
     keycode_numpad_2=153
     
+def process_detections():
+    if gbstate.detections is None:
+        print("detections does not exist")
+        return
+    d=gbstate.detections
+    n=d['num_detections']
+    print("n=",n)
+    boxes=d['detection_boxes']
+    scores=d['detection_scores']
+    classes=d['detection_classes']
+    anchors=d['detection_anchor_indices']
+    #print("boxes=",boxes)
+    #print("scores=",scores)
+    #print("classes=",classes)
+    #print("anchors=",anchors)
+    #print("index=",gbstate.category_index)
+    #print("offset=",gbstate.label_id_offset)
+
+    # build a list of digested detections
+    digested=[]
+    for j in range(n):
+        #print("j=",j)
+        detectclass=classes[j]
+        #print("detectclass=",detectclass)
+        e=gbstate.category_index[detectclass+gbstate.label_id_offset]
+        #print("e=",e)
+        name=e['name']
+        #print("name=",name)
+        box=boxes[j]
+        # box is [y1,x1,y2,x2]
+        #print("box=",box)
+        score=scores[j]
+        #print("score=",score)
+        y1=box[0]*gbdata.stdscreen_size[1]
+        x1=box[1]*gbdata.stdscreen_size[0]
+        y2=box[2]*gbdata.stdscreen_size[1]
+        x2=box[3]*gbdata.stdscreen_size[0]
+        #print(x1,y1,x2,y2)
+        cx=(x1+x2)/2
+        cy=(y1+y2)/2
+        #print(cx,cy)
+        found=[name,score,cx,cy]
+        #print("found=",found)
+        digested.append(found)
+    #print(digested)
+    for det in digested:
+        print(det)
+    gbstate.digested=digested
 
 def do_one_object_detect():
 
-    global g_detections
-    g_detections=None
+    gbstate.detections=None
 
     # convert the image format to what is needed for object detection
-    image_np=numpy.array(g_frame)
+    image_np=numpy.array(gbstate.frame)
     input_tensor=tf.convert_to_tensor(numpy.expand_dims(image_np,0),dtype=tf.float32)
 
     # run the image through the model
-    image_pre, shapes=g_model.preprocess(input_tensor)
-    prediction_dict=g_model.predict(image_pre,shapes)
-    detections=g_model.postprocess(prediction_dict,shapes)
+    image_pre, shapes=gbstate.model.preprocess(input_tensor)
+    prediction_dict=gbstate.model.predict(image_pre,shapes)
+    detections=gbstate.model.postprocess(prediction_dict,shapes)
 
     num_detections=int(detections.pop('num_detections'))
     detections={key: value[0, :num_detections].numpy()
@@ -73,17 +116,14 @@ def do_one_object_detect():
 
     detections['detection_classes']=detections['detection_classes'].astype(numpy.int64)
 
-    label_id_offset=1
     image_np_with_detections=image_np.copy()
-
-    global g_category_index
 
     visualization_utils.visualize_boxes_and_labels_on_image_array(
         image_np_with_detections,
         detections['detection_boxes'],
-        detections['detection_classes']+label_id_offset,
+        detections['detection_classes']+gbstate.label_id_offset,
         detections['detection_scores'],
-        g_category_index,
+        gbstate.category_index,
         use_normalized_coordinates=True,
         max_boxes_to_draw=64,
         min_score_thresh=.2,
@@ -92,67 +132,73 @@ def do_one_object_detect():
     #cv2.imshow("show detections",cv2.resize(image_np_with_detections,(800,600)))
     cv2.imshow("show detections",image_np_with_detections)
 
-    g_detections=detections
+    gbstate.detections=detections
+
+    process_detections()
 
 def debug_show_state():
-    g_tasks.DebugRecursive()
-    #print(g_detections)
+    gbstate.tasks.DebugRecursive()
+    #print(gbstate.detections)
 
 def process_key(key):
     print("key=",key)
     if ord('a') == key:
-        g_ps.move_left_joy_left(keydown_time_ms)
+        #gbstate.ps.move_left_joy_left(gbstate.keydown_time_ms)
+        gbstate.ps.move_left_joy_left()
         return 0
     if ord('d') == key:
-        g_ps.move_left_joy_right(keydown_time_ms)
+        #gbstate.ps.move_left_joy_right(gbstate.keydown_time_ms)
+        gbstate.ps.move_left_joy_right()
         return 0
     if ord('w') == key:
-        g_ps.move_left_joy_up(keydown_time_ms)
+        #gbstate.ps.move_left_joy_up(gbstate.keydown_time_ms)
+        gbstate.ps.move_left_joy_up()
         return 0
     if ord('s') == key:
-        g_ps.move_left_joy_down(keydown_time_ms)
+        #gbstate.ps.move_left_joy_down(gbstate.keydown_time_ms)
+        gbstate.ps.move_left_joy_down()
         return 0
     if ord('8') == key:
-        g_ps.press_X()
+        gbstate.ps.press_X()
         return 0
     if ord('6') == key:
-        g_ps.press_A()
+        gbstate.ps.press_A()
         return 0
     if ord('4') == key:
-        g_ps.press_Y()
+        gbstate.ps.press_Y()
         return 0
     if ord('2') == key:
-        g_ps.press_B()
+        gbstate.ps.press_B()
         return 0
     if keycode_numpad_8 == key:
-        g_ps.press_X()
+        gbstate.ps.press_X()
         return 0
     if keycode_numpad_6 == key:
-        g_ps.press_A()
+        gbstate.ps.press_A()
         return 0
     if keycode_numpad_4 == key:
-        g_ps.press_Y()
+        gbstate.ps.press_Y()
         return 0
     if keycode_numpad_2 == key:
-        g_ps.press_B()
+        gbstate.ps.press_B()
         return 0
     if ord('+') == key:
-        g_ps.press_PLUS()
+        gbstate.ps.press_PLUS()
         return 0
     if ord('-') == key:
-        g_ps.press_MINUS()
+        gbstate.ps.press_MINUS()
         return 0
     if ord('u') == key:
-        g_ps.press_XL()
+        gbstate.ps.press_ZL()
         return 0
     if ord('j') == key:
-        g_ps.press_L()
+        gbstate.ps.press_L()
         return 0
     if ord('i') == key:
-        g_ps.press_XR()
+        gbstate.ps.press_ZR()
         return 0
     if ord('k') == key:
-        g_ps.press_R()
+        gbstate.ps.press_R()
         return 0
     if ord('q') == key:
         return -1
@@ -163,36 +209,61 @@ def process_key(key):
 
 def main_loop(vid):
 
-    debugtime=time.monotonic()+g_debug_every
-    capturetime=time.monotonic()+g_detect_every
+    debugtime=time.monotonic()+gbstate.debug_every
+    capturetime=time.monotonic()+gbstate.detect_every
+    start_delay_frames=5 # capture this many frames to get past startup noise
+    prebuild_window=True
 
     while(True):
-        g_tasks.Poll()
-        g_tasks.DebugRecursive()
+        if gbstate.frame is not None:
+            print("g_frame exists")
+        else:
+            print("g_frame does not exist")
+
+        gbstate.tasks.Poll()
+        gbstate.tasks.DebugRecursive()
 
         # get a frame
         ret, frame = vid.read()
 
-        global g_frame
-        g_frame=frame
+        print("ret",ret);
+        height, width, channels=frame.shape
+        print("width",width,"height",height,"channels",channels)
+
+        gbstate.frame=frame
 
         # show the frame as captured
         # scale it down to save screen space
         #scaled=imutils.resize(frame,width=320) # maintains aspect
         scaled=frame
+        if prebuild_window:
+            cv2.imshow("show detections",scaled)
+            prebuild_window=False
         cv2.imshow('captured',scaled)
+
+        if start_delay_frames > 0:
+            start_delay_frames-=1
+            continue
 
         now=time.monotonic()
         if now >= debugtime:
-            debugtime=time.monotonic()+g_debug_every
-            g_tasks.DebugRecursive()
+            debugtime=time.monotonic()+gbstate.debug_every
+            gbstate.tasks.DebugRecursive()
 
         if now >= capturetime:
-            # we could do capturetime=capturetime+g_detect_every but
+            # we could do capturetime=capturetime+gbstate.detect_every but
             # this allows for the time to do detection to be larger than
-            capturetime=time.monotonic()+g_detect_every
+            capturetime=time.monotonic()+gbstate.detect_every
             # object detect on the frame
             #do_one_object_detect()
+
+        if gbstate.frame is not None:
+            print("g_frame exists")
+            if gbstate.detections is None:
+                print("g_detections does not exist")
+                do_one_object_detect()
+        else:
+            print("g_frame does not exist")
 
         # Exit on any key press.
         key=cv2.waitKey(2)
@@ -204,17 +275,16 @@ def main_loop(vid):
 
 def setup_run_cleanup():
     # get a packetserial object
-    global g_ps
-    g_ps=packetserial.PacketSerial()
-    g_ps=packetserial.PacketSerial()
-    g_ps.OpenAndClear()
+    gbstate.ps=packetserial.PacketSerial()
+    gbstate.ps=packetserial.PacketSerial()
+    gbstate.ps.OpenAndClear()
 
     # load the object detection model
-    pipeline_config=os.path.join(modelpath,"pipeline.config")
+    pipeline_config=os.path.join(gbstate.modelpath,"pipeline.config")
     print("pipeline_config=",pipeline_config)
-    checkpoint_path=os.path.join(modelpath,"checkpoint","ckpt-0")
+    checkpoint_path=os.path.join(gbstate.modelpath,"checkpoint","ckpt-0")
     print("checkpoint_path=",checkpoint_path)
-    label_map=os.path.join(modelpath,"label_map.pbtxt")
+    label_map=os.path.join(gbstate.modelpath,"label_map.pbtxt")
     print("label_map=",label_map)
 
     configs=config_util.get_configs_from_pipeline_file(pipeline_config)
@@ -224,11 +294,9 @@ def setup_run_cleanup():
     ckpt=tf.compat.v2.train.Checkpoint(model=detection_model)
     ckpt.restore(checkpoint_path).expect_partial()
 
-    global g_model
-    g_model=detection_model
+    gbstate.model=detection_model
 
-    global g_category_index
-    g_category_index=label_map_util.create_category_index_from_labelmap(label_map)
+    gbstate.category_index=label_map_util.create_category_index_from_labelmap(label_map)
 
     # Open the capture device
     vid = cv2.VideoCapture(default_camera_index)
@@ -237,8 +305,8 @@ def setup_run_cleanup():
     height=int(vid.get(cv2.CAP_PROP_FRAME_HEIGHT))
     print("width=",width,"height=",height)
 
-    vid.set(cv2.CAP_PROP_FRAME_WIDTH,1280)
-    vid.set(cv2.CAP_PROP_FRAME_HEIGHT,720)
+    vid.set(cv2.CAP_PROP_FRAME_WIDTH,gbdata.stdscreen_size[0])
+    vid.set(cv2.CAP_PROP_FRAME_HEIGHT,gbdata.stdscreen_size[1])
 
     width=int(vid.get(cv2.CAP_PROP_FRAME_WIDTH))
     height=int(vid.get(cv2.CAP_PROP_FRAME_HEIGHT))
@@ -247,7 +315,10 @@ def setup_run_cleanup():
     # give time for the capture device to settle
     time.sleep(5)
 
-    g_tasks.AddToThread(0,tasksay.TaskSay(g_ps,"gamebot"))
+    gbstate.tasks=taskobject.TaskThreads()
+    gbstate.tasks.AddToThread(0,tasktakestock.TaskTakeStock())
+    gbstate.tasks.AddToThread(0,taskdetect.TaskDetect())
+    #gbstate.tasks.AddToThread(0,tasksay.TaskSay(gbstate.ps,"gamebot"))
 
     main_loop(vid)
 
@@ -255,7 +326,7 @@ def setup_run_cleanup():
     # reboot to reset the capture device.
     vid.release()
     cv2.destroyAllWindows()
-    g_ps.Close()
+    gbstate.ps.Close()
 
 def main(args):
     print("verify model")

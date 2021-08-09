@@ -114,3 +114,27 @@ class TaskPress(taskobject.TaskTimed):
         if 'hat_CENTER' == self.pressthis:
             self.ps.press_hat_CENTER(self.press_msec)
             return
+        if 'left_joy_right' == self.pressthis:
+            self.ps.move_left_joy_right(self.press_msec)
+            return
+        if 'left_joy_left' == self.pressthis:
+            self.ps.move_left_joy_left(self.press_msec)
+            return
+        if 'left_joy_down' == self.pressthis:
+            self.ps.move_left_joy_down(self.press_msec)
+            return
+        if 'left_joy_up' == self.pressthis:
+            self.ps.move_left_joy_up(self.press_msec)
+            return
+        if 'right_joy_right' == self.pressthis:
+            self.ps.move_right_joy_right(self.press_msec)
+            return
+        if 'right_joy_left' == self.pressthis:
+            self.ps.move_right_joy_left(self.press_msec)
+            return
+        if 'right_joy_down' == self.pressthis:
+            self.ps.move_right_joy_down(self.press_msec)
+            return
+        if 'right_joy_up' == self.pressthis:
+            self.ps.move_right_joy_up(self.press_msec)
+            return
