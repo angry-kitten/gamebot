@@ -35,8 +35,7 @@ def match_within(v1,v2,within):
         return True
     return False
 
-def color_match(x,y,tr,tg,tb,within):
-    (pb,pg,pr)=get_pixel(x,y)
+def color_match_rgb(pr,pg,pb,tr,tg,tb,within):
     if not match_within(tr,pr,within):
         return False
     if not match_within(tg,pg,within):
@@ -44,6 +43,10 @@ def color_match(x,y,tr,tg,tb,within):
     if not match_within(tb,pb,within):
         return False
     return True
+
+def color_match(x,y,tr,tg,tb,within):
+    (pb,pg,pr)=get_pixel(x,y)
+    return color_match_rgb(pr,pg,pb,tr,tg,tb,within)
 
 def is_black_screen():
     # sample the screen instead of looking at all of it
@@ -107,8 +110,27 @@ def is_start_continue_screen():
         return False
     if not has_label('SymbolBattery',0.30,1199,64,5):
         return False
-    if not has_label('SymbolWiFi',0.30,1140,65,5):
+    if not has_label('SymbolWiFi',0.20,1140,65,5):
         return False
+    return True
+
+def is_minimap():
+    # check for minimap
+    # look for the white border
+    x1=int((gbdata.minimap_border_left+gbdata.minimap_left)/2)
+    x2=int((gbdata.minimap_right+gbdata.minimap_border_right)/2)
+    y1=int((gbdata.minimap_border_top+gbdata.minimap_top)/2)
+    y2=int((gbdata.minimap_border_bottom+gbdata.minimap_bottom)/2)
+    #print("minimap",x1,x2,y1,y2)
+    if not color_match(x1,y1,252,252,227,5):
+        return False
+    if not color_match(x2,y1,252,252,230,5):
+        return False
+    if not color_match(x1,y2,253,253,230,5):
+        return False
+    if not color_match(x2,y2,252,252,227,5):
+        return False
+    print("minimap")
     return True
 
 def is_main_screen():
@@ -118,13 +140,7 @@ def is_main_screen():
     if not color_match(89,94,243,247,223,5):
         return False
     # check for minimap
-    if not color_match(1015,499,252,252,227,5):
-        return False
-    if not color_match(1259,499,252,252,230,5):
-        return False
-    if not color_match(1016,695,253,253,230,5):
-        return False
-    if not color_match(1259,698,252,252,227,5):
+    if not is_minimap():
         return False
     # check for date line
     if not color_match(64,646,250,255,233,5):
@@ -152,4 +168,40 @@ def is_continue_triangle_detect():
     if not has_label('ContinueTriangle',0.30,644,659,5):
         return False
     print("continue triangle detect")
+    return True
+
+def is_selection_screen_no_ACNH():
+    if gbstate.digested is None:
+        return False
+    if not has_label('SOnlineLogo',0.30,314,546,5):
+        return False
+    if not has_label('SymbolBattery',0.30,1199,64,5):
+        return False
+    if not has_label('SymbolWiFi',0.20,1139,64,5):
+        return False
+    return True
+
+def is_selection_screen():
+    if gbstate.digested is None:
+        return False
+    if not is_selection_screen_no_ACNH():
+        return False
+    if not has_label('ACNHTile',0.30,234,318,5):
+        return False
+    return True
+
+def is_user_selection_screen():
+    if gbstate.digested is None:
+        return False
+    if not has_label('ButtonPlus',0.30,780,517,5):
+        return False
+    return True
+
+def is_main_logo_screen():
+    if gbstate.digested is None:
+        return False
+    if not has_label('ACNHMainLogo',0.30,625,200,20):
+        return False
+    if not has_label('ButtonA',0.30,693,635,5):
+        return False
     return True

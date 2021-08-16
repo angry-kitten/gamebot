@@ -20,3 +20,6 @@ digested=None
 tasks=None
 
 label_id_offset=1
+
+minimap=None
+phonemap=None

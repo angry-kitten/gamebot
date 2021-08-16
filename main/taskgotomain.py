@@ -72,9 +72,34 @@ class TaskGoToMain(taskobject.Task):
             # press B to continue
             self.parent.Push(taskpress.TaskPress(gbstate.ps,'B',5.0))
             return
+        if gbscreen.is_selection_screen():
+            print("selection screen")
+            self.parent.Push(taskdetect.TaskDetect())
+            # press A to continue
+            self.parent.Push(taskpress.TaskPress(gbstate.ps,'A',5.0))
+            return
+        if gbscreen.is_selection_screen_no_ACNH():
+            print("selection screen, no ACNH")
+            self.parent.Push(taskdetect.TaskDetect())
+            # press hat_LEFT to try to get to the ACNH tile
+            self.parent.Push(taskpress.TaskPress(gbstate.ps,'hat_LEFT',5.0))
+            return
+        if gbscreen.is_user_selection_screen():
+            print("user selection screen")
+            self.parent.Push(taskdetect.TaskDetect())
+            # press A to select default user
+            self.parent.Push(taskpress.TaskPress(gbstate.ps,'A',5.0))
+            return
+        if gbscreen.is_main_logo_screen():
+            print("main logo screen")
+            self.parent.Push(taskdetect.TaskDetect())
+            # press A to continue
+            self.parent.Push(taskpress.TaskPress(gbstate.ps,'A',5.0))
+            return
 
         # purturb the game to see if it was screen dimmed or something
         self.parent.Push(taskdetect.TaskDetect())
+        self.parent.Push(taskpress.TaskPress(gbstate.ps,'right_joy_left',5.0))
         self.parent.Push(taskpress.TaskPress(gbstate.ps,'right_joy_right',5.0))
 
     def Start(self):

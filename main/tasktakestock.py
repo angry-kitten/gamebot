@@ -12,6 +12,7 @@ import taskpress
 import tasksay
 import taskdetect
 import taskgotomain
+import taskupdatemini
 
 class TaskTakeStock(taskobject.Task):
     """TaskTakeStock Object"""
@@ -43,6 +44,7 @@ class TaskTakeStock(taskobject.Task):
         self.started=True
         # push tasks in reverse order
         #self.parent.Push(tasksay.TaskSay(gbstate.ps,"gamebot"))
+        self.parent.Push(taskupdatemini.TaskUpdateMini())
         self.parent.Push(taskgotomain.TaskGoToMain())
 
     def DebugRecursive(self,indent=0):
