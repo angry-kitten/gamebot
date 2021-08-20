@@ -7,6 +7,7 @@
 import sys
 import os
 import time
+import random
 import cv2
 import imutils
 import object_detection
@@ -25,6 +26,7 @@ import taskobject
 import tasksay
 import taskdetect
 import tasktakestock
+import taskdosomething
 
 sys.path.append(os.path.join(os.getcwd(),"..","..","gamebot-serial","pylib"))
 #print(sys.path)
@@ -207,6 +209,22 @@ def process_key(key):
         return 0
     return key
 
+def query_state(ps):
+    test_time_sec=10
+
+    (flags,head,tail,count,ic,cem,echo_count)=ps.request_query_state()
+    print(f"flags={flags}")
+    if flags & ps.GB_FLAGS_CONFIGURED:
+        print("configured")
+    else:
+        print("not configured")
+    print(f"head={head}")
+    print(f"tail={tail}")
+    print(f"count={count}")
+    print(f"ic={ic}")
+    print(f"cem={cem}")
+    print(f"echo_count={echo_count}")
+
 def main_loop(vid):
 
     debugtime=time.monotonic()+gbstate.debug_every
@@ -215,6 +233,8 @@ def main_loop(vid):
     prebuild_window=True
 
     while(True):
+        query_state(gbstate.ps)
+
         if gbstate.frame is not None:
             print("g_frame exists")
         else:
@@ -274,6 +294,8 @@ def main_loop(vid):
                 break
 
 def setup_run_cleanup():
+    random.seed()
+
     # get a packetserial object
     gbstate.ps=packetserial.PacketSerial()
     gbstate.ps=packetserial.PacketSerial()
@@ -316,9 +338,10 @@ def setup_run_cleanup():
     time.sleep(5)
 
     gbstate.tasks=taskobject.TaskThreads()
+    gbstate.tasks.AddToThread(0,taskdosomething.TaskDoSomething())
+    #gbstate.tasks.AddToThread(0,tasksay.TaskSay(gbstate.ps,"gamebot"))
     gbstate.tasks.AddToThread(0,tasktakestock.TaskTakeStock())
     gbstate.tasks.AddToThread(0,taskdetect.TaskDetect())
-    #gbstate.tasks.AddToThread(0,tasksay.TaskSay(gbstate.ps,"gamebot"))
 
     main_loop(vid)
 

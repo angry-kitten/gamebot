@@ -33,10 +33,12 @@ class TaskGoToMain(taskobject.Task):
         if gbscreen.is_loading_screen():
             print("loading screen")
             # do nothing and wait
+            self.parent.Push(taskdetect.TaskDetect())
             return
         if gbscreen.is_black_screen():
             print("black screen")
             # do nothing and wait
+            self.parent.Push(taskdetect.TaskDetect())
             return
         if gbscreen.is_color_bars(): # my capture device shows color bars for no signal
             # NOTE: this doesn't work :(
