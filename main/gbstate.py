@@ -23,3 +23,8 @@ label_id_offset=1
 
 minimap=None
 phonemap=None
+
+position_minimap_x=-1
+position_minimap_y=-1
+target_mx=-1
+target_my=-1

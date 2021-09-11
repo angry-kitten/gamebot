@@ -43,8 +43,9 @@ class TaskTakeStock(taskobject.Task):
             return # already started
         self.started=True
         # push tasks in reverse order
-        #self.parent.Push(tasksay.TaskSay(gbstate.ps,"gamebot"))
+        #self.parent.Push(tasksay.TaskSay("gamebot"))
         self.parent.Push(taskupdatemini.TaskUpdateMini())
+        self.parent.Push(taskobject.TaskTimed()) # default 1 second delay
         self.parent.Push(taskgotomain.TaskGoToMain())
 
     def DebugRecursive(self,indent=0):

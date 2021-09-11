@@ -54,11 +54,12 @@ class TaskRandomWalk(taskobject.Task):
         #    press='left_joy_up'
         #else:
         #    press='left_joy_down'
-        #self.parent.Push(taskpress.TaskPress(gbstate.ps,press,5.0,500))
+        #self.parent.Push(taskpress.TaskPress(press,5.0,500))
         heading=random.randint(0,360)
         extent=random.randint(0,100)/100
         print(heading,extent)
-        self.parent.Push(taskjoy.TaskJoyLeft(heading,extent,5.0,500))
+        # move for 2 seconds over a total of 3 seconds
+        self.parent.Push(taskjoy.TaskJoyLeft(heading,extent,3.0,2000))
         self.taskdone=True
 
     def DebugRecursive(self,indent=0):

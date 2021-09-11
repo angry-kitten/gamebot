@@ -13,6 +13,7 @@ import taskdetect
 import taskgotomain
 import taskupdatemini
 import taskrandomwalk
+import taskweed
 
 class TaskDoSomething(taskobject.Task):
     """TaskDoSomething Object"""
@@ -33,6 +34,7 @@ class TaskDoSomething(taskobject.Task):
             return
 
         self.parent.Push(taskrandomwalk.TaskRandomWalk())
+        self.parent.Push(taskweed.TaskWeed())
         return
 
     def Start(self):

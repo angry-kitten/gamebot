@@ -48,6 +48,9 @@ def color_match(x,y,tr,tg,tb,within):
     (pb,pg,pr)=get_pixel(x,y)
     return color_match_rgb(pr,pg,pb,tr,tg,tb,within)
 
+def color_match_array(x,y,a,within):
+    return color_match(x,y,a[0],a[1],a[2],within)
+
 def is_black_screen():
     # sample the screen instead of looking at all of it
     w=gbdata.stdscreen_size[0]

@@ -11,10 +11,9 @@ import taskpress
 class TaskSay(taskobject.Task):
     """TaskSay Object"""
 
-    def __init__(self,ps,saythis):
+    def __init__(self,saythis):
         super().__init__()
         print("new TaskSay object")
-        self.ps=ps
         self.saythis=saythis
         self.step=0
         self.substep=0
@@ -32,7 +31,7 @@ class TaskSay(taskobject.Task):
         print("TaskSay at step",self.step)
         if 0 == self.step:
             print("TaskSay press R")
-            self.parent.Push(taskpress.TaskPress(self.ps,'R',1.0))
+            self.parent.Push(taskpress.TaskPress('R',1.0))
             self.step=1
             return
         if 1 == self.step:
@@ -40,7 +39,7 @@ class TaskSay(taskobject.Task):
             return
         if 2 == self.step:
             print("TaskSay press + (confirm)")
-            self.parent.Push(taskpress.TaskPress(self.ps,'+',1.0))
+            self.parent.Push(taskpress.TaskPress('+',1.0))
             self.step=3
             return
         print("TaskSay done")
@@ -87,11 +86,11 @@ class TaskSay(taskobject.Task):
             # move in x
             if self.skb_x < x:
                 # need to increment
-                self.parent.Push(taskpress.TaskPress(self.ps,'hat_RIGHT'))
+                self.parent.Push(taskpress.TaskPress('hat_RIGHT'))
                 self.skb_x+=1
                 return
             # else need to decrement
-            self.parent.Push(taskpress.TaskPress(self.ps,'hat_LEFT'))
+            self.parent.Push(taskpress.TaskPress('hat_LEFT'))
             self.skb_x-=1
             return
 
@@ -100,14 +99,14 @@ class TaskSay(taskobject.Task):
             # move in y
             if self.skb_y < y:
                 # need to increment
-                self.parent.Push(taskpress.TaskPress(self.ps,'hat_BOTTOM'))
+                self.parent.Push(taskpress.TaskPress('hat_BOTTOM'))
                 self.skb_y+=1
                 return
             # else need to decrement
-            self.parent.Push(taskpress.TaskPress(self.ps,'hat_TOP'))
+            self.parent.Push(taskpress.TaskPress('hat_TOP'))
             self.skb_y-=1
             return
 
         # The position is correct. Select that letter.
-        self.parent.Push(taskpress.TaskPress(self.ps,'A'))
+        self.parent.Push(taskpress.TaskPress('A'))
         self.substep+=1

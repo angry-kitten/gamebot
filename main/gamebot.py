@@ -21,12 +21,14 @@ from matplotlib import pyplot
 
 import gbdata
 import gbstate
+import gbdisplay
 
 import taskobject
 import tasksay
 import taskdetect
 import tasktakestock
 import taskdosomething
+
 
 sys.path.append(os.path.join(os.getcwd(),"..","..","gamebot-serial","pylib"))
 #print(sys.path)
@@ -79,6 +81,7 @@ def process_detections():
         #print("name=",name)
         box=boxes[j]
         # box is [y1,x1,y2,x2]
+        # y is down, x is right
         #print("box=",box)
         score=scores[j]
         #print("score=",score)
@@ -89,8 +92,10 @@ def process_detections():
         #print(x1,y1,x2,y2)
         cx=(x1+x2)/2
         cy=(y1+y2)/2
+        bx=cx
+        by=y2
         #print(cx,cy)
-        found=[name,score,cx,cy]
+        found=[name,score,cx,cy,bx,by]
         #print("found=",found)
         digested.append(found)
     #print(digested)
@@ -127,7 +132,7 @@ def do_one_object_detect():
         detections['detection_scores'],
         gbstate.category_index,
         use_normalized_coordinates=True,
-        max_boxes_to_draw=64,
+        max_boxes_to_draw=gbdata.object_count,
         min_score_thresh=.2,
         agnostic_mode=False)
 
@@ -159,6 +164,22 @@ def process_key(key):
     if ord('s') == key:
         #gbstate.ps.move_left_joy_down(gbstate.keydown_time_ms)
         gbstate.ps.move_left_joy_down()
+        return 0
+    if ord('f') == key:
+        #gbstate.ps.move_right_joy_left(gbstate.keydown_time_ms)
+        gbstate.ps.move_right_joy_left()
+        return 0
+    if ord('h') == key:
+        #gbstate.ps.move_right_joy_right(gbstate.keydown_time_ms)
+        gbstate.ps.move_right_joy_right()
+        return 0
+    if ord('t') == key:
+        #gbstate.ps.move_right_joy_up(gbstate.keydown_time_ms)
+        gbstate.ps.move_right_joy_up()
+        return 0
+    if ord('g') == key:
+        #gbstate.ps.move_right_joy_down(gbstate.keydown_time_ms)
+        gbstate.ps.move_right_joy_down()
         return 0
     if ord('8') == key:
         gbstate.ps.press_X()
@@ -233,7 +254,11 @@ def main_loop(vid):
     prebuild_window=True
 
     while(True):
-        query_state(gbstate.ps)
+        #query_state(gbstate.ps)
+        # From query_state it shows that when the console is powered down
+        # or in sleep mode that the USB device is not configured. That
+        # makes it impossible to wake it from the USB device without
+        # USB remote wakeup support.
 
         if gbstate.frame is not None:
             print("g_frame exists")
@@ -255,10 +280,12 @@ def main_loop(vid):
         # show the frame as captured
         # scale it down to save screen space
         #scaled=imutils.resize(frame,width=320) # maintains aspect
-        scaled=frame
+        scaled=frame.copy()
         if prebuild_window:
             cv2.imshow("show detections",scaled)
+            cv2.moveWindow("show detections",1024,0)
             prebuild_window=False
+        gbdisplay.draw_on(scaled)
         cv2.imshow('captured',scaled)
 
         if start_delay_frames > 0:
@@ -339,7 +366,7 @@ def setup_run_cleanup():
 
     gbstate.tasks=taskobject.TaskThreads()
     gbstate.tasks.AddToThread(0,taskdosomething.TaskDoSomething())
-    #gbstate.tasks.AddToThread(0,tasksay.TaskSay(gbstate.ps,"gamebot"))
+    #gbstate.tasks.AddToThread(0,tasksay.TaskSay("gamebot"))
     gbstate.tasks.AddToThread(0,tasktakestock.TaskTakeStock())
     gbstate.tasks.AddToThread(0,taskdetect.TaskDetect())
 
