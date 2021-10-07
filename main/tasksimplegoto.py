@@ -26,12 +26,16 @@ class TaskSimpleGoTo(taskobject.Task):
     def __init__(self,mx,my):
         super().__init__()
         print("new TaskSimpleGoTo object")
+        self.limit=100
+        self.counter=0
         self.target_mx=mx
         self.target_my=my
         print("go to mx",mx,"my",my)
         self.within=0.1
         self.previous_mx=-1
         self.previous_my=-1
+        gbstate.goto_target_mx=mx
+        gbstate.goto_target_my=my
 
     def Poll(self):
         """check if any action can be taken"""
@@ -50,9 +54,21 @@ class TaskSimpleGoTo(taskobject.Task):
         if self.previous_mx >= 0:
             if self.previous_mx == mx and self.previous_my == my:
                 print("stuck")
+                gbstate.goto_target_mx=-1
+                gbstate.goto_target_my=-1
                 print("TaskSimpleGoTo done")
                 self.taskdone=True
                 return
+
+        if self.counter >= self.limit:
+            print("over count")
+            gbstate.goto_target_mx=-1
+            gbstate.goto_target_my=-1
+            print("TaskSimpleGoTo done")
+            self.taskdone=True
+            return
+
+        self.counter+=1
 
         self.previous_mx=mx
         self.previous_my=my
@@ -81,15 +97,16 @@ class TaskSimpleGoTo(taskobject.Task):
 
             self.parent.Push(taskupdatemini.TaskUpdateMini())
             self.parent.Push(taskobject.TaskTimed()) # default 1 second delay
-            self.parent.Push(taskdetect.TaskDetect())
-            seconds=distance/10
-            if seconds > .5:
-                seconds=.5
+            seconds=self.distance_to_time(distance)
+            if seconds > 2:
+                seconds=2
             print("seconds",seconds)
             # move for up to 2 seconds over a total of 3 seconds
             self.parent.Push(taskjoy.TaskJoyLeft(heading,1.0,3.0,int(seconds*1000)))
             return
 
+        gbstate.goto_target_mx=-1
+        gbstate.goto_target_my=-1
         print("TaskSimpleGoTo done")
         self.taskdone=True
         return
@@ -102,7 +119,36 @@ class TaskSimpleGoTo(taskobject.Task):
         self.started=True
         self.parent.Push(taskupdatemini.TaskUpdateMini())
         self.parent.Push(taskobject.TaskTimed()) # default 1 second delay
-        self.parent.Push(taskdetect.TaskDetect())
 
     def DebugRecursive(self,indent=0):
         self.DebugPrint("TaskSimpleGoTo",indent)
+
+    def distance_to_time(self,distance):
+        print("distance_to_time",distance)
+        ttd=gbdata.time_to_distance
+        entries=len(ttd)
+        for j in range(entries-1):
+            a=ttd[j]
+            b=ttd[j+1]
+            if distance > a[1]:
+                t=a[0]*(distance/a[1])
+                print("t",t)
+                return t
+            if distance == a[1]:
+                t=a[0]
+                print("t",t)
+                return t
+            if distance == b[1]:
+                t=b[0]
+                print("t",t)
+                return t
+            if a[1] <= distance and distance <= b[1]:
+                dt=a[0]-b[0]
+                dd=a[1]-b[1]
+                pd=distance-b[1]
+                t=b[0]+((dt/dd)*pd)
+                print("t",t)
+                return t
+        t=0
+        print("t",t)
+        return t

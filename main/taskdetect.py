@@ -23,8 +23,9 @@ class TaskDetect(taskobject.Task):
             return
         if self.taskdone:
             return
-        if gbstate.detections is None:
-            return
+        with gbstate.detection_lock:
+            if gbstate.detections is None:
+                return
 
         print("TaskDetect done")
         self.taskdone=True
@@ -35,7 +36,8 @@ class TaskDetect(taskobject.Task):
         if self.started:
             return # already started
         self.started=True
-        gbstate.detections=None
+        with gbstate.detection_lock:
+            gbstate.detections=None
 
     def DebugRecursive(self,indent=0):
         self.DebugPrint("TaskDetect",indent)

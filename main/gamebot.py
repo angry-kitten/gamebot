@@ -8,6 +8,7 @@ import sys
 import os
 import time
 import random
+import threading
 import cv2
 import imutils
 import object_detection
@@ -28,6 +29,8 @@ import tasksay
 import taskdetect
 import tasktakestock
 import taskdosomething
+import taskupdatemini
+import tasktest
 
 
 sys.path.append(os.path.join(os.getcwd(),"..","..","gamebot-serial","pylib"))
@@ -51,11 +54,10 @@ if "posix" == os.name:
     keycode_numpad_4=150
     keycode_numpad_2=153
     
-def process_detections():
-    if gbstate.detections is None:
+def process_detections(d):
+    if d is None:
         print("detections does not exist")
         return
-    d=gbstate.detections
     n=d['num_detections']
     print("n=",n)
     boxes=d['detection_boxes']
@@ -101,14 +103,12 @@ def process_detections():
     #print(digested)
     for det in digested:
         print(det)
-    gbstate.digested=digested
+    return digested
 
-def do_one_object_detect():
-
-    gbstate.detections=None
+def do_one_object_detect(dframe):
 
     # convert the image format to what is needed for object detection
-    image_np=numpy.array(gbstate.frame)
+    image_np=numpy.array(dframe)
     input_tensor=tf.convert_to_tensor(numpy.expand_dims(image_np,0),dtype=tf.float32)
 
     # run the image through the model
@@ -137,11 +137,11 @@ def do_one_object_detect():
         agnostic_mode=False)
 
     #cv2.imshow("show detections",cv2.resize(image_np_with_detections,(800,600)))
-    cv2.imshow("show detections",image_np_with_detections)
+    #cv2.imshow("show detections",image_np_with_detections)
 
-    gbstate.detections=detections
+    digested=process_detections(detections)
 
-    process_detections()
+    return (detections,digested,image_np_with_detections)
 
 def debug_show_state():
     gbstate.tasks.DebugRecursive()
@@ -228,6 +228,14 @@ def process_key(key):
     if ord('b') == key:
         debug_show_state()
         return 0
+    if ord('p') == key:
+        # get current position from minimap
+        gbstate.tasks.AddToThread(0,taskupdatemini.TaskUpdateMini())
+        return 0
+    if ord('z') == key:
+        # run a test task
+        gbstate.tasks.AddToThread(0,tasktest.TaskTest())
+        return 0
     return key
 
 def query_state(ps):
@@ -246,10 +254,37 @@ def query_state(ps):
     print(f"cem={cem}")
     print(f"echo_count={echo_count}")
 
+def object_detection_thread():
+    dframe=None
+    do_detect=False
+    localdetections=None
+    localdigested=None
+    while True:
+        print("odt")
+        dframe=None
+        do_detect=False
+        localdetections=None
+        localdigested=None
+        with gbstate.detection_lock:
+            if gbstate.detection_frame is not None:
+                if gbstate.detections is None:
+                    dframe=gbstate.detection_frame
+                    do_detect=True
+        if do_detect:
+            print("start a detection")
+            (localdetections,localdigested,localim)=do_one_object_detect(dframe)
+            if localdetections is not None:
+                with gbstate.detection_lock:
+                    gbstate.detections=localdetections
+                    gbstate.digested=localdigested
+                    gbstate.detim=localim
+        else:
+            print("no detection")
+            time.sleep(1)
+
 def main_loop(vid):
 
     debugtime=time.monotonic()+gbstate.debug_every
-    capturetime=time.monotonic()+gbstate.detect_every
     start_delay_frames=5 # capture this many frames to get past startup noise
     prebuild_window=True
 
@@ -266,7 +301,7 @@ def main_loop(vid):
             print("g_frame does not exist")
 
         gbstate.tasks.Poll()
-        gbstate.tasks.DebugRecursive()
+        #gbstate.tasks.DebugRecursive()
 
         # get a frame
         ret, frame = vid.read()
@@ -295,22 +330,18 @@ def main_loop(vid):
         now=time.monotonic()
         if now >= debugtime:
             debugtime=time.monotonic()+gbstate.debug_every
-            gbstate.tasks.DebugRecursive()
-
-        if now >= capturetime:
-            # we could do capturetime=capturetime+gbstate.detect_every but
-            # this allows for the time to do detection to be larger than
-            capturetime=time.monotonic()+gbstate.detect_every
-            # object detect on the frame
-            #do_one_object_detect()
+            #gbstate.tasks.DebugRecursive()
 
         if gbstate.frame is not None:
-            print("g_frame exists")
-            if gbstate.detections is None:
-                print("g_detections does not exist")
-                do_one_object_detect()
-        else:
-            print("g_frame does not exist")
+            with gbstate.detection_lock:
+                gbstate.detection_frame=gbstate.frame
+
+        showme=None
+        with gbstate.detection_lock:
+            if gbstate.detim is not None:
+                showme=gbstate.detim
+        if showme is not None:
+            cv2.imshow("show detections",showme)
 
         # Exit on any key press.
         key=cv2.waitKey(2)
@@ -369,6 +400,14 @@ def setup_run_cleanup():
     #gbstate.tasks.AddToThread(0,tasksay.TaskSay("gamebot"))
     gbstate.tasks.AddToThread(0,tasktakestock.TaskTakeStock())
     gbstate.tasks.AddToThread(0,taskdetect.TaskDetect())
+
+    # create the lock to synchronize data with the object detection
+    # thread
+    gbstate.detection_lock=threading.Lock()
+
+    # start the object detection thread
+    odt=threading.Thread(target=object_detection_thread,daemon=True)
+    odt.start()
 
     main_loop(vid)
 

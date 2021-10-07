@@ -17,6 +17,7 @@ color_green=(0,255,0) # BGR
 color_red=(0,0,255) # BGR
 color_blue=(255,0,0) # BGR
 line_width=1
+line_width_x=3
 line_type=cv2.LINE_AA
 font_line_width=1
 font_vertical_space=26
@@ -33,14 +34,14 @@ font_scale=1
 
 #pixels_per_square=124
 pixels_per_square=124
-#angle_to_player=39 # degrees
-angle_to_player=38 # degrees
-#degrees_per_square=angle_to_player/10
-#degrees_per_square=angle_to_player/11
-degrees_per_square=angle_to_player/12
+#angle_to_center=39 # degrees
+angle_to_center=38 # degrees
+#degrees_per_square=angle_to_center/10
+#degrees_per_square=angle_to_center/11
+degrees_per_square=angle_to_center/12
 cylinder_radius=1579
-#distance_to_viewer=1500 # pixels from player position
-distance_to_viewer=1500 # pixels from player position
+#distance_to_viewer=1500 # pixels from center position
+distance_to_viewer=1500 # pixels from center position
 
 def control_help(frame):
     x=0
@@ -85,6 +86,10 @@ def control_help(frame):
     cv2.putText(frame,'q=quit',(x,y),font,font_scale,color_green,font_line_width,line_type)
     y+=i
     cv2.putText(frame,'b=debug',(x,y),font,font_scale,color_green,font_line_width,line_type)
+    y+=i
+    cv2.putText(frame,'p=position',(x,y),font,font_scale,color_green,font_line_width,line_type)
+    y+=i
+    cv2.putText(frame,'z=test',(x,y),font,font_scale,color_green,font_line_width,line_type)
 
 def minimap_position(frame):
     if gbstate.minimap is None:
@@ -99,32 +104,39 @@ def minimap_position(frame):
     cv2.putText(frame,s,(x,y),font,font_scale*0.75,color_white,font_line_width,line_type)
 
 def convert_map_to_pixel(mx,my):
-    if gbstate.position_minimap_x < 0:
+    if gbstate.center_mx >= 0:
+        center_x=gbstate.center_mx
+        center_y=gbstate.center_my
+    elif gbstate.player_mx >= 0:
+        center_x=gbstate.player_mx
+        center_y=gbstate.player_my
+    elif gbstate.position_minimap_x >= 0:
+        center_x=gbstate.position_minimap_x
+        center_y=gbstate.position_minimap_y
+    else:
         return (-1,-1)
+
     w=gbdata.stdscreen_size[0]
     h=gbdata.stdscreen_size[1]
     cx=int(w/2)
     cy=int(h/2)
 
-    player_x=gbstate.position_minimap_x
-    player_y=gbstate.position_minimap_y
-
     # Map the center of the squares on a cylinder and calculate 3d coordinates.
-    player_cyl_y=cylinder_radius*math.cos(math.radians(angle_to_player))
-    #print("player_cyl_y",player_cyl_y)
-    player_cyl_z=cylinder_radius*math.sin(math.radians(angle_to_player))
-    #print("player_cyl_z",player_cyl_z)
-    # Map the position relative to the player.
-    rel_y=my-player_y
+    center_cyl_y=cylinder_radius*math.cos(math.radians(angle_to_center))
+    #print("center_cyl_y",center_cyl_y)
+    center_cyl_z=cylinder_radius*math.sin(math.radians(angle_to_center))
+    #print("center_cyl_z",center_cyl_z)
+    # Map the position relative to the center.
+    rel_y=my-center_y
     #print("rel_y",rel_y)
-    rel_x=mx-player_x
+    rel_x=mx-center_x
     #print("rel_x",rel_x)
-    square_center_angle=angle_to_player+(rel_y*degrees_per_square)
+    square_center_angle=angle_to_center+(rel_y*degrees_per_square)
     #print("square_center_angle",square_center_angle)
     cyl_x=rel_x*pixels_per_square
-    cyl_y=player_cyl_y-(cylinder_radius*math.cos(math.radians(square_center_angle)))
+    cyl_y=center_cyl_y-(cylinder_radius*math.cos(math.radians(square_center_angle)))
     #print("cyl_y",cyl_y)
-    cyl_z=(cylinder_radius*math.sin(math.radians(square_center_angle)))-player_cyl_z # more distant/into screen is negative
+    cyl_z=(cylinder_radius*math.sin(math.radians(square_center_angle)))-center_cyl_z # more distant/into screen is negative
 
     # Map the cylinder coordinates the the point of view.
     #print("distance_to_viewer",distance_to_viewer)
@@ -143,22 +155,31 @@ def calculate_distance(px1,py1,px2,py2):
 
 def convert_pixel_to_map(px,py):
     print("convert_pixel_to_map",px,py)
-    if gbstate.position_minimap_x < 0:
+
+    if gbstate.center_mx >= 0:
+        center_x=gbstate.center_mx
+        center_y=gbstate.center_my
+    elif gbstate.player_mx >= 0:
+        center_x=gbstate.player_mx
+        center_y=gbstate.player_my
+    elif gbstate.position_minimap_x >= 0:
+        center_x=gbstate.position_minimap_x
+        center_y=gbstate.position_minimap_y
+    else:
         return (-1,-1)
+
     converge=0.75
     limit=0.01
     trylimit=1000
 
-    # Start with the player position as the first estimate.
-    player_x=gbstate.position_minimap_x
-    player_y=gbstate.position_minimap_y
-    best_map_x=player_x;
-    best_map_y=player_y;
+    # Start with the screen center position as the first estimate.
+    best_map_x=center_x;
+    best_map_y=center_y;
     try_mx=best_map_x
     try_my=best_map_y
-    print("player try_mx",try_mx,"try_my",try_my)
+    print("center try_mx",try_mx,"try_my",try_my)
     (try_px,try_py)=convert_map_to_pixel(try_mx,try_my)
-    print("player try_px",try_px,"try_py",try_py)
+    print("center try_px",try_px,"try_py",try_py)
     if try_px < 0:
         return (-1,-1)
     if try_px == px and try_py == py:
@@ -237,24 +258,34 @@ def convert_pixel_to_map(px,py):
     return (-1,-1)
 
 def draw_grid(frame):
-    if gbstate.position_minimap_x < 0:
+    if gbstate.center_mx >= 0:
+        center_x=gbstate.center_mx
+        center_y=gbstate.center_my
+    elif gbstate.player_mx >= 0:
+        center_x=gbstate.player_mx
+        center_y=gbstate.player_my
+    elif gbstate.position_minimap_x >= 0:
+        center_x=gbstate.position_minimap_x
+        center_y=gbstate.position_minimap_y
+    else:
         return
+
     w=gbdata.stdscreen_size[0]
     h=gbdata.stdscreen_size[1]
     cx=int(w/2)
     cy=int(h/2)
 
     # For a given area of the map.
-    player_x=int(gbstate.position_minimap_x)
-    player_y=int(gbstate.position_minimap_y)
-    # For this many squares around the player.
+    center_x=int(center_x)
+    center_y=int(center_y)
+    # For this many squares around the center.
     #print("yyy")
     #square_surround=5
     square_surround=10
-    map_low_x=player_x-square_surround
-    map_high_x=player_x+square_surround
-    map_low_y=player_y-square_surround
-    map_high_y=player_y+square_surround
+    map_low_x=center_x-square_surround
+    map_high_x=center_x+square_surround
+    map_low_y=center_y-square_surround
+    map_high_y=center_y+square_surround
     if map_low_x < 0:
         map_low_x=0
     elif map_low_x >= gbdata.minimap_width:
@@ -279,24 +310,24 @@ def draw_grid(frame):
     # Map the center of the squares on a cylinder and calculate 3d coordinates.
     data_w=1+(map_high_x-map_low_x)
     data_h=1+(map_high_y-map_low_y)
-    player_cyl_y=cylinder_radius*math.cos(math.radians(angle_to_player))
-    #print("player_cyl_y",player_cyl_y)
-    player_cyl_z=cylinder_radius*math.sin(math.radians(angle_to_player))
-    #print("player_cyl_z",player_cyl_z)
+    center_cyl_y=cylinder_radius*math.cos(math.radians(angle_to_center))
+    #print("center_cyl_y",center_cyl_y)
+    center_cyl_z=cylinder_radius*math.sin(math.radians(angle_to_center))
+    #print("center_cyl_z",center_cyl_z)
     pcyl=[[(0,0,0) for y in range(data_h)] for x in range(data_w)]
-    # Map the squares relative to the player.
+    # Map the squares relative to the center.
     for dy in range(data_h):
-        rel_y=dy+(map_low_y-player_y)
+        rel_y=dy+(map_low_y-center_y)
         #print("rel_y",rel_y)
         for dx in range(data_w):
-            rel_x=dx+(map_low_x-player_x)
+            rel_x=dx+(map_low_x-center_x)
             #print("rel_x",rel_x)
-            square_center_angle=angle_to_player+(rel_y*degrees_per_square)
+            square_center_angle=angle_to_center+(rel_y*degrees_per_square)
             #print("square_center_angle",square_center_angle)
             cyl_x=rel_x*pixels_per_square
-            cyl_y=player_cyl_y-(cylinder_radius*math.cos(math.radians(square_center_angle)))
+            cyl_y=center_cyl_y-(cylinder_radius*math.cos(math.radians(square_center_angle)))
             #print("cyl_y",cyl_y)
-            cyl_z=(cylinder_radius*math.sin(math.radians(square_center_angle)))-player_cyl_z # more distant/into screen is negative
+            cyl_z=(cylinder_radius*math.sin(math.radians(square_center_angle)))-center_cyl_z # more distant/into screen is negative
             pcyl[dx][dy]=(cyl_x,cyl_y,cyl_z)
 
     # Map the cylinder coordinates the the point of view.
@@ -333,8 +364,8 @@ def draw_grid(frame):
             cv2.line(frame,(int(x1),int(y1)),(int(x2),int(y2)),color_white,line_width)
 
 def draw_x_at(frame,x,y,color):
-    cv2.line(frame,(int(x)-10,int(y)-10),(int(x)+10,int(y)+10),color,line_width)
-    cv2.line(frame,(int(x)-10,int(y)+10),(int(x)+10,int(y)-10),color,line_width)
+    cv2.line(frame,(int(x)-10,int(y)-10),(int(x)+10,int(y)+10),color,line_width_x)
+    cv2.line(frame,(int(x)-10,int(y)+10),(int(x)+10,int(y)-10),color,line_width_x)
 
 def draw_x_at_map(frame,mx,my,color):
     (px,py)=convert_map_to_pixel(mx,my)
@@ -344,13 +375,22 @@ def draw_x_at_map(frame,mx,my,color):
     draw_x_at(frame,px,py,color)
 
 def draw_x_path(frame):
-    if gbstate.position_minimap_x < 0:
+    if gbstate.center_mx >= 0:
+        center_x=gbstate.center_mx
+        center_y=gbstate.center_my
+    elif gbstate.player_mx >= 0:
+        center_x=gbstate.player_mx
+        center_y=gbstate.player_my
+    elif gbstate.position_minimap_x >= 0:
+        center_x=gbstate.position_minimap_x
+        center_y=gbstate.position_minimap_y
+    else:
         return
-    player_x=int(gbstate.position_minimap_x)
-    player_y=int(gbstate.position_minimap_y)
+    center_x=int(center_x)
+    center_y=int(center_y)
     for j in range(7):
-            mx=j+player_x
-            my=player_y-j
+            mx=j+center_x
+            my=center_y-j
             (x1,y1)=convert_map_to_pixel(mx,my)
             if x1 < 0:
                 return (-1,-1)
@@ -370,10 +410,21 @@ def draw_x_path(frame):
             draw_x_at(frame,x2,y2,color_red)
 
 def draw_targets(frame):
-    if gbstate.position_minimap_x > 0:
-        draw_x_at_map(frame,gbstate.position_minimap_x,gbstate.position_minimap_y,color_blue)
-    if gbstate.target_mx > 0:
-        draw_x_at_map(frame,gbstate.target_mx,gbstate.target_my,color_green)
+    if gbstate.player_mx >= 0:
+        draw_x_at_map(frame,gbstate.player_mx,gbstate.player_my,color_blue)
+        x=gbdata.minimap_left+gbstate.player_mx*gbdata.minimap_square_spacing
+        y=gbdata.minimap_top+gbstate.player_my*gbdata.minimap_square_spacing
+        draw_x_at(frame,x,y,color_blue)
+    if gbstate.goto_target_mx >= 0:
+        draw_x_at_map(frame,gbstate.goto_target_mx,gbstate.goto_target_my,color_red)
+        x=gbdata.minimap_left+gbstate.goto_target_mx*gbdata.minimap_square_spacing
+        y=gbdata.minimap_top+gbstate.goto_target_my*gbdata.minimap_square_spacing
+        draw_x_at(frame,x,y,color_red)
+    if gbstate.object_target_mx >= 0:
+        draw_x_at_map(frame,gbstate.object_target_mx,gbstate.object_target_my,color_green)
+        x=gbdata.minimap_left+gbstate.object_target_mx*gbdata.minimap_square_spacing
+        y=gbdata.minimap_top+gbstate.object_target_my*gbdata.minimap_square_spacing
+        draw_x_at(frame,x,y,color_green)
 
 def draw_on(frame):
     control_help(frame)

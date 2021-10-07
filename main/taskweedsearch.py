@@ -1,6 +1,6 @@
 #
 # Copyright 2021 by angry-kitten
-# Pick something for the character to do.
+# Look at the current screen for weeds and pick them.
 #
 
 import taskobject
@@ -13,20 +13,23 @@ import taskdetect
 import taskgotomain
 import taskupdatemini
 import taskrandomwalk
+import tasksimplegoto
+import gbscreen
+import gbdisplay
+import random
 import taskweed
-import taskweedsearch
 import tasksearchpattern
 
-class TaskDoSomething(taskobject.Task):
-    """TaskDoSomething Object"""
+class TaskWeedSearch(taskobject.Task):
+    """TaskWeedSearch Object"""
 
     def __init__(self):
         super().__init__()
-        print("new TaskDoSomething object")
+        print("new TaskWeedSearch object")
 
     def Poll(self):
         """check if any action can be taken"""
-        print("TaskDoSomething Poll")
+        print("TaskWeedSearch Poll")
         if not self.started:
             self.Start()
             return
@@ -35,17 +38,23 @@ class TaskDoSomething(taskobject.Task):
         if gbstate.frame is None:
             return
 
-        self.parent.Push(taskrandomwalk.TaskRandomWalk())
-        #self.parent.Push(taskweed.TaskWeed())
-        self.parent.Push(taskweedsearch.TaskWeedSearch())
+        print("TaskWeedSearch done")
+        self.taskdone=True
         return
 
     def Start(self):
         """Cause the task to begin doing whatever."""
-        print("TaskDoSomething Start")
+        print("TaskWeedSearch Start")
         if self.started:
             return # already started
         self.started=True
 
+        # push tasks in reverse order
+        self.parent.Push(tasksearchpattern.TaskSearchPattern(1,self.weedhere))
+
     def DebugRecursive(self,indent=0):
-        self.DebugPrint("TaskDoSomething",indent)
+        self.DebugPrint("TaskWeedSearch",indent)
+
+    def weedhere(self):
+        print("weedhere")
+        self.parent.Push(taskweed.TaskWeed())

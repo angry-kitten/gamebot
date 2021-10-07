@@ -92,9 +92,11 @@ def is_color_bars():
     return True
 
 def has_label(label,ratio,x,y,within):
-    if gbstate.digested is None:
-        return False
-    for det in gbstate.digested:
+    with gbstate.detection_lock:
+        if gbstate.digested is None:
+            return False
+        localdigested=gbstate.digested
+    for det in localdigested:
         print(det)
         if det[0] == label:
             if det[1] >= ratio:
@@ -105,8 +107,9 @@ def has_label(label,ratio,x,y,within):
     return False
 
 def is_start_continue_screen():
-    if gbstate.digested is None:
-        return False
+    with gbstate.detection_lock:
+        if gbstate.digested is None:
+            return False
     if not has_label('ButtonA',0.30,726,646,5):
         return False
     if not has_label('ButtonY',0.30,65,645,5):
@@ -154,8 +157,9 @@ def is_main_screen():
     return True
 
 def is_loading_screen():
-    if gbstate.digested is None:
-        return False
+    with gbstate.detection_lock:
+        if gbstate.digested is None:
+            return False
     if not has_label('LoadingPalmTree',0.30,1166,623,5):
         return False
     print("loading screen")
@@ -174,8 +178,9 @@ def is_continue_triangle_detect():
     return True
 
 def is_selection_screen_no_ACNH():
-    if gbstate.digested is None:
-        return False
+    with gbstate.detection_lock:
+        if gbstate.digested is None:
+            return False
     if not has_label('SOnlineLogo',0.30,314,546,5):
         return False
     if not has_label('SymbolBattery',0.30,1199,64,5):
@@ -185,8 +190,9 @@ def is_selection_screen_no_ACNH():
     return True
 
 def is_selection_screen():
-    if gbstate.digested is None:
-        return False
+    with gbstate.detection_lock:
+        if gbstate.digested is None:
+            return False
     if not is_selection_screen_no_ACNH():
         return False
     if not has_label('ACNHTile',0.30,234,318,5):
@@ -194,15 +200,17 @@ def is_selection_screen():
     return True
 
 def is_user_selection_screen():
-    if gbstate.digested is None:
-        return False
+    with gbstate.detection_lock:
+        if gbstate.digested is None:
+            return False
     if not has_label('ButtonPlus',0.30,780,517,5):
         return False
     return True
 
 def is_main_logo_screen():
-    if gbstate.digested is None:
-        return False
+    with gbstate.detection_lock:
+        if gbstate.digested is None:
+            return False
     if not has_label('ACNHMainLogo',0.30,625,200,20):
         return False
     if not has_label('ButtonA',0.30,693,635,5):

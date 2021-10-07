@@ -95,3 +95,15 @@ maptypes={
 maptype_rev={}
 for key in maptypes:
     maptype_rev[maptypes[key][0]]=[key,maptypes[key][1]]
+
+time_turn_180_seconds=0.5
+
+# time in seconds, map distance
+time_to_distance=[
+    [ 2, 7.0 ],
+    [ 1, 3.5 ],
+    [ 0.5, 1.65 ],
+    [ 0.2, 0.6 ],
+    [ 0.1, 0.2 ],
+    [ 0.05, 0.0 ]
+]

@@ -14,8 +14,13 @@ model=None
 frame=None
 categgory_index=None
 
+# below are protected by the lock
+detection_lock=None
+detection_frame=None
 detections=None
 digested=None
+detim=None
+# above are protected by the lock
 
 tasks=None
 
@@ -26,5 +31,11 @@ phonemap=None
 
 position_minimap_x=-1
 position_minimap_y=-1
-target_mx=-1
-target_my=-1
+player_mx=-1
+player_my=-1
+center_mx=-1
+center_my=-1
+goto_target_mx=-1
+goto_target_my=-1
+object_target_mx=-1
+object_target_my=-1

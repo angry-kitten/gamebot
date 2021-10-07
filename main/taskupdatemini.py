@@ -13,6 +13,7 @@ import tasksay
 import taskdetect
 import taskgotomain
 import gbscreen
+import gbtrack
 
 class TaskUpdateMini(taskobject.Task):
     """TaskUpdateMini Object"""
@@ -202,6 +203,8 @@ class TaskUpdateMini(taskobject.Task):
 
         gbstate.position_minimap_x=map_x
         gbstate.position_minimap_y=map_y
+
+        gbtrack.current_position(map_x,map_y)
 
         return True
 
