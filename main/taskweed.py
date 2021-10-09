@@ -26,7 +26,8 @@ class TaskWeed(taskobject.Task):
         print("new TaskWeed object")
         self.target_mx=-1
         self.target_my=-1
-        self.close=5
+        #self.close=5
+        self.close=6
 
     def Poll(self):
         """check if any action can be taken"""
@@ -41,11 +42,15 @@ class TaskWeed(taskobject.Task):
         # Find a weed
 
         if self.target_mx < 0:
+            # At this point a search for a weed hasn't been done yet.
             self.find_a_weed()
             if self.target_mx < 0:
+                # At this point no weed was found by the search.
                 print("no target found")
                 print("TaskWeed done")
                 self.taskdone=True
+            # At this point a weed was found by the search and subtasks
+            # have been added to the stack.
             return
 
         gbstate.object_target_mx=-1
@@ -62,11 +67,14 @@ class TaskWeed(taskobject.Task):
         self.started=True
         # push tasks in reverse order
         self.parent.Push(taskupdatemini.TaskUpdateMini())
-        self.parent.Push(taskobject.TaskTimed()) # default 1 second delay
         self.parent.Push(taskdetect.TaskDetect())
 
     def DebugRecursive(self,indent=0):
         self.DebugPrint("TaskWeed",indent)
+
+    def NameRecursive(self):
+        myname="TaskWeed"
+        return myname
 
     def find_a_weed(self):
         print("find a weed")
@@ -113,7 +121,8 @@ class TaskWeed(taskobject.Task):
 
         print("found weed",best_weed)
 
-        (mx,my)=gbdisplay.convert_pixel_to_map(best_weed[4],best_weed[5])
+        #(mx,my)=gbdisplay.convert_pixel_to_map(best_weed[4],best_weed[5])
+        (mx,my)=gbdisplay.convert_pixel_to_map(best_weed[2],best_weed[3])
         if mx < 0:
             print("bad position")
             return
@@ -126,7 +135,6 @@ class TaskWeed(taskobject.Task):
 
         # push tasks in reverse order
         self.parent.Push(taskupdatemini.TaskUpdateMini())
-        self.parent.Push(taskobject.TaskTimed()) # default 1 second delay
         self.parent.Push(taskdetect.TaskDetect())
         #self.parent.Push(taskrandomwalk.TaskRandomWalk())
         self.parent.Push(taskpress.TaskPress('Y'))

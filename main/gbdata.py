@@ -107,3 +107,36 @@ time_to_distance=[
     [ 0.1, 0.2 ],
     [ 0.05, 0.0 ]
 ]
+
+# This is the extent of the inventory area in screen pixels.
+inventory_sy1=75
+inventory_sy2=450
+inventory_sx1=300
+inventory_sx2=980
+
+# Screen locations for the 20 item inventory. The
+# dot ones are the center of the InvEmpty dots.
+inventory_locations_20 = [
+    (338,199),
+    (403,181),
+    (472,172),
+    (538,167),
+    (607,162),
+    (674,164),
+    (743,166),
+    (804,171),
+    (875,183),
+    (941,200), # dot
+    (338,278), # dot
+    (404,264),
+    (471,250),
+    (540,244),
+    (606,240),
+    (674,239), # dot
+    (743,244),
+    (809,251),
+    (878,259),
+    (940,276)
+]
+inventory_pointer_offset_x=40
+inventory_pointer_offset_y=39

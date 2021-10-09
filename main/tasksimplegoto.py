@@ -19,6 +19,7 @@ import taskupdatemini
 import taskjoy
 import gbscreen
 import gbdisplay
+import tasktrackgoto
 
 class TaskSimpleGoTo(taskobject.Task):
     """TaskSimpleGoTo Object"""
@@ -28,6 +29,7 @@ class TaskSimpleGoTo(taskobject.Task):
         print("new TaskSimpleGoTo object")
         self.limit=100
         self.counter=0
+        self.step_distance_limit=4
         self.target_mx=mx
         self.target_my=my
         print("go to mx",mx,"my",my)
@@ -80,29 +82,19 @@ class TaskSimpleGoTo(taskobject.Task):
             print("dx dy",dx,dy)
             distance=math.sqrt(dx*dx+dy*dy)
             print("distance",distance)
-            if dy == 0:
-                heading=0
-            else:
-                rawheading=math.degrees(math.atan(dx/dy))
-                print("rawheading",rawheading)
-                if dx > 0 and dy > 0:
-                    heading=180-rawheading
-                elif dx > 0 and dy < 0:
-                    heading=-rawheading
-                elif dx < 0 and dy > 0:
-                    heading=180-rawheading
-                else:
-                    heading=360-rawheading
-            print("heading",heading)
 
-            self.parent.Push(taskupdatemini.TaskUpdateMini())
-            self.parent.Push(taskobject.TaskTimed()) # default 1 second delay
-            seconds=self.distance_to_time(distance)
-            if seconds > 2:
-                seconds=2
-            print("seconds",seconds)
-            # move for up to 2 seconds over a total of 3 seconds
-            self.parent.Push(taskjoy.TaskJoyLeft(heading,1.0,3.0,int(seconds*1000)))
+            if distance > self.step_distance_limit:
+                distance2=self.step_distance_limit
+                ratio=distance2/distance
+                dx*=ratio
+                dy*=ratio
+                distance=distance2
+                print("distance",distance)
+
+            step_target_mx=mx+dx
+            step_target_my=my+dy
+
+            self.parent.Push(tasktrackgoto.TaskTrackGoTo(step_target_mx,step_target_my))
             return
 
         gbstate.goto_target_mx=-1
@@ -118,37 +110,10 @@ class TaskSimpleGoTo(taskobject.Task):
             return # already started
         self.started=True
         self.parent.Push(taskupdatemini.TaskUpdateMini())
-        self.parent.Push(taskobject.TaskTimed()) # default 1 second delay
 
     def DebugRecursive(self,indent=0):
         self.DebugPrint("TaskSimpleGoTo",indent)
 
-    def distance_to_time(self,distance):
-        print("distance_to_time",distance)
-        ttd=gbdata.time_to_distance
-        entries=len(ttd)
-        for j in range(entries-1):
-            a=ttd[j]
-            b=ttd[j+1]
-            if distance > a[1]:
-                t=a[0]*(distance/a[1])
-                print("t",t)
-                return t
-            if distance == a[1]:
-                t=a[0]
-                print("t",t)
-                return t
-            if distance == b[1]:
-                t=b[0]
-                print("t",t)
-                return t
-            if a[1] <= distance and distance <= b[1]:
-                dt=a[0]-b[0]
-                dd=a[1]-b[1]
-                pd=distance-b[1]
-                t=b[0]+((dt/dd)*pd)
-                print("t",t)
-                return t
-        t=0
-        print("t",t)
-        return t
+    def NameRecursive(self):
+        myname="TaskSimpleGoTo"
+        return myname

@@ -147,6 +147,9 @@ def debug_show_state():
     gbstate.tasks.DebugRecursive()
     #print(gbstate.detections)
 
+def debug_get_name():
+    return gbstate.tasks.NameRecursive()
+
 def process_key(key):
     print("key=",key)
     if ord('a') == key:
@@ -302,6 +305,8 @@ def main_loop(vid):
 
         gbstate.tasks.Poll()
         #gbstate.tasks.DebugRecursive()
+        #n=debug_get_name()
+        #print("n=",n)
 
         # get a frame
         ret, frame = vid.read()

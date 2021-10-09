@@ -16,8 +16,12 @@ color_black=(0,0,0) # BGR
 color_green=(0,255,0) # BGR
 color_red=(0,0,255) # BGR
 color_blue=(255,0,0) # BGR
+color_yellow=(0,255,255) # BGR
+color_orange=(0,165,255) # BGR
 line_width=1
+line_width_x_narrow=2
 line_width_x=3
+line_width_x_wide=6
 line_type=cv2.LINE_AA
 font_line_width=1
 font_vertical_space=26
@@ -363,16 +367,16 @@ def draw_grid(frame):
             y2+=cy
             cv2.line(frame,(int(x1),int(y1)),(int(x2),int(y2)),color_white,line_width)
 
-def draw_x_at(frame,x,y,color):
-    cv2.line(frame,(int(x)-10,int(y)-10),(int(x)+10,int(y)+10),color,line_width_x)
-    cv2.line(frame,(int(x)-10,int(y)+10),(int(x)+10,int(y)-10),color,line_width_x)
+def draw_x_at(frame,x,y,color,line_width=line_width_x):
+    cv2.line(frame,(int(x)-10,int(y)-10),(int(x)+10,int(y)+10),color,line_width)
+    cv2.line(frame,(int(x)-10,int(y)+10),(int(x)+10,int(y)-10),color,line_width)
 
-def draw_x_at_map(frame,mx,my,color):
+def draw_x_at_map(frame,mx,my,color,line_width=line_width_x):
     (px,py)=convert_map_to_pixel(mx,my)
     if px < 0:
         print("bad location")
         return
-    draw_x_at(frame,px,py,color)
+    draw_x_at(frame,px,py,color,line_width=line_width)
 
 def draw_x_path(frame):
     if gbstate.center_mx >= 0:
@@ -416,22 +420,84 @@ def draw_targets(frame):
         y=gbdata.minimap_top+gbstate.player_my*gbdata.minimap_square_spacing
         draw_x_at(frame,x,y,color_blue)
     if gbstate.goto_target_mx >= 0:
-        draw_x_at_map(frame,gbstate.goto_target_mx,gbstate.goto_target_my,color_red)
+        draw_x_at_map(frame,gbstate.goto_target_mx,gbstate.goto_target_my,color_red,line_width=line_width_x_wide)
         x=gbdata.minimap_left+gbstate.goto_target_mx*gbdata.minimap_square_spacing
         y=gbdata.minimap_top+gbstate.goto_target_my*gbdata.minimap_square_spacing
-        draw_x_at(frame,x,y,color_red)
+        draw_x_at(frame,x,y,color_red,line_width=line_width_x_wide)
     if gbstate.object_target_mx >= 0:
-        draw_x_at_map(frame,gbstate.object_target_mx,gbstate.object_target_my,color_green)
+        draw_x_at_map(frame,gbstate.object_target_mx,gbstate.object_target_my,color_green,line_width=line_width_x_wide)
         x=gbdata.minimap_left+gbstate.object_target_mx*gbdata.minimap_square_spacing
         y=gbdata.minimap_top+gbstate.object_target_my*gbdata.minimap_square_spacing
-        draw_x_at(frame,x,y,color_green)
+        draw_x_at(frame,x,y,color_green,line_width=line_width_x_wide)
+    if gbstate.track_goto_target_mx >= 0:
+        draw_x_at_map(frame,gbstate.track_goto_target_mx,gbstate.track_goto_target_my,color_orange,line_width=line_width_x_narrow)
+        x=gbdata.minimap_left+gbstate.track_goto_target_mx*gbdata.minimap_square_spacing
+        y=gbdata.minimap_top+gbstate.track_goto_target_my*gbdata.minimap_square_spacing
+        draw_x_at(frame,x,y,color_orange,line_width=line_width_x_narrow)
+
+def draw_feet_box(frame):
+    if gbstate.center_mx < 0:
+        print("unable to draw feet box 1")
+        return
+    if gbstate.feet_box_offset_mx == -2:
+        print("unable to draw feet box 2")
+        return
+    # Start with the center_m* values so that they cancel
+    # out even if incorrect.
+    center_x=gbstate.center_mx
+    center_y=gbstate.center_my
+    center_y+=gbstate.tune_fb_offset_my
+    center_x+=gbstate.feet_box_offset_mx
+    center_y+=gbstate.feet_box_offset_my
+    x1=center_x-0.5
+    x2=center_x+0.5
+    y1=center_y-0.5
+    y2=center_y+0.5
+    (p1x,p1y)=convert_map_to_pixel(x1,y1)
+    if p1x < 0:
+        print("unable to draw feet box 3")
+        return
+    (p2x,p2y)=convert_map_to_pixel(x2,y1)
+    if p2x < 0:
+        print("unable to draw feet box 4")
+        return
+    (p3x,p3y)=convert_map_to_pixel(x1,y2)
+    if p3x < 0:
+        print("unable to draw feet box 5")
+        return
+    (p4x,p4y)=convert_map_to_pixel(x2,y2)
+    if p4x < 0:
+        print("unable to draw feet box 6")
+        return
+    cv2.line(frame,(int(p1x),int(p1y)),(int(p2x),int(p2y)),color_blue,line_width)
+    cv2.line(frame,(int(p2x),int(p2y)),(int(p4x),int(p4y)),color_blue,line_width)
+    cv2.line(frame,(int(p1x),int(p1y)),(int(p3x),int(p3y)),color_blue,line_width)
+    cv2.line(frame,(int(p3x),int(p3y)),(int(p4x),int(p4y)),color_blue,line_width)
+
+def draw_top_of_task_stack(frame):
+    n=gbstate.tasks.NameRecursive()
+    w=gbdata.stdscreen_size[0]
+    h=gbdata.stdscreen_size[1]
+    x=int((w*1)/4)
+    y=h-2
+    cv2.putText(frame,n,(x,y),font,font_scale*0.75,color_white,font_line_width,line_type)
+
+def draw_inventory(frame):
+    if not gbstate.draw_inventory_locations:
+        return
+    diam=10
+    for loc in gbdata.inventory_locations_20:
+        cv2.circle(frame,loc,diam,color_black,line_width)
 
 def draw_on(frame):
     control_help(frame)
+    draw_top_of_task_stack(frame)
     minimap_position(frame)
     draw_grid(frame)
+    draw_feet_box(frame)
     #draw_x_path(frame)
     draw_targets(frame)
+    draw_inventory(frame)
     w=gbdata.stdscreen_size[0]
     h=gbdata.stdscreen_size[1]
     x2=int(w/4)

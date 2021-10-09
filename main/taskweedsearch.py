@@ -55,6 +55,14 @@ class TaskWeedSearch(taskobject.Task):
     def DebugRecursive(self,indent=0):
         self.DebugPrint("TaskWeedSearch",indent)
 
+    def NameRecursive(self):
+        myname="TaskWeedSearch"
+        return myname
+
     def weedhere(self):
         print("weedhere")
+        self.parent.Push(taskweed.TaskWeed())
+        self.parent.Push(taskweed.TaskWeed())
+        self.parent.Push(taskweed.TaskWeed())
+        self.parent.Push(taskweed.TaskWeed())
         self.parent.Push(taskweed.TaskWeed())

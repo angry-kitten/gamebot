@@ -18,6 +18,7 @@ import gbscreen
 import gbdisplay
 import random
 import tasksimplegoto
+import taskcheckforinterrupt
 
 class TaskSearchPattern(taskobject.Task):
     """TaskSearchPattern Object"""
@@ -54,6 +55,9 @@ class TaskSearchPattern(taskobject.Task):
         self.callme()
 
         self.pattern_poll()
+
+        self.parent.Push(taskcheckforinterrupt.TaskCheckForInterrupt())
+
         return
 
     def Start(self):
@@ -66,6 +70,10 @@ class TaskSearchPattern(taskobject.Task):
 
     def DebugRecursive(self,indent=0):
         self.DebugPrint("TaskSearchPattern",indent)
+
+    def NameRecursive(self):
+        myname="TaskSearchPattern"
+        return myname
 
     # pattern 0 is top to bottom, left to right
     def pattern0_init(self):

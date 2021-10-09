@@ -45,6 +45,10 @@ class Task:
     def DebugRecursive(self,indent=0):
         self.DebugPrint("Task "+str(self.myid),indent)
 
+    def NameRecursive(self):
+        myname="Task "+str(self.myid)
+        return myname
+
 class TaskStack(Task):
     """This contains a list of tasks that can run in order from the top of the stack."""
 
@@ -86,6 +90,13 @@ class TaskStack(Task):
         for t in self.thestack:
             t.DebugRecursive(indent)
         self.DebugPrint("top of stack",indent)
+
+    def NameRecursive(self):
+        l=len(self.thestack)
+        if l < 1:
+            myname="TaskStack "+str(self.myid)
+            return myname
+        return self.thestack[l-1].NameRecursive()
 
     def Push(self,atask):
         print("Push")
@@ -133,6 +144,13 @@ class TaskThreads(Task):
         for t in self.threadlist:
             t.DebugRecursive(indent)
 
+    def NameRecursive(self):
+        l=len(self.threadlist)
+        if l < 1:
+            myname="TaskThreads "+str(self.myid)
+            return myname
+        return self.threadlist[l-1].NameRecursive()
+
     def AddToThread(self,n,atask):
         """ add a task to the stack at n """
         print("AddThread at",n)
@@ -158,12 +176,12 @@ class TaskThreads(Task):
 class TaskTimed(Task):
     """This is a task that runs for a minimum amount of time."""
 
-    def __init__(self):
+    def __init__(self,time_seconds=1.0):
         super().__init__()
         print("new TaskTimed object",self.myid)
         self.starttime_sec=0 # monotonic time value
         self.endtime_sec=0 # when it should end, monotonic time value
-        self.duration_sec=1 # default duration
+        self.duration_sec=time_seconds
 
     def Poll(self):
         """check if any action can be taken"""
@@ -191,3 +209,7 @@ class TaskTimed(Task):
 
     def DebugRecursive(self,indent=0):
         self.DebugPrint("TaskTimed "+str(self.myid),indent)
+
+    def NameRecursive(self):
+        myname="TaskTimed "+str(self.myid)
+        return myname

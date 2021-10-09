@@ -97,14 +97,37 @@ def has_label(label,ratio,x,y,within):
             return False
         localdigested=gbstate.digested
     for det in localdigested:
-        print(det)
+        print(det) # det is [name,score,cx,cy,bx,by]
         if det[0] == label:
             if det[1] >= ratio:
+                if x < 0:
+                    # don't match on location
+                    print("has with no location")
+                    return True
                 if match_within(det[2],x,within):
                     if match_within(det[3],y,within):
                         print("has")
                         return True
     return False
+
+def has_label_in_box(label,ratio,x1,x2,y1,y2):
+    bestmatch=None
+    with gbstate.detection_lock:
+        if gbstate.digested is None:
+            return bestmatch
+        localdigested=gbstate.digested
+    for det in localdigested:
+        print(det) # det is [name,score,cx,cy,bx,by]
+        if det[0] == label:
+            if det[1] >= ratio:
+                if is_inside_box(x1,x2,y1,y2,det[2],det[3]):
+                    if bestmatch is None:
+                        bestmatch=det
+                    else:
+                        if det[1] > bestmatch[1]:
+                            bestmatch=det
+    print("bestmatch",bestmatch)
+    return bestmatch
 
 def is_start_continue_screen():
     with gbstate.detection_lock:
@@ -140,19 +163,25 @@ def is_minimap():
     return True
 
 def is_main_screen():
+    print("is_main_screen 1")
     # check for phone
     if not color_match(62,26,243,247,223,5):
         return False
+    print("is_main_screen 2")
     if not color_match(89,94,243,247,223,5):
         return False
+    print("is_main_screen 3")
     # check for minimap
     if not is_minimap():
         return False
+    print("is_main_screen 4")
     # check for date line
-    if not color_match(64,646,250,255,233,5):
-        return False
-    if not color_match(274,647,247,255,230,5):
-        return False
+    #if not color_match(64,646,250,255,233,5):
+    #    return False
+    #print("is_main_screen 5")
+    #if not color_match(274,647,247,255,230,5):
+    #    return False
+    print("is_main_screen 6")
     print("main screen")
     return True
 
@@ -214,5 +243,30 @@ def is_main_logo_screen():
     if not has_label('ACNHMainLogo',0.30,625,200,20):
         return False
     if not has_label('ButtonA',0.30,693,635,5):
+        return False
+    return True
+
+def is_inside_box(x1,x2,y1,y2,x,y):
+    if x < x1:
+        return False
+    if x > x2:
+        return False
+    if y < y1:
+        return False
+    if y > y2:
+        return False
+    return True
+
+def is_inventory_screen():
+    with gbstate.detection_lock:
+        if gbstate.digested is None:
+            return False
+    if not has_label('PointerHand',0.30,-1,-1,-1):
+        return False
+    if not has_label('BellBagStar',0.30,386,354,20):
+        return False
+    if not has_label('ButtonA',0.30,1130,692,5):
+        return False
+    if not has_label('ButtonB',0.15,1001,693,5):
         return False
     return True

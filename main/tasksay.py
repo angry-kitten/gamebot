@@ -55,6 +55,10 @@ class TaskSay(taskobject.Task):
     def DebugRecursive(self,indent=0):
         self.DebugPrint("TaskSay",indent)
 
+    def NameRecursive(self):
+        myname="TaskSay"
+        return myname
+
     def GetLetterPosition(self,l):
         y=0
         for row in gbdata.skblc:

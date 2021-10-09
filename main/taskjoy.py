@@ -46,5 +46,9 @@ class TaskJoyLeft(taskobject.TaskTimed):
     def DebugRecursive(self,indent=0):
         self.DebugPrint("TaskJoyLeft",indent)
 
+    def NameRecursive(self):
+        myname="TaskJoyLeft"
+        return myname
+
     def TriggerJoyLeft(self):
         self.ps.left_joy_heading(self.heading,self.extent,self.press_msec)

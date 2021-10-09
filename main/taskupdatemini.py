@@ -4,6 +4,7 @@
 # determine player location from the pin.
 #
 
+import time
 import taskobject
 import gbdata
 import gbstate
@@ -21,6 +22,8 @@ class TaskUpdateMini(taskobject.Task):
     def __init__(self):
         super().__init__()
         print("new TaskUpdateMini object")
+        self.additional_wait=0.1 # 100 milliseconds
+        self.additional_wait_active=False
 
     def Poll(self):
         """check if any action can be taken"""
@@ -32,8 +35,37 @@ class TaskUpdateMini(taskobject.Task):
             return
         if gbstate.frame is None:
             return
+
+        # Don't hang forever if the minimap is not present or turned
+        # off.
+        time_now=time.monotonic()
+        elapsed=time_now-self.start_time
+        if elapsed > 1.0:
+            print("TaskUpdateMini time elapsed")
+            self.taskdone=True
+            return
+
+        if not gbscreen.is_minimap():
+            print("minimap not visible yet")
+            return
+
+        print("minimap visible")
+
+        if not self.additional_wait_active:
+            # Wait an additional time to allow for the minimap to
+            # slide fully into position.
+            print("activate additional wait")
+            self.additional_wait_active=True
+            self.additioanl_wait_after=time_now+self.additional_wait
+            return
+        else:
+            if time_now <= self.additioanl_wait_after:
+                print("additional wait")
+                return
+
+        print("additional wait complete")
         self.gather_minimap()
-        self.debug_minimap()
+        #self.debug_minimap()
         self.position_from_minimap()
         print("TaskUpdateMini done")
         self.taskdone=True
@@ -45,9 +77,14 @@ class TaskUpdateMini(taskobject.Task):
         if self.started:
             return # already started
         self.started=True
+        self.start_time=time.monotonic()
 
     def DebugRecursive(self,indent=0):
         self.DebugPrint("TaskUpdateMini",indent)
+
+    def NameRecursive(self):
+        myname="TaskUpdateMini"
+        return myname
 
     def process_location(self,data_x,data_y,pixel_x,pixel_y):
         (b,g,r)=gbscreen.get_pixel(pixel_x,pixel_y)
@@ -204,7 +241,7 @@ class TaskUpdateMini(taskobject.Task):
         gbstate.position_minimap_x=map_x
         gbstate.position_minimap_y=map_y
 
-        gbtrack.current_position(map_x,map_y)
+        gbtrack.set_current_position(map_x,map_y)
 
         return True
 

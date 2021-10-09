@@ -98,6 +98,12 @@ class TaskGoToMain(taskobject.Task):
             # press A to continue
             self.parent.Push(taskpress.TaskPress('A',5.0))
             return
+        if gbscreen.is_inventory_screen():
+            print("inventory screen")
+            self.parent.Push(taskdetect.TaskDetect())
+            # press B to close inventory
+            self.parent.Push(taskpress.TaskPress('B',5.0))
+            return
 
         # purturb the game to see if it was screen dimmed or something
         self.parent.Push(taskdetect.TaskDetect())
@@ -115,3 +121,7 @@ class TaskGoToMain(taskobject.Task):
 
     def DebugRecursive(self,indent=0):
         self.DebugPrint("TaskGoToMain",indent)
+
+    def NameRecursive(self):
+        myname="TaskGoToMain"
+        return myname

@@ -64,3 +64,7 @@ class TaskRandomWalk(taskobject.Task):
 
     def DebugRecursive(self,indent=0):
         self.DebugPrint("TaskRandomWalk",indent)
+
+    def NameRecursive(self):
+        myname="TaskRandomWalk"
+        return myname

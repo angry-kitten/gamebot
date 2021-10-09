@@ -45,8 +45,11 @@ class TaskTakeStock(taskobject.Task):
         # push tasks in reverse order
         #self.parent.Push(tasksay.TaskSay("gamebot"))
         self.parent.Push(taskupdatemini.TaskUpdateMini())
-        self.parent.Push(taskobject.TaskTimed()) # default 1 second delay
         self.parent.Push(taskgotomain.TaskGoToMain())
 
     def DebugRecursive(self,indent=0):
         self.DebugPrint("TaskTakeStock",indent)
+
+    def NameRecursive(self):
+        myname="TaskTakeStock"
+        return myname

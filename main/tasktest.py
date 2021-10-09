@@ -91,17 +91,19 @@ class TaskTest(taskobject.Task):
         self.started=True
 
         self.parent.Push(taskupdatemini.TaskUpdateMini())
-        self.parent.Push(taskobject.TaskTimed()) # default 1 second delay
 
     def DebugRecursive(self,indent=0):
         self.DebugPrint("TaskTest",indent)
+
+    def NameRecursive(self):
+        myname="TaskTest"
+        return myname
 
     def startmove(self):
         self.start_mx=gbstate.position_minimap_x
         self.start_my=gbstate.position_minimap_y
 
         self.parent.Push(taskupdatemini.TaskUpdateMini())
-        self.parent.Push(taskobject.TaskTimed()) # default 1 second delay
 
         heading=90
         #if (self.i % 2) == 1:

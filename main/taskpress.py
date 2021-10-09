@@ -44,6 +44,10 @@ class TaskPress(taskobject.TaskTimed):
     def DebugRecursive(self,indent=0):
         self.DebugPrint("TaskPress",indent)
 
+    def NameRecursive(self):
+        myname="TaskPress"
+        return myname
+
     def TriggerPress(self):
         if 'A' == self.pressthis:
             gbstate.ps.press_A(self.press_msec)

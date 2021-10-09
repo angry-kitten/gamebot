@@ -16,6 +16,8 @@ import taskrandomwalk
 import taskweed
 import taskweedsearch
 import tasksearchpattern
+import taskcheckforinterrupt
+import taskholdtool
 
 class TaskDoSomething(taskobject.Task):
     """TaskDoSomething Object"""
@@ -35,9 +37,18 @@ class TaskDoSomething(taskobject.Task):
         if gbstate.frame is None:
             return
 
+        self.parent.Push(taskholdtool.TaskHoldTool('None'))
+        self.parent.Push(taskholdtool.TaskHoldTool('Axe'))
+        self.parent.Push(taskholdtool.TaskHoldTool('Net'))
+        self.parent.Push(taskholdtool.TaskHoldTool('Shovel'))
+        #self.parent.Push(taskholdtool.TaskHoldTool('Pole'))
+        #self.parent.Push(taskholdtool.TaskHoldTool('FishingPole'))
+        #self.parent.Push(taskholdtool.TaskHoldTool('Ladder'))
+        self.parent.Push(taskholdtool.TaskHoldTool('None'))
         self.parent.Push(taskrandomwalk.TaskRandomWalk())
         #self.parent.Push(taskweed.TaskWeed())
-        self.parent.Push(taskweedsearch.TaskWeedSearch())
+        #self.parent.Push(taskweedsearch.TaskWeedSearch())
+        self.parent.Push(taskcheckforinterrupt.TaskCheckForInterrupt())
         return
 
     def Start(self):
@@ -49,3 +60,7 @@ class TaskDoSomething(taskobject.Task):
 
     def DebugRecursive(self,indent=0):
         self.DebugPrint("TaskDoSomething",indent)
+
+    def NameRecursive(self):
+        myname="TaskDoSomething"
+        return myname

@@ -1,0 +1,287 @@
+#
+# Copyright 2021 by angry-kitten
+# A task for the player character to begin holding a tool if possible.
+#
+
+import taskobject
+import gbdata
+import taskpress
+import taskdetect
+import gbscreen
+import gbstate
+import gbdisplay
+
+class TaskHoldTool(taskobject.Task):
+    """TaskHoldTool Object"""
+
+    def __init__(self,toolname):
+        super().__init__()
+        print("new TaskHoldTool object")
+        self.toolname=toolname
+        self.step=0
+        self.ratio=0.30
+
+    def Poll(self):
+        """check if any action can be taken"""
+        print("TaskHoldTool Poll")
+        if not self.started:
+            self.Start()
+            return
+        if self.taskdone:
+            return
+
+        if self.step == 0:
+            print("detect was just done")
+            self.find_tool_and_pointer()
+            return
+
+        if self.step == 1:
+            print("tool and hand found, moving pointer hand")
+            self.move_pointer_hand()
+            return
+
+        if self.step == 2:
+            print("select tool")
+            self.parent.Push(taskobject.TaskTimed(1.0)) # wait for menu to pop up
+            self.parent.Push(taskpress.TaskPress('A'))
+            self.step=3 # process menu
+            return
+
+        # close the inventory
+        self.parent.Push(taskobject.TaskTimed(2.0)) # wait for the inventory to close
+        self.parent.Push(taskpress.TaskPress('B'))
+        gbstate.draw_inventory_locations=False
+        print("TaskHoldTool done")
+        self.taskdone=True
+
+    def Start(self):
+        """Cause the task to begin doing whatever."""
+        print("TaskHoldTool Start",self.toolname)
+        if self.started:
+            return # already started
+        self.started=True
+        self.step=0
+
+        if self.toolname == 'None':
+            self.parent.Push(taskobject.TaskTimed(2.0)) # wait for animation
+            self.parent.Push(taskpress.TaskPress('hat_BOTTOM'))
+            print("TaskHoldTool done")
+            self.taskdone=True
+            return
+
+        # open inventory to check for tools
+        self.parent.Push(taskdetect.TaskDetect())
+        self.parent.Push(taskobject.TaskTimed(2.0)) # wait for the inventory to open
+        self.parent.Push(taskpress.TaskPress('X'))
+        gbstate.draw_inventory_locations=True
+
+    def DebugRecursive(self,indent=0):
+        self.DebugPrint("TaskHoldTool",indent)
+
+    def NameRecursive(self):
+        myname="TaskHoldTool"
+        return myname
+
+    def find_tool_by_inventory_name(self,inventory_name_list):
+        print("find_tool_by_inventory_name",inventory_name_list)
+        for name in inventory_name_list:
+            print("looking for",name)
+            match=gbscreen.has_label_in_box(name,self.ratio,gbdata.inventory_sx1,gbdata.inventory_sx2,gbdata.inventory_sy1,gbdata.inventory_sy2)
+            if match is not None:
+                self.match=match
+                return
+            print(name,"not found")
+
+        self.step=4 # close inventory
+        return
+
+    def find_tool(self):
+        print("find_tool",self.toolname)
+        if self.toolname == 'Axe':
+            self.find_tool_by_inventory_name(['InvAxe','InvGoldenAxe'])
+            return
+        if self.toolname == 'StoneAxe':
+            self.find_tool_by_inventory_name(['InvStoneAxe'])
+            return
+        if self.toolname == 'Net':
+            self.find_tool_by_inventory_name(['InvNet','InvFlimsyNet','InvGoldenNet'])
+            return
+        if self.toolname == 'Shovel':
+            self.find_tool_by_inventory_name(['InvShovel','InvFlimsyShovel','InvGoldenShovel'])
+            return
+        if self.toolname == 'WateringCan':
+            self.find_tool_by_inventory_name(['InvWateringCan'])
+            return
+        if self.toolname == 'GoldWateringCan':
+            self.find_tool_by_inventory_name(['InvGoldWateringCan'])
+            return
+        if self.toolname == 'Slingshot':
+            self.find_tool_by_inventory_name(['InvSlingshot'])
+            return
+        if self.toolname == 'FishingPole':
+            self.find_tool_by_inventory_name(['InvFishingPole'])
+            return
+        if self.toolname == 'Pole':
+            self.find_tool_by_inventory_name(['InvPole'])
+            return
+        if self.toolname == 'Ladder':
+            self.find_tool_by_inventory_name(['InvLadder'])
+            return
+
+        print(name,"not found")
+        self.step=4 # close inventory
+        return
+
+    def find_inventory_slot(self,x,y):
+        best_slot=None
+        best_distance=None
+        for i in range(20):
+            (lx,ly)=gbdata.inventory_locations_20[i]
+            d=gbdisplay.calculate_distance(x,y,lx,ly)
+            if best_distance is None:
+                best_distance=d
+                best_slot=i
+            else:
+                if d < best_distance:
+                    best_distance=d
+                    best_slot=i
+        return best_slot
+
+    def find_tool_and_pointer(self):
+        # Find the tool
+        self.find_tool()
+        # If not on step 0 still, then tool was not found.
+        if self.step != 0:
+            return;
+        # Find the slot number for the tool.
+        # match is [name,score,cx,cy,bx,by]
+        slot=self.find_inventory_slot(self.match[2],self.match[3])
+        print("slot is",slot)
+        if slot is None:
+            print("slot not found")
+            self.step=4 # close inventory
+            return
+        self.tool_slot=slot
+
+        # find the pointer hand
+        hand_match=gbscreen.has_label_in_box('PointerHand',self.ratio,gbdata.inventory_sx1,gbdata.inventory_sx2,gbdata.inventory_sy1,gbdata.inventory_sy2)
+        if hand_match is None:
+            print("hand not found")
+            self.step=4 # close inventory
+            return
+
+        # Find the slot number for the hand.
+        x=hand_match[2]
+        y=hand_match[3]
+        # Estimate the inventory position the hand is pointing at.
+        x-=gbdata.inventory_pointer_offset_x
+        y-=gbdata.inventory_pointer_offset_y
+        hand_slot=self.find_inventory_slot(x,y)
+        print("hand_slot is",hand_slot)
+        if hand_slot is None:
+            print("hand_slot not found")
+            self.step=4 # close inventory
+            return
+        self.hand_slot=hand_slot
+
+        self.step=1 # move the pointer hand
+
+    def move_pointer_hand(self):
+        if self.tool_slot == self.hand_slot:
+            print("pointing at tool")
+            self.step=2 # select tool
+            return
+        if self.tool_slot <= 9:
+            if self.hand_slot <= 9:
+                if self.hand_slot < self.tool_slot:
+                    # move pointer hand right
+                    self.hand_slot+=1
+                    self.parent.Push(taskobject.TaskTimed(1.0)) # wait for animation
+                    self.parent.Push(taskpress.TaskPress('hat_RIGHT'))
+                    return
+                # move pointer hand left
+                self.hand_slot-=1
+                self.parent.Push(taskobject.TaskTimed(1.0)) # wait for animation
+                self.parent.Push(taskpress.TaskPress('hat_LEFT'))
+                return
+            # move pointer hand up
+            self.hand_slot-=10
+            self.parent.Push(taskobject.TaskTimed(1.0)) # wait for animation
+            self.parent.Push(taskpress.TaskPress('hat_TOP'))
+            return
+        if self.tool_slot <= 19:
+            if self.hand_slot <= 9:
+                # move pointer hand down
+                self.hand_slot+=10
+                self.parent.Push(taskobject.TaskTimed(1.0)) # wait for animation
+                self.parent.Push(taskpress.TaskPress('hat_BOTTOM'))
+                return
+            if self.hand_slot <= 19:
+                if self.hand_slot < self.tool_slot:
+                    # move pointer hand right
+                    self.hand_slot+=1
+                    self.parent.Push(taskobject.TaskTimed(1.0)) # wait for animation
+                    self.parent.Push(taskpress.TaskPress('hat_RIGHT'))
+                    return
+                # move pointer hand left
+                self.hand_slot-=1
+                self.parent.Push(taskobject.TaskTimed(1.0)) # wait for animation
+                self.parent.Push(taskpress.TaskPress('hat_LEFT'))
+                return
+            # move pointer hand up
+            self.hand_slot-=10
+            self.parent.Push(taskobject.TaskTimed(1.0)) # wait for animation
+            self.parent.Push(taskpress.TaskPress('hat_TOP'))
+            return
+        if self.tool_slot <= 29:
+            if self.hand_slot <= 19:
+                # move pointer hand down
+                self.hand_slot+=10
+                self.parent.Push(taskobject.TaskTimed(1.0)) # wait for animation
+                self.parent.Push(taskpress.TaskPress('hat_BOTTOM'))
+                return
+            if self.hand_slot <= 29:
+                if self.hand_slot < self.tool_slot:
+                    # move pointer hand right
+                    self.hand_slot+=1
+                    self.parent.Push(taskobject.TaskTimed(1.0)) # wait for animation
+                    self.parent.Push(taskpress.TaskPress('hat_RIGHT'))
+                    return
+                # move pointer hand left
+                self.hand_slot-=1
+                self.parent.Push(taskobject.TaskTimed(1.0)) # wait for animation
+                self.parent.Push(taskpress.TaskPress('hat_LEFT'))
+                return
+            # move pointer hand up
+            self.hand_slot-=10
+            self.parent.Push(taskobject.TaskTimed(1.0)) # wait for animation
+            self.parent.Push(taskpress.TaskPress('hat_TOP'))
+            return
+        if self.tool_slot <= 39:
+            if self.hand_slot <= 29:
+                # move pointer hand down
+                self.hand_slot+=10
+                self.parent.Push(taskobject.TaskTimed(1.0)) # wait for animation
+                self.parent.Push(taskpress.TaskPress('hat_BOTTOM'))
+                return
+            if self.hand_slot <= 39:
+                if self.hand_slot < self.tool_slot:
+                    # move pointer hand right
+                    self.hand_slot+=1
+                    self.parent.Push(taskobject.TaskTimed(1.0)) # wait for animation
+                    self.parent.Push(taskpress.TaskPress('hat_RIGHT'))
+                    return
+                # move pointer hand left
+                self.hand_slot-=1
+                self.parent.Push(taskobject.TaskTimed(1.0)) # wait for animation
+                self.parent.Push(taskpress.TaskPress('hat_LEFT'))
+                return
+            # move pointer hand up
+            self.hand_slot-=10
+            self.parent.Push(taskobject.TaskTimed(1.0)) # wait for animation
+            self.parent.Push(taskpress.TaskPress('hat_TOP'))
+            return
+
+        print("slot error")
+        self.step=4 # close inventory
+        return

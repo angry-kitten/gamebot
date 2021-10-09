@@ -41,3 +41,7 @@ class TaskDetect(taskobject.Task):
 
     def DebugRecursive(self,indent=0):
         self.DebugPrint("TaskDetect",indent)
+
+    def NameRecursive(self):
+        myname="TaskDetect"
+        return myname
