@@ -117,7 +117,7 @@ inventory_sx2=980
 # Screen locations for the 20 item inventory. The
 # dot ones are the center of the InvEmpty dots.
 inventory_locations_20 = [
-    (338,199),
+    (338,199), # 0
     (403,181),
     (472,172),
     (538,167),
@@ -125,18 +125,18 @@ inventory_locations_20 = [
     (674,164),
     (743,166),
     (804,171),
-    (875,183),
-    (941,200), # dot
-    (338,278), # dot
-    (404,264),
+    (874,184),
+    (941,200), # 9 dot
+    (338,278), # 10 dot
+    (404,263),
     (471,250),
     (540,244),
     (606,240),
     (674,239), # dot
-    (743,244),
-    (809,251),
-    (878,259),
-    (940,276)
+    (741,243),
+    (808,250),
+    (876,262),
+    (940,277)  # 19
 ]
 inventory_pointer_offset_x=40
 inventory_pointer_offset_y=39

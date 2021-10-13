@@ -42,9 +42,15 @@ class TaskHoldTool(taskobject.Task):
 
         if self.step == 2:
             print("select tool")
+            self.parent.Push(taskdetect.TaskDetect())
             self.parent.Push(taskobject.TaskTimed(1.0)) # wait for menu to pop up
             self.parent.Push(taskpress.TaskPress('A'))
             self.step=3 # process menu
+            return
+
+        if self.step == 3:
+            print("process menu")
+            self.process_menu()
             return
 
         # close the inventory
@@ -67,6 +73,7 @@ class TaskHoldTool(taskobject.Task):
             self.parent.Push(taskpress.TaskPress('hat_BOTTOM'))
             print("TaskHoldTool done")
             self.taskdone=True
+            gbstate.current_tool=None
             return
 
         # open inventory to check for tools
@@ -283,5 +290,20 @@ class TaskHoldTool(taskobject.Task):
             return
 
         print("slot error")
+        self.step=4 # close inventory
+        return
+
+    def process_menu(self):
+        if not gbscreen.has_label('PointerHand',0.30,792,347,10):
+            print("no menu pointer hand")
+            # Assume there is a menu but the hand wasn't detected.
+            self.parent.Push(taskobject.TaskTimed(1.0)) # wait for menu to pop down
+            self.parent.Push(taskpress.TaskPress('B'))
+            self.step=4 # close inventory
+            return
+        # select the first item in the menu. Hopefully this is "Hold". 
+        self.parent.Push(taskobject.TaskTimed(1.0)) # wait for menu to pop down
+        self.parent.Push(taskpress.TaskPress('A'))
+        gbstate.current_tool=self.toolname
         self.step=4 # close inventory
         return

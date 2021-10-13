@@ -208,8 +208,8 @@ class TaskTimed(Task):
         self.taskdone=True
 
     def DebugRecursive(self,indent=0):
-        self.DebugPrint("TaskTimed "+str(self.myid),indent)
+        self.DebugPrint("TaskTimed",indent)
 
     def NameRecursive(self):
-        myname="TaskTimed "+str(self.myid)
+        myname="TaskTimed"
         return myname

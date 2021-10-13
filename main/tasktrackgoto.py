@@ -19,6 +19,7 @@ import taskupdatemini
 import taskjoy
 import gbscreen
 import gbdisplay
+import gbtrack
 
 class TaskTrackGoTo(taskobject.Task):
     """TaskTrackGoTo Object"""
@@ -83,7 +84,7 @@ class TaskTrackGoTo(taskobject.Task):
         distance=math.sqrt(dx*dx+dy*dy)
         print("distance",distance)
 
-        heading=self.calculate_heading(dx,dy)
+        heading=gbtrack.calculate_heading(dx,dy)
 
         self.parent.Push(taskupdatemini.TaskUpdateMini())
         seconds=self.distance_to_time(distance)
@@ -137,23 +138,6 @@ class TaskTrackGoTo(taskobject.Task):
         t=0
         print("t",t)
         return t
-
-    def calculate_heading(self,dx,dy):
-        if dy == 0:
-            heading=0
-        else:
-            rawheading=math.degrees(math.atan(dx/dy))
-            print("rawheading",rawheading)
-            if dx > 0 and dy > 0:
-                heading=180-rawheading
-            elif dx > 0 and dy < 0:
-                heading=-rawheading
-            elif dx < 0 and dy > 0:
-                heading=180-rawheading
-            else:
-                heading=360-rawheading
-        print("heading",heading)
-        return heading
 
     def process_move(self):
         # See if we reached the target.

@@ -38,16 +38,19 @@ class TaskDoSomething(taskobject.Task):
             return
 
         self.parent.Push(taskholdtool.TaskHoldTool('None'))
-        self.parent.Push(taskholdtool.TaskHoldTool('Axe'))
-        self.parent.Push(taskholdtool.TaskHoldTool('Net'))
+        self.parent.Push(taskholdtool.TaskHoldTool('Pole'))
+        self.parent.Push(taskholdtool.TaskHoldTool('Ladder'))
         self.parent.Push(taskholdtool.TaskHoldTool('Shovel'))
-        #self.parent.Push(taskholdtool.TaskHoldTool('Pole'))
-        #self.parent.Push(taskholdtool.TaskHoldTool('FishingPole'))
-        #self.parent.Push(taskholdtool.TaskHoldTool('Ladder'))
+        self.parent.Push(taskholdtool.TaskHoldTool('Axe'))
+        self.parent.Push(taskholdtool.TaskHoldTool('Slingshot'))
+        self.parent.Push(taskholdtool.TaskHoldTool('FishingPole'))
+        self.parent.Push(taskholdtool.TaskHoldTool('WateringCan'))
+        self.parent.Push(taskholdtool.TaskHoldTool('Net'))
+        self.parent.Push(taskholdtool.TaskHoldTool('StoneAxe'))
         self.parent.Push(taskholdtool.TaskHoldTool('None'))
         self.parent.Push(taskrandomwalk.TaskRandomWalk())
         #self.parent.Push(taskweed.TaskWeed())
-        #self.parent.Push(taskweedsearch.TaskWeedSearch())
+        self.parent.Push(taskweedsearch.TaskWeedSearch())
         self.parent.Push(taskcheckforinterrupt.TaskCheckForInterrupt())
         return
 

@@ -15,6 +15,8 @@ import taskdetect
 import taskgotomain
 import taskupdatemini
 import taskjoy
+import tasktrackgoto
+import gbtrack
 
 class TaskRandomWalk(taskobject.Task):
     """TaskRandomWalk Object"""
@@ -44,22 +46,15 @@ class TaskRandomWalk(taskobject.Task):
         if self.started:
             return # already started
         self.started=True
-        # TODO expand this later
-        #direction=random.randint(0,3)
-        #if 0 == direction:
-        #    press='left_joy_right'
-        #elif 1 == direction:
-        #    press='left_joy_left'
-        #elif 2 == direction:
-        #    press='left_joy_up'
-        #else:
-        #    press='left_joy_down'
-        #self.parent.Push(taskpress.TaskPress(press,5.0,500))
         heading=random.randint(0,360)
-        extent=random.randint(0,100)/100
-        print(heading,extent)
-        # move for 2 seconds over a total of 3 seconds
-        self.parent.Push(taskjoy.TaskJoyLeft(heading,extent,3.0,2000))
+        distance=random.randint(0,5)
+        print(heading,distance)
+        (dmx,dmy)=gbtrack.calculate_dx_dy(heading,distance)
+        mx=gbstate.position_minimap_x
+        my=gbstate.position_minimap_y
+        mx+=dmx
+        my+=dmy
+        self.parent.Push(tasktrackgoto.TaskTrackGoTo(mx,my))
         self.taskdone=True
 
     def DebugRecursive(self,indent=0):

@@ -489,6 +489,17 @@ def draw_inventory(frame):
     for loc in gbdata.inventory_locations_20:
         cv2.circle(frame,loc,diam,color_black,line_width)
 
+def draw_current_tool(frame):
+    if gbstate.current_tool is None:
+        n='None'
+    else:
+        n=gbstate.current_tool
+    w=gbdata.stdscreen_size[0]
+    h=gbdata.stdscreen_size[1]
+    x=0
+    y=h-2
+    cv2.putText(frame,n,(x,y),font,font_scale*0.75,color_white,font_line_width,line_type)
+
 def draw_on(frame):
     control_help(frame)
     draw_top_of_task_stack(frame)
@@ -498,6 +509,7 @@ def draw_on(frame):
     #draw_x_path(frame)
     draw_targets(frame)
     draw_inventory(frame)
+    draw_current_tool(frame)
     w=gbdata.stdscreen_size[0]
     h=gbdata.stdscreen_size[1]
     x2=int(w/4)
