@@ -65,3 +65,6 @@ class TaskPickSomethingSearch(taskobject.Task):
     def picksomething(self):
         print("picksomething")
         self.parent.Push(taskpicksomething.TaskPickSomething())
+        self.parent.Push(taskpicksomething.TaskPickSomething())
+        self.parent.Push(taskpicksomething.TaskPickSomething())
+        self.parent.Push(taskpicksomething.TaskPickSomething())

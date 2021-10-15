@@ -6,6 +6,7 @@
 
 import taskobject
 import gbdata
+import gbstate
 import taskpress
 
 class TaskSay(taskobject.Task):

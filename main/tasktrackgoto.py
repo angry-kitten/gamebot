@@ -28,6 +28,8 @@ class TaskTrackGoTo(taskobject.Task):
         super().__init__()
         self.name="TaskTrackGoTo"
         print("new TaskTrackGoTo object")
+        mx=int(round(mx))
+        my=int(round(my))
         self.target_mx=mx
         self.target_my=my
         print("go to mx",mx,"my",my)
@@ -84,13 +86,26 @@ class TaskTrackGoTo(taskobject.Task):
         print("dx dy",dx,dy)
         distance=math.sqrt(dx*dx+dy*dy)
         print("distance",distance)
+        self.distance=distance
 
+        previous_heading=gbstate.heading
         heading=gbtrack.calculate_heading(dx,dy)
         self.heading=heading
+        gbstate.heading=heading
+
+        (turn_seconds,turn_distance)=self.turn_time_distance(previous_heading,heading)
+        print("turn_seconds",turn_seconds)
+        print("turn_distance",turn_distance)
+        if turn_distance <= distance:
+            distance-=turn_distance
+        else:
+            distance=0
 
         self.parent.Push(taskupdatemini.TaskUpdateMini())
         seconds=self.distance_to_time(distance)
         print("seconds",seconds)
+        seconds+=turn_seconds
+        print("combined seconds",seconds)
         msec=int(seconds*1000) # how long to activate the joystick in milliseconds
         total_sec=1+seconds # the total time for the joystick task
         self.parent.Push(taskjoy.TaskJoyLeft(heading,1.0,total_sec,msec))
@@ -154,28 +169,32 @@ class TaskTrackGoTo(taskobject.Task):
             print("got",gbstate.move_after_mx,gbstate.move_after_my)
             # We might have passed an obstruction. Or we might be running
             # into one.
-            if gbstate.move_before_mx == gbstate.move_after_mx and gbstate.move_before_my == gbstate.move_after_my:
-                # We ran into an obstruction.
-                print("zero movement")
-                if (self.heading >= 0 and self.heading < 45) or (self.heading >= 315 and self.heading <= 360):
-                    print("obstructed up/north")
-                    mx=int(gbstate.move_after_mx)
-                    my=int(gbstate.move_after_my-1)
-                    gbtrack.set_obstructed(mx,my)
-                elif self.heading >= 45 and self.heading < 135:
-                    print("obstructed right/east")
-                    mx=int(gbstate.move_after_mx+1)
-                    my=int(gbstate.move_after_my)
-                    gbtrack.set_obstructed(mx,my)
-                elif self.heading >= 135 and self.heading < 225:
-                    print("obstructed down/south")
-                    mx=int(gbstate.move_after_mx)
-                    my=int(gbstate.move_after_my+1)
-                elif self.heading >= 225 and self.heading < 315:
-                    print("obstructed left/west")
-                    mx=int(gbstate.move_after_mx-1)
-                    my=int(gbstate.move_after_my)
-                    gbtrack.set_obstructed(mx,my)
+            if self.distance >= 1:
+                # Don't evaluate short moves because they could trigger the
+                # obstruction code by accident.
+                if gbstate.move_before_mx == gbstate.move_after_mx and gbstate.move_before_my == gbstate.move_after_my:
+                    # We ran into an obstruction.
+                    print("zero movement")
+                    if (self.heading >= 0 and self.heading < 45) or (self.heading >= 315 and self.heading <= 360):
+                        print("obstructed up/north")
+                        mx=int(round(gbstate.move_after_mx))
+                        my=int(round(gbstate.move_after_my-1))
+                        gbtrack.set_obstructed(mx,my)
+                    elif self.heading >= 45 and self.heading < 135:
+                        print("obstructed right/east")
+                        mx=int(round(gbstate.move_after_mx+1))
+                        my=int(round(gbstate.move_after_my))
+                        gbtrack.set_obstructed(mx,my)
+                    elif self.heading >= 135 and self.heading < 225:
+                        print("obstructed down/south")
+                        mx=int(round(gbstate.move_after_mx))
+                        my=int(round(gbstate.move_after_my+1))
+                        gbtrack.set_obstructed(mx,my)
+                    elif self.heading >= 225 and self.heading < 315:
+                        print("obstructed left/west")
+                        mx=int(round(gbstate.move_after_mx-1))
+                        my=int(round(gbstate.move_after_my))
+                        gbtrack.set_obstructed(mx,my)
 
         # set center if not already set
         if gbstate.center_mx < 0:
@@ -258,3 +277,15 @@ class TaskTrackGoTo(taskobject.Task):
         gbstate.move_before_my=-1
         gbstate.move_after_mx=-1
         gbstate.move_after_my=-1
+
+    def turn_time_distance(self,h1,h2):
+        dh=0
+        if h1 <= h2:
+            dh=h2-h1
+        else:
+            dh=h1-h2
+        if dh > 180:
+            dh=360-dh
+        turn_seconds=gbdata.time_turn_180_seconds*dh/180
+        turn_distance=gbdata.distance_turn_180*dh/180
+        return (turn_seconds,turn_distance)

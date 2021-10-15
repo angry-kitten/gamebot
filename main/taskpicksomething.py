@@ -18,6 +18,7 @@ import gbscreen
 import gbdisplay
 import random
 import taskweed
+import taskgather
 
 class TaskPickSomething(taskobject.Task):
     """TaskPickSomething Object"""
@@ -93,14 +94,11 @@ class TaskPickSomething(taskobject.Task):
             # det is [name,score,cx,cy,bx,by]
             if det[0] == "Weeds":
                 things.append(det)
-            elif det[0] == "Tree":
-                things.append(det)
-            elif det[0] == "PineTree":
-                things.append(det)
         print("things",things)
         l=len(things)
         if l < 1:
             print("empty things list")
+            self.parent.Push(taskgather.TaskGather(gbdata.gatherable_items))
             return
 
         close_things=[]
@@ -115,6 +113,7 @@ class TaskPickSomething(taskobject.Task):
         l=len(close_things)
         if l < 1:
             print("empty close things list")
+            self.parent.Push(taskgather.TaskGather(gbdata.gatherable_items))
             return
 
         best_thing=None
@@ -136,18 +135,12 @@ class TaskPickSomething(taskobject.Task):
 
         self.target_mx=mx
         self.target_my=my
-        gbstate.object_target_mx=mx
-        gbstate.object_target_my=my
+        #gbstate.object_target_mx=mx
+        #gbstate.object_target_my=my
 
         if best_thing[0] == "Weeds":
             self.parent.Push(taskweed.TaskWeed())
             return
-        elif best_thing[0] == "Tree":
-            self.parent.Push(taskweed.TaskWeed())
-            return
-        elif best_thing[0] == "PineTree":
-            self.parent.Push(taskweed.TaskWeed())
-            return
 
-        self.parent.Push(taskweed.TaskWeed())
+        self.parent.Push(taskgather.TaskGather(gbdata.gatherable_items))
         return

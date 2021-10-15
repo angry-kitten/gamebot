@@ -10,6 +10,7 @@ import cv2
 import taskpress
 import taskdetect
 import math
+import gbtrack
 
 color_white=(255,255,255) # BGR
 color_black=(0,0,0) # BGR
@@ -35,6 +36,9 @@ line_width_x_wide=6
 line_type=cv2.LINE_AA
 font_line_width=1
 font_vertical_space=26
+font_vertical_space_75=26
+font_vertical_space_50=int(round(font_vertical_space*0.50))
+font_vertical_space_25=int(round(font_vertical_space*0.25))
 font=cv2.FONT_HERSHEY_SIMPLEX
 #font=cv2.FONT_HERSHEY_PLAIN
 #font=cv2.FONT_HERSHEY_DUPLEX
@@ -45,6 +49,9 @@ font=cv2.FONT_HERSHEY_SIMPLEX
 #font=cv2.FONT_HERSHEY_SCRIPT_COMPLEX
 #font=cv2.FONT_ITALIC
 font_scale=1
+font_scale_75=font_scale*0.75
+font_scale_50=font_scale*0.50
+font_scale_25=font_scale*0.25
 
 #pixels_per_square=124
 pixels_per_square=124
@@ -426,23 +433,23 @@ def draw_x_path(frame):
 def draw_targets(frame):
     if gbstate.player_mx >= 0:
         draw_x_at_map(frame,gbstate.player_mx,gbstate.player_my,color_blue)
-        x=gbdata.minimap_left+gbstate.player_mx*gbdata.minimap_square_spacing
-        y=gbdata.minimap_top+gbstate.player_my*gbdata.minimap_square_spacing
+        x=gbdata.minimap_origin_x+gbstate.player_mx*gbdata.minimap_square_spacing
+        y=gbdata.minimap_origin_y+gbstate.player_my*gbdata.minimap_square_spacing
         draw_x_at(frame,x,y,color_blue)
     if gbstate.goto_target_mx >= 0:
         draw_x_at_map(frame,gbstate.goto_target_mx,gbstate.goto_target_my,color_red,line_width=line_width_x_wide)
-        x=gbdata.minimap_left+gbstate.goto_target_mx*gbdata.minimap_square_spacing
-        y=gbdata.minimap_top+gbstate.goto_target_my*gbdata.minimap_square_spacing
+        x=gbdata.minimap_origin_x+gbstate.goto_target_mx*gbdata.minimap_square_spacing
+        y=gbdata.minimap_origin_y+gbstate.goto_target_my*gbdata.minimap_square_spacing
         draw_x_at(frame,x,y,color_red,line_width=line_width_x_wide)
     if gbstate.object_target_mx >= 0:
         draw_x_at_map(frame,gbstate.object_target_mx,gbstate.object_target_my,color_green,line_width=line_width_x_wide)
-        x=gbdata.minimap_left+gbstate.object_target_mx*gbdata.minimap_square_spacing
-        y=gbdata.minimap_top+gbstate.object_target_my*gbdata.minimap_square_spacing
+        x=gbdata.minimap_origin_x+gbstate.object_target_mx*gbdata.minimap_square_spacing
+        y=gbdata.minimap_origin_y+gbstate.object_target_my*gbdata.minimap_square_spacing
         draw_x_at(frame,x,y,color_green,line_width=line_width_x_wide)
     if gbstate.track_goto_target_mx >= 0:
         draw_x_at_map(frame,gbstate.track_goto_target_mx,gbstate.track_goto_target_my,color_orange,line_width=line_width_x_narrow)
-        x=gbdata.minimap_left+gbstate.track_goto_target_mx*gbdata.minimap_square_spacing
-        y=gbdata.minimap_top+gbstate.track_goto_target_my*gbdata.minimap_square_spacing
+        x=gbdata.minimap_origin_x+gbstate.track_goto_target_mx*gbdata.minimap_square_spacing
+        y=gbdata.minimap_origin_y+gbstate.track_goto_target_my*gbdata.minimap_square_spacing
         draw_x_at(frame,x,y,color_orange,line_width=line_width_x_narrow)
 
 def draw_feet_box(frame):
@@ -488,18 +495,15 @@ def draw_top_of_task_stack(frame):
     n=gbstate.tasks.NameRecursive()
     w=gbdata.stdscreen_size[0]
     h=gbdata.stdscreen_size[1]
-    x=int((w*1)/4)
-    y=h-2
-    cv2.putText(frame,n,(x,y),font,font_scale*0.75,color_white,font_line_width,line_type)
 
     # Draw the names of multiple tasks on the top of the stack along
     # the right side of the screen.
     x=int((w*3)/4)
-    i=26 # This is the spacing between the lines vertically.
+    i=font_vertical_space_50 # This is the spacing between the lines vertically.
     y=i
     l=len(gbstate.task_stack_names)
     for n in gbstate.task_stack_names:
-        cv2.putText(frame,n,(x,y),font,font_scale*0.75,color_white,font_line_width,line_type)
+        cv2.putText(frame,n,(x,y),font,font_scale_50,color_white,font_line_width,line_type)
         y+=i
 
 def draw_inventory(frame):
@@ -564,10 +568,12 @@ def draw_maps(frame):
             for x in range(gbdata.map_width):
                 v=gbstate.obstructionmap[x][y]
                 color=None
-                if v == 1:
+                if v == gbdata.obstruction_maptype_not_obstructed:
                     color=color_green # not obstructed
-                elif v == 2:
+                elif v == gbdata.obstruction_maptype_obstructed:
                     color=color_red # obstructed
+                elif v == gbdata.obstruction_maptype_standing_on_water:
+                    color=color_white
                 if color is not None:
                     sx=origin_sx+x
                     sy=origin_sy+y
@@ -605,6 +611,17 @@ def draw_maps(frame):
                     # use a rectangle to draw a pixel
                     cv2.rectangle(frame,(sx,sy),(sx+1,sy+1),color,-1)
 
+def draw_heading(frame):
+    w=gbdata.stdscreen_size[0]
+    h=gbdata.stdscreen_size[1]
+    x3=int(w/2)
+    y3=int(h/2)
+    radius=int(h/4)
+    (dsx,dsy)=gbtrack.calculate_dx_dy(gbstate.heading,radius)
+    sx=int(round(x3+dsx))
+    sy=int(round(y3+dsy))
+    cv2.line(frame,(x3,y3),(sx,sy),color_green,line_width)
+
 def draw_on(frame):
     control_help(frame)
     draw_top_of_task_stack(frame)
@@ -628,3 +645,4 @@ def draw_on(frame):
     cv2.circle(frame,(x3,y3),y2,color_white,line_width)
     #cv2.putText(frame,'Gamebot',(x3,y3),font,font_scale,color_white,line_width,line_type)
     draw_maps(frame)
+    draw_heading(frame)

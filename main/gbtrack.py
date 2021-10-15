@@ -11,10 +11,20 @@ import taskpress
 import taskdetect
 import math
 
+def evaluate_position(mx,my):
+    mx=int(round(mx))
+    my=int(round(my))
+    if gbstate.minimap is None:
+        return
+    v=gbstate.minimap[mx][my]
+    if v == gbdata.maptype_water:
+        set_standing_on_water(mx,my)
+
 def set_current_position(map_x,map_y):
     gbstate.player_mx=map_x
     gbstate.player_my=map_y
-    set_not_obstructed(int(map_x),int(map_y))
+    set_not_obstructed(map_x,map_y)
+    evaluate_position(map_x,map_y)
 
     if gbstate.center_mx < 0:
         gbstate.center_mx=gbstate.player_mx
@@ -112,17 +122,31 @@ def debug_obstructionmap():
         print(line)
 
 def set_obstructed(mx,my):
+    mx=int(round(mx))
+    my=int(round(my))
     if gbstate.obstructionmap is None:
         build_default_obstruction_map()
     gbstate.obstructionmap[mx][my]=2
 
 def set_not_obstructed(mx,my):
+    mx=int(round(mx))
+    my=int(round(my))
     if gbstate.obstructionmap is None:
         build_default_obstruction_map()
     gbstate.obstructionmap[mx][my]=1
     #debug_obstructionmap()
 
 def set_unknown(mx,my):
+    mx=int(round(mx))
+    my=int(round(my))
     if gbstate.obstructionmap is None:
         build_default_obstruction_map()
     gbstate.obstructionmap[mx][my]=0
+
+def set_standing_on_water(mx,my):
+    mx=int(round(mx))
+    my=int(round(my))
+    print("standing on water",mx,my)
+    if gbstate.obstructionmap is None:
+        build_default_obstruction_map()
+    gbstate.obstructionmap[mx][my]=3

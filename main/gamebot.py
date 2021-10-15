@@ -32,6 +32,7 @@ import taskdosomething
 import taskupdatemini
 import tasktest
 import tasktest2
+import tasktest3
 
 
 sys.path.append(os.path.join(os.getcwd(),"..","..","gamebot-serial","pylib"))
@@ -239,7 +240,8 @@ def process_key(key):
     if ord('z') == key:
         # run a test task
         #gbstate.tasks.AddToThread(0,tasktest.TaskTest())
-        gbstate.tasks.AddToThread(0,tasktest2.TaskTest2())
+        #gbstate.tasks.AddToThread(0,tasktest2.TaskTest2())
+        gbstate.tasks.AddToThread(0,tasktest3.TaskTest3())
         return 0
     return key
 

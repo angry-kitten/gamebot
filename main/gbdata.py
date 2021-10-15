@@ -55,8 +55,10 @@ minimap_border_right=1261
 minimap_border_top=497
 minimap_border_bottom=699
 minimap_left=1019
+minimap_origin_x=minimap_left+9
 minimap_right=1255
 minimap_top=503
+minimap_origin_y=minimap_top-3
 minimap_bottom=694
 minimap_dashes_L2R_0=1057
 minimap_dashes_L2R_1=1089
@@ -82,9 +84,10 @@ map_height=16*6
 minimap_width=map_width
 minimap_height=map_height
 
+maptype_water=1
 maptypes={
     'Unknown':  [0, '_'],
-    'Water':  [1, 'W'],
+    'Water':  [maptype_water, 'W'],
     'Rock':  [2, 'R'],
     'Grass0':  [3, '0'],
     'Grass1':  [4, '1'],
@@ -94,11 +97,17 @@ maptypes={
     'Dirt':  [8, 'D']
 }
 
+obstruction_maptype_unknown=0
+obstruction_maptype_not_obstructed=1
+obstruction_maptype_obstructed=2
+obstruction_maptype_standing_on_water=3
+
 maptype_rev={}
 for key in maptypes:
     maptype_rev[maptypes[key][0]]=[key,maptypes[key][1]]
 
-time_turn_180_seconds=0.5
+time_turn_180_seconds=0.285
+distance_turn_180=0.20
 
 # time in seconds, map distance
 time_to_distance=[
@@ -142,3 +151,26 @@ inventory_locations_20 = [
 ]
 inventory_pointer_offset_x=40
 inventory_pointer_offset_y=39
+
+gatherable_items=[
+    "Weeds",
+    "Branches",
+    "Stone",
+    "OrangeShell",
+    "GrayShell",
+    "SummerShell",
+    "Coral",
+    "Iron",
+    "Clay",
+    "Wood",
+    "SoftWood",
+    "HardWood",
+    "Bamboo",
+    "Orange",
+    "Peach",
+    "Pear",
+    "Cherries",
+    "Apple",
+    "Coconut",
+    "WeedsBag"
+]

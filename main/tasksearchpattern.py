@@ -147,9 +147,12 @@ class TaskSearchPattern(taskobject.Task):
         self.search_my=0
         self.search_step=4
         self.search_list=[]
-        for my in range(0,gbdata.minimap_height,self.search_step):
-            for mx in range(0,gbdata.minimap_width,self.search_step):
-                self.search_list.append((mx,my))
+        #for my in range(0,gbdata.minimap_height,self.search_step):
+        #    for mx in range(0,gbdata.minimap_width,self.search_step):
+        #        self.search_list.append((mx,my))
+        for my in range(0,int(gbdata.minimap_height/2),self.search_step):
+            for mx in range(0,int(gbdata.minimap_width/2),self.search_step):
+                self.search_list.append((mx,int(gbdata.minimap_height/2)+my))
 
     def pattern2_start(self):
         l=len(self.search_list)

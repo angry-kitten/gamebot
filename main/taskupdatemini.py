@@ -238,8 +238,8 @@ class TaskUpdateMini(taskobject.Task):
         print("tip_y=",tip_y)
 
         # Calculate the map location from the tip location.
-        map_x=(tip_x-gbdata.minimap_left)/gbdata.minimap_square_spacing
-        map_y=(tip_y-gbdata.minimap_top)/gbdata.minimap_square_spacing
+        map_x=(tip_x-gbdata.minimap_origin_x)/gbdata.minimap_square_spacing
+        map_y=(tip_y-gbdata.minimap_origin_y)/gbdata.minimap_square_spacing
         print("map_x=",map_x)
         print("map_y=",map_y)
 

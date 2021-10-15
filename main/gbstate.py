@@ -95,3 +95,5 @@ track_goto_target_my=-1
 draw_inventory_locations=False
 
 current_tool=None
+
+heading=0

@@ -28,6 +28,8 @@ class TaskSimpleGoTo(taskobject.Task):
         super().__init__()
         self.name="TaskSimpleGoTo"
         print("new",self.name,"object")
+        mx=int(round(mx))
+        my=int(round(my))
         self.limit=100
         self.counter=0
         self.step_distance_limit=4
