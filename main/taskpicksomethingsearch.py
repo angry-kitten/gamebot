@@ -19,18 +19,19 @@ import gbdisplay
 import random
 import taskweed
 import tasksearchpattern
+import taskpicksomething
 
-class TaskWeedSearch(taskobject.Task):
-    """TaskWeedSearch Object"""
+class TaskPickSomethingSearch(taskobject.Task):
+    """TaskPickSomethingSearch Object"""
 
     def __init__(self):
         super().__init__()
-        self.name="TaskWeedSearch"
-        print("new TaskWeedSearch object")
+        self.name="TaskPickSomethingSearch"
+        print("new TaskPickSomethingSearch object")
 
     def Poll(self):
         """check if any action can be taken"""
-        print("TaskWeedSearch Poll")
+        print("TaskPickSomethingSearch Poll")
         if not self.started:
             self.Start()
             return
@@ -39,32 +40,28 @@ class TaskWeedSearch(taskobject.Task):
         if gbstate.frame is None:
             return
 
-        print("TaskWeedSearch done")
+        print("TaskPickSomethingSearch done")
         self.taskdone=True
         return
 
     def Start(self):
         """Cause the task to begin doing whatever."""
-        print("TaskWeedSearch Start")
+        print("TaskPickSomethingSearch Start")
         if self.started:
             return # already started
         self.started=True
 
         # push tasks in reverse order
-        self.parent.Push(tasksearchpattern.TaskSearchPattern(2,self.weedhere))
+        self.parent.Push(tasksearchpattern.TaskSearchPattern(2,self.picksomething))
 
     def DebugRecursive(self,indent=0):
-        self.DebugPrint("TaskWeedSearch",indent)
+        self.DebugPrint("TaskPickSomethingSearch",indent)
 
     def NameRecursive(self):
         gbstate.task_stack_names.append(self.name)
-        myname="TaskWeedSearch"
+        myname="TaskPickSomethingSearch"
         return myname
 
-    def weedhere(self):
-        print("weedhere")
-        self.parent.Push(taskweed.TaskWeed())
-        self.parent.Push(taskweed.TaskWeed())
-        self.parent.Push(taskweed.TaskWeed())
-        self.parent.Push(taskweed.TaskWeed())
-        self.parent.Push(taskweed.TaskWeed())
+    def picksomething(self):
+        print("picksomething")
+        self.parent.Push(taskpicksomething.TaskPickSomething())

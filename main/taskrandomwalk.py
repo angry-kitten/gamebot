@@ -23,6 +23,7 @@ class TaskRandomWalk(taskobject.Task):
 
     def __init__(self):
         super().__init__()
+        self.name="TaskRandomWalk"
         print("new TaskRandomWalk object")
 
     def Poll(self):
@@ -61,5 +62,6 @@ class TaskRandomWalk(taskobject.Task):
         self.DebugPrint("TaskRandomWalk",indent)
 
     def NameRecursive(self):
+        gbstate.task_stack_names.append(self.name)
         myname="TaskRandomWalk"
         return myname

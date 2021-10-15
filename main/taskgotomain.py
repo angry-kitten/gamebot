@@ -17,6 +17,7 @@ class TaskGoToMain(taskobject.Task):
 
     def __init__(self):
         super().__init__()
+        self.name="TaskGoToMain"
         print("new TaskGoToMain object")
 
     def Poll(self):
@@ -104,6 +105,12 @@ class TaskGoToMain(taskobject.Task):
             # press B to close inventory
             self.parent.Push(taskpress.TaskPress('B',5.0))
             return
+        if gbscreen.is_accept_controller_screen():
+            print("accept controller screen")
+            self.parent.Push(taskdetect.TaskDetect())
+            # press A to accept
+            self.parent.Push(taskpress.TaskPress('A',5.0))
+            return
 
         # purturb the game to see if it was screen dimmed or something
         self.parent.Push(taskdetect.TaskDetect())
@@ -123,5 +130,6 @@ class TaskGoToMain(taskobject.Task):
         self.DebugPrint("TaskGoToMain",indent)
 
     def NameRecursive(self):
+        gbstate.task_stack_names.append(self.name)
         myname="TaskGoToMain"
         return myname

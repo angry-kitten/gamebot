@@ -75,10 +75,12 @@ minimap_square_spacing=2
 # The pin can go off the top of the minimap.
 minimap_top_pin=minimap_top-pin_height
 
-# minimap data info
+# map and minimap data info
 # The minimap is 16x16 squares separated by dashes.
-minimap_width=16*7
-minimap_height=16*6
+map_width=16*7
+map_height=16*6
+minimap_width=map_width
+minimap_height=map_height
 
 maptypes={
     'Unknown':  [0, '_'],

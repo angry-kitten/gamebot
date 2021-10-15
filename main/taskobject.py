@@ -4,12 +4,14 @@
 #
 
 import time
+import gbstate
 
 class Task:
     """Task Object"""
     id=0
 
     def __init__(self):
+        self.name="Task"
         #print("a Task.id is",Task.id)
         self.myid=Task.id
         Task.id=Task.id+1
@@ -43,6 +45,7 @@ class Task:
         print(sp+text)
 
     def DebugRecursive(self,indent=0):
+        gbstate.task_stack_names.append(self.name)
         self.DebugPrint("Task "+str(self.myid),indent)
 
     def NameRecursive(self):
@@ -54,6 +57,7 @@ class TaskStack(Task):
 
     def __init__(self):
         super().__init__()
+        self.name="TaskStack"
         print("new TaskStack object",self.myid)
         self.thestack=[]
 
@@ -92,10 +96,16 @@ class TaskStack(Task):
         self.DebugPrint("top of stack",indent)
 
     def NameRecursive(self):
+        gbstate.task_stack_names.append(self.name)
         l=len(self.thestack)
         if l < 1:
             myname="TaskStack "+str(self.myid)
             return myname
+        elif l > 1:
+            for j in range(0,l-1):
+                # We don't need the return value. We call it
+                # to put the name into gbstate.task_stack_names
+                self.thestack[j].NameRecursive()
         return self.thestack[l-1].NameRecursive()
 
     def Push(self,atask):
@@ -109,6 +119,7 @@ class TaskThreads(Task):
 
     def __init__(self):
         super().__init__()
+        self.name="TaskThreads"
         print("new TaskThreads object",self.myid)
         self.threadlist=[]
 
@@ -145,6 +156,8 @@ class TaskThreads(Task):
             t.DebugRecursive(indent)
 
     def NameRecursive(self):
+        gbstate.task_stack_names=[]
+        gbstate.task_stack_names.append("TaskThreads")
         l=len(self.threadlist)
         if l < 1:
             myname="TaskThreads "+str(self.myid)
@@ -178,6 +191,7 @@ class TaskTimed(Task):
 
     def __init__(self,time_seconds=1.0):
         super().__init__()
+        self.name="TaskTimed"
         print("new TaskTimed object",self.myid)
         self.starttime_sec=0 # monotonic time value
         self.endtime_sec=0 # when it should end, monotonic time value

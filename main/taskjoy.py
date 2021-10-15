@@ -12,6 +12,7 @@ class TaskJoyLeft(taskobject.TaskTimed):
 
     def __init__(self,heading,extent,total_sec=1.000,press_msec=500):
         super().__init__()
+        self.name="TaskJoyLeft"
         print("new TaskJoyLeft object")
         self.ps=gbstate.ps
         self.heading=heading
@@ -47,6 +48,7 @@ class TaskJoyLeft(taskobject.TaskTimed):
         self.DebugPrint("TaskJoyLeft",indent)
 
     def NameRecursive(self):
+        gbstate.task_stack_names.append(self.name)
         myname="TaskJoyLeft"
         return myname
 

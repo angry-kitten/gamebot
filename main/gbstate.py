@@ -23,11 +23,20 @@ detim=None
 # above are protected by the lock
 
 tasks=None
+task_stack_names=[]
 
 label_id_offset=1
 
+# Map structures are:
+# gbstate.minimap=[0 for x in range(gbdata.minimap_width)]
+# for data_x in range(gbdata.minimap_width):
+#     gbstate.minimap[data_x]=[0 for y in range(gbdata.minimap_height)]
+# It is accessed like this:
+# gbstate.minimap[data_x][data_y]=4
 minimap=None
 phonemap=None
+# Can player walk here?  0=unknown, 1=open, 2=obstructed
+obstructionmap=None
 
 # The map position calculated from the minimap.
 position_minimap_x=-1

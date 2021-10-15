@@ -26,11 +26,12 @@ class TaskTrackGoTo(taskobject.Task):
 
     def __init__(self,mx,my):
         super().__init__()
+        self.name="TaskTrackGoTo"
         print("new TaskTrackGoTo object")
         self.target_mx=mx
         self.target_my=my
         print("go to mx",mx,"my",my)
-        self.within=0.1
+        self.within=1.0
         gbstate.move_before_mx=-1
         gbstate.move_before_my=-1
         gbstate.move_after_mx=-1
@@ -85,6 +86,7 @@ class TaskTrackGoTo(taskobject.Task):
         print("distance",distance)
 
         heading=gbtrack.calculate_heading(dx,dy)
+        self.heading=heading
 
         self.parent.Push(taskupdatemini.TaskUpdateMini())
         seconds=self.distance_to_time(distance)
@@ -106,6 +108,7 @@ class TaskTrackGoTo(taskobject.Task):
         self.DebugPrint("TaskTrackGoTo",indent)
 
     def NameRecursive(self):
+        gbstate.task_stack_names.append(self.name)
         myname="TaskTrackGoTo"
         return myname
 
@@ -143,8 +146,36 @@ class TaskTrackGoTo(taskobject.Task):
         # See if we reached the target.
         if gbscreen.match_within(gbstate.move_after_mx,self.target_mx,self.within) and gbscreen.match_within(gbstate.move_after_my,self.target_my,self.within):
             gbstate.move_obstructed=False
+            print("not obstructed")
         else:
             gbstate.move_obstructed=True
+            print("obstructed")
+            print("wanted",self.target_mx,self.target_my)
+            print("got",gbstate.move_after_mx,gbstate.move_after_my)
+            # We might have passed an obstruction. Or we might be running
+            # into one.
+            if gbstate.move_before_mx == gbstate.move_after_mx and gbstate.move_before_my == gbstate.move_after_my:
+                # We ran into an obstruction.
+                print("zero movement")
+                if (self.heading >= 0 and self.heading < 45) or (self.heading >= 315 and self.heading <= 360):
+                    print("obstructed up/north")
+                    mx=int(gbstate.move_after_mx)
+                    my=int(gbstate.move_after_my-1)
+                    gbtrack.set_obstructed(mx,my)
+                elif self.heading >= 45 and self.heading < 135:
+                    print("obstructed right/east")
+                    mx=int(gbstate.move_after_mx+1)
+                    my=int(gbstate.move_after_my)
+                    gbtrack.set_obstructed(mx,my)
+                elif self.heading >= 135 and self.heading < 225:
+                    print("obstructed down/south")
+                    mx=int(gbstate.move_after_mx)
+                    my=int(gbstate.move_after_my+1)
+                elif self.heading >= 225 and self.heading < 315:
+                    print("obstructed left/west")
+                    mx=int(gbstate.move_after_mx-1)
+                    my=int(gbstate.move_after_my)
+                    gbtrack.set_obstructed(mx,my)
 
         # set center if not already set
         if gbstate.center_mx < 0:

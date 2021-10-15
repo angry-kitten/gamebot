@@ -16,24 +16,26 @@ import taskdetect
 import taskgotomain
 import taskupdatemini
 import taskjoy
+import tasktrackgoto
+import gbtrack
 
-class TaskTest(taskobject.Task):
-    """TaskTest Object"""
+class TaskTest2(taskobject.Task):
+    """TaskTest2 Object"""
 
     def __init__(self):
         super().__init__()
-        self.name="TaskTest"
-        print("new TaskTest object")
+        self.name="TaskTest2"
+        print("new",self.name,"object")
         self.iterations=10
         self.i=0
-        self.seconds=2
+        self.stepsize=2
         self.start_mx=-1
         self.start_my=-1
         self.dlist=[]
 
     def Poll(self):
         """check if any action can be taken"""
-        print("TaskTest Poll")
+        print(self.name,"Poll")
         if not self.started:
             self.Start()
             return
@@ -44,7 +46,7 @@ class TaskTest(taskobject.Task):
 
         if gbstate.position_minimap_x < 0:
             print("bad position")
-            print("TaskTest done")
+            print(self.name,"done")
             self.taskdone=True
             return
 
@@ -72,7 +74,7 @@ class TaskTest(taskobject.Task):
         for j in range(self.iterations):
             print("distance",self.dlist[j])
             distance_total+=self.dlist[j]
-            rate=self.dlist[j]/self.seconds
+            rate=self.dlist[j]/1
             print("distance per second",rate)
             rate_total+=rate
         distance_average=distance_total/self.iterations
@@ -80,13 +82,13 @@ class TaskTest(taskobject.Task):
         print("average distance",distance_average)
         print("average distance per second",rate_average)
 
-        print("TaskTest done")
+        print(self.name,"done")
         self.taskdone=True
         return
 
     def Start(self):
         """Cause the task to begin doing whatever."""
-        print("TaskTest Start")
+        print(self.name,"Start")
         if self.started:
             return # already started
         self.started=True
@@ -94,12 +96,11 @@ class TaskTest(taskobject.Task):
         self.parent.Push(taskupdatemini.TaskUpdateMini())
 
     def DebugRecursive(self,indent=0):
-        self.DebugPrint("TaskTest",indent)
+        self.DebugPrint(self.name,indent)
 
     def NameRecursive(self):
         gbstate.task_stack_names.append(self.name)
-        myname="TaskTest"
-        return myname
+        return self.name
 
     def startmove(self):
         self.start_mx=gbstate.position_minimap_x
@@ -108,9 +109,9 @@ class TaskTest(taskobject.Task):
         self.parent.Push(taskupdatemini.TaskUpdateMini())
 
         heading=90
-        #if (self.i % 2) == 1:
-        #    heading=90
-        #else:
-        #    heading=270
-        self.parent.Push(taskjoy.TaskJoyLeft(heading,1.0,3.0,int(self.seconds*1000)))
-        
+        (dmx,dmy)=gbtrack.calculate_dx_dy(heading,self.stepsize)
+        mx=gbstate.position_minimap_x
+        my=gbstate.position_minimap_y
+        mx+=dmx
+        my+=dmy
+        self.parent.Push(tasktrackgoto.TaskTrackGoTo(mx,my))

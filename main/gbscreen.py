@@ -270,3 +270,11 @@ def is_inventory_screen():
     if not has_label('ButtonB',0.15,1001,693,5):
         return False
     return True
+
+def is_accept_controller_screen():
+    with gbstate.detection_lock:
+        if gbstate.digested is None:
+            return False
+    if not has_label('ButtonA',0.80,556,597,5):
+        return False
+    return True

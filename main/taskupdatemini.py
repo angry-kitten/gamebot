@@ -21,6 +21,7 @@ class TaskUpdateMini(taskobject.Task):
 
     def __init__(self):
         super().__init__()
+        self.name="TaskUpdateMini"
         print("new TaskUpdateMini object")
         self.additional_wait=0.1 # 100 milliseconds
         self.additional_wait_active=False
@@ -83,6 +84,7 @@ class TaskUpdateMini(taskobject.Task):
         self.DebugPrint("TaskUpdateMini",indent)
 
     def NameRecursive(self):
+        gbstate.task_stack_names.append(self.name)
         myname="TaskUpdateMini"
         return myname
 
@@ -115,15 +117,18 @@ class TaskUpdateMini(taskobject.Task):
         if gbscreen.color_match_rgb(r,g,b,174,159,125,5):
             gbstate.minimap[data_x][data_y]=gbdata.maptypes['Dirt'][0]
             return
-        gbstate.minimap[data_x][data_y]=gbdata.maptypes['Unknown'][0]
+        #gbstate.minimap[data_x][data_y]=gbdata.maptypes['Unknown'][0]
 
     def gather_minimap(self):
-        gbstate.minimap=[0 for x in range(gbdata.minimap_width)]
+        if gbstate.minimap is None:
+            gbstate.minimap=[0 for x in range(gbdata.minimap_width)]
+            for data_x in range(gbdata.minimap_width):
+                gbstate.minimap[data_x]=[0 for y in range(gbdata.minimap_height)]
+
         pixel_start_x=gbdata.minimap_dashes_L2R_0-gbdata.minimap_dashes_step
         pixel_start_y=gbdata.minimap_dashes_T2B_0-gbdata.minimap_dashes_step
         for data_x in range(gbdata.minimap_width):
             pixel_x=(data_x*gbdata.minimap_square_spacing)+pixel_start_x
-            gbstate.minimap[data_x]=[0 for y in range(gbdata.minimap_height)]
             for data_y in range(gbdata.minimap_height):
                 pixel_y=(data_y*gbdata.minimap_square_spacing)+pixel_start_y
                 self.process_location(data_x,data_y,pixel_x,pixel_y)

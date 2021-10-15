@@ -18,6 +18,16 @@ color_red=(0,0,255) # BGR
 color_blue=(255,0,0) # BGR
 color_yellow=(0,255,255) # BGR
 color_orange=(0,165,255) # BGR
+
+color_water=color_blue
+color_coastal_rock=(32,32,32)
+color_grass0=(0,128,0) # BGR
+color_grass1=(0,192,0) # BGR
+color_grass2=(0,255,0) # BGR
+color_sand=color_yellow
+color_dock=(0,128,128)
+color_dirt=(0,32,32)
+
 line_width=1
 line_width_x_narrow=2
 line_width_x=3
@@ -482,6 +492,16 @@ def draw_top_of_task_stack(frame):
     y=h-2
     cv2.putText(frame,n,(x,y),font,font_scale*0.75,color_white,font_line_width,line_type)
 
+    # Draw the names of multiple tasks on the top of the stack along
+    # the right side of the screen.
+    x=int((w*3)/4)
+    i=26 # This is the spacing between the lines vertically.
+    y=i
+    l=len(gbstate.task_stack_names)
+    for n in gbstate.task_stack_names:
+        cv2.putText(frame,n,(x,y),font,font_scale*0.75,color_white,font_line_width,line_type)
+        y+=i
+
 def draw_inventory(frame):
     if not gbstate.draw_inventory_locations:
         return
@@ -499,6 +519,91 @@ def draw_current_tool(frame):
     x=0
     y=h-2
     cv2.putText(frame,n,(x,y),font,font_scale*0.75,color_white,font_line_width,line_type)
+
+def draw_maps(frame):
+    w=gbdata.stdscreen_size[0]
+    h=gbdata.stdscreen_size[1]
+    origin_sx=w-(3*gbdata.map_width)  # origin (upper left) screen x
+    origin_sy=int(h/2)                # origin (upper left) screen y
+
+    # draw phonemap
+    if gbstate.phonemap is not None:
+        cv2.rectangle(frame,(origin_sx,origin_sy),(origin_sx+gbdata.map_width,origin_sy+gbdata.map_height),color_red,1)
+        for y in range(gbdata.map_height):
+            for x in range(gbdata.map_width):
+                v=gbstate.phonemap[x][y]
+                color=None
+                if v == 1: # water
+                    color=color_water
+                elif v == 2: # rock (coastal)
+                    color=color_coastal_rock
+                elif v == 3: # grass level 0
+                    color=color_grass0
+                elif v == 4: # grass level 1
+                    color=color_grass1
+                elif v == 5: # grass level 2
+                    color=color_grass2
+                elif v == 6: # sand
+                    color=color_sand
+                elif v == 7: # dock
+                    color=color_dock
+                elif v == 8: # dirt
+                    color=color_dirt
+                if color is not None:
+                    sx=origin_sx+x
+                    sy=origin_sy+y
+                    # use a rectangle to draw a pixel
+                    cv2.rectangle(frame,(sx,sy),(sx+1,sy+1),color,-1)
+
+    origin_sx+=gbdata.map_width
+
+    # draw obstructionmap
+    if gbstate.obstructionmap is not None:
+        cv2.rectangle(frame,(origin_sx,origin_sy),(origin_sx+gbdata.map_width,origin_sy+gbdata.map_height),color_red,1)
+        for y in range(gbdata.map_height):
+            for x in range(gbdata.map_width):
+                v=gbstate.obstructionmap[x][y]
+                color=None
+                if v == 1:
+                    color=color_green # not obstructed
+                elif v == 2:
+                    color=color_red # obstructed
+                if color is not None:
+                    sx=origin_sx+x
+                    sy=origin_sy+y
+                    # use a rectangle to draw a pixel
+                    cv2.rectangle(frame,(sx,sy),(sx+1,sy+1),color,-1)
+
+    origin_sx+=gbdata.map_width
+
+    # draw minimap
+    if gbstate.minimap is not None:
+        cv2.rectangle(frame,(origin_sx,origin_sy),(origin_sx+gbdata.map_width,origin_sy+gbdata.map_height),color_red,1)
+        for y in range(gbdata.map_height):
+            for x in range(gbdata.map_width):
+                v=gbstate.minimap[x][y]
+                color=None
+                if v == 1: # water
+                    color=color_water
+                elif v == 2: # rock (coastal)
+                    color=color_coastal_rock
+                elif v == 3: # grass level 0
+                    color=color_grass0
+                elif v == 4: # grass level 1
+                    color=color_grass1
+                elif v == 5: # grass level 2
+                    color=color_grass2
+                elif v == 6: # sand
+                    color=color_sand
+                elif v == 7: # dock
+                    color=color_dock
+                elif v == 8: # dirt
+                    color=color_dirt
+                if color is not None:
+                    sx=origin_sx+x
+                    sy=origin_sy+y
+                    # use a rectangle to draw a pixel
+                    cv2.rectangle(frame,(sx,sy),(sx+1,sy+1),color,-1)
 
 def draw_on(frame):
     control_help(frame)
@@ -522,3 +627,4 @@ def draw_on(frame):
     #cv2.rectangle(frame,(x2,y2),(x4,y4),color_white,line_width)
     cv2.circle(frame,(x3,y3),y2,color_white,line_width)
     #cv2.putText(frame,'Gamebot',(x3,y3),font,font_scale,color_white,line_width,line_type)
+    draw_maps(frame)

@@ -14,6 +14,7 @@ import math
 def set_current_position(map_x,map_y):
     gbstate.player_mx=map_x
     gbstate.player_my=map_y
+    set_not_obstructed(int(map_x),int(map_y))
 
     if gbstate.center_mx < 0:
         gbstate.center_mx=gbstate.player_mx
@@ -87,3 +88,41 @@ def calculate_dx_dy(heading,distance):
     print("heading=",heading,"distance=",distance,"dx=",dx,"dy=",dy)
 
     return (dx,dy)
+
+def build_default_obstruction_map():
+    gbstate.obstructionmap=[0 for x in range(gbdata.map_width)]
+    for data_x in range(gbdata.map_width):
+        # Set all to 0 or unknown.
+        gbstate.obstructionmap[data_x]=[0 for y in range(gbdata.map_height)]
+
+def debug_obstructionmap():
+    if gbstate.obstructionmap is None:
+        print("no obstructionmap")
+        return
+    for y in range(gbdata.map_height):
+        line=''
+        for x in range(gbdata.map_width):
+            v=gbstate.obstructionmap[x][y]
+            c=' '
+            if v == 1:
+                c='u'
+            elif v == 2:
+                c='o'
+            line+=c
+        print(line)
+
+def set_obstructed(mx,my):
+    if gbstate.obstructionmap is None:
+        build_default_obstruction_map()
+    gbstate.obstructionmap[mx][my]=2
+
+def set_not_obstructed(mx,my):
+    if gbstate.obstructionmap is None:
+        build_default_obstruction_map()
+    gbstate.obstructionmap[mx][my]=1
+    #debug_obstructionmap()
+
+def set_unknown(mx,my):
+    if gbstate.obstructionmap is None:
+        build_default_obstruction_map()
+    gbstate.obstructionmap[mx][my]=0

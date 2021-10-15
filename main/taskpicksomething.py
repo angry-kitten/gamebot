@@ -1,6 +1,6 @@
 #
 # Copyright 2021 by angry-kitten
-# Look at the current screen for weeds and pick them.
+# Look at the current screen and pick something to do.
 #
 
 import taskobject
@@ -14,18 +14,18 @@ import taskgotomain
 import taskupdatemini
 import taskrandomwalk
 import tasksimplegoto
-import taskpathplangoto
 import gbscreen
 import gbdisplay
 import random
+import taskweed
 
-class TaskWeed(taskobject.Task):
-    """TaskWeed Object"""
+class TaskPickSomething(taskobject.Task):
+    """TaskPickSomething Object"""
 
     def __init__(self):
         super().__init__()
-        self.name="TaskWeed"
-        print("new TaskWeed object")
+        self.name="TaskPickSomething"
+        print("new TaskPickSomething object")
         self.target_mx=-1
         self.target_my=-1
         #self.close=5
@@ -33,7 +33,7 @@ class TaskWeed(taskobject.Task):
 
     def Poll(self):
         """check if any action can be taken"""
-        print("TaskWeed Poll")
+        print("TaskPickSomething Poll")
         if not self.started:
             self.Start()
             return
@@ -44,26 +44,26 @@ class TaskWeed(taskobject.Task):
         # Find a weed
 
         if self.target_mx < 0:
-            # At this point a search for a weed hasn't been done yet.
-            self.find_a_weed()
+            # At this point a search hasn't been done yet.
+            self.find_something()
             if self.target_mx < 0:
-                # At this point no weed was found by the search.
+                # At this point no target was found by the search.
                 print("no target found")
-                print("TaskWeed done")
+                print("TaskPickSomething done")
                 self.taskdone=True
-            # At this point a weed was found by the search and subtasks
+            # At this point something was found by the search and subtasks
             # have been added to the stack.
             return
 
         gbstate.object_target_mx=-1
         gbstate.object_target_my=-1
-        print("TaskWeed done")
+        print("TaskPickSomething done")
         self.taskdone=True
         return
 
     def Start(self):
         """Cause the task to begin doing whatever."""
-        print("TaskWeed Start")
+        print("TaskPickSomething Start")
         if self.started:
             return # already started
         self.started=True
@@ -72,72 +72,82 @@ class TaskWeed(taskobject.Task):
         self.parent.Push(taskdetect.TaskDetect())
 
     def DebugRecursive(self,indent=0):
-        self.DebugPrint("TaskWeed",indent)
+        self.DebugPrint("TaskPickSomething",indent)
 
     def NameRecursive(self):
         gbstate.task_stack_names.append(self.name)
-        myname="TaskWeed"
+        myname="TaskPickSomething"
         return myname
 
-    def find_a_weed(self):
-        print("find a weed")
+    def find_something(self):
+        print("find something")
         with gbstate.detection_lock:
             if gbstate.digested is None:
                 return False
             localdigested=gbstate.digested
         if gbstate.center_mx < 0:
             return
-        weeds=[]
+        things=[]
         for det in localdigested:
             print(det)
             # det is [name,score,cx,cy,bx,by]
             if det[0] == "Weeds":
-                weeds.append(det)
-        print("weeds",weeds)
-        l=len(weeds)
+                things.append(det)
+            elif det[0] == "Tree":
+                things.append(det)
+            elif det[0] == "PineTree":
+                things.append(det)
+        print("things",things)
+        l=len(things)
         if l < 1:
-            print("empty weeds list")
+            print("empty things list")
             return
 
-        close_weeds=[]
-        for weed in weeds:
-            print(weed)
-            (mx,my)=gbdisplay.convert_pixel_to_map(weed[2],weed[3]) # use cx cy
+        close_things=[]
+        for thing in things:
+            print(thing)
+            (mx,my)=gbdisplay.convert_pixel_to_map(thing[2],thing[3]) # use cx cy
             d=gbdisplay.calculate_distance(mx,my,gbstate.center_mx,gbstate.center_my)
             if d < self.close:
-                close_weeds.append(weed)
+                close_things.append(thing)
 
-        print("close_weeds",close_weeds)
-        l=len(close_weeds)
+        print("close_things",close_things)
+        l=len(close_things)
         if l < 1:
-            print("empty close weeds list")
+            print("empty close things list")
             return
 
-        best_weed=None # Insert pot jokes here.
-        for weed in close_weeds:
-            if best_weed is None:
-                best_weed=weed
-            elif best_weed[1] < weed[1]:
-                best_weed=weed
+        best_thing=None
+        for thing in close_things:
+            if best_thing is None:
+                best_thing=thing
+            elif best_thing[1] < thing[1]:
+                best_thing=thing
 
-        print("best_weed",best_weed)
+        print("best_thing",best_thing)
 
-        print("found weed",best_weed)
+        print("found thing",best_thing)
 
-        #(mx,my)=gbdisplay.convert_pixel_to_map(best_weed[4],best_weed[5])
-        (mx,my)=gbdisplay.convert_pixel_to_map(best_weed[2],best_weed[3])
+        (mx,my)=gbdisplay.convert_pixel_to_map(best_thing[2],best_thing[3])
         if mx < 0:
             print("bad position")
             return
-        print("target weed mx",mx,"my",my)
+        print("target thing mx",mx,"my",my)
 
         self.target_mx=mx
         self.target_my=my
         gbstate.object_target_mx=mx
         gbstate.object_target_my=my
 
-        # push tasks in reverse order
-        self.parent.Push(taskupdatemini.TaskUpdateMini())
-        self.parent.Push(taskdetect.TaskDetect())
-        self.parent.Push(taskpress.TaskPress('Y'))
-        self.parent.Push(taskpathplangoto.TaskPathPlanGoTo(mx,my))
+        if best_thing[0] == "Weeds":
+            self.parent.Push(taskweed.TaskWeed())
+            return
+        elif best_thing[0] == "Tree":
+            self.parent.Push(taskweed.TaskWeed())
+            return
+        elif best_thing[0] == "PineTree":
+            self.parent.Push(taskweed.TaskWeed())
+            return
+
+        self.parent.Push(taskweed.TaskWeed())
+        return

@@ -13,6 +13,7 @@ class TaskDetect(taskobject.Task):
 
     def __init__(self):
         super().__init__()
+        self.name="TaskDetect"
         print("new TaskDetect object")
 
     def Poll(self):
@@ -43,5 +44,6 @@ class TaskDetect(taskobject.Task):
         self.DebugPrint("TaskDetect",indent)
 
     def NameRecursive(self):
+        gbstate.task_stack_names.append(self.name)
         myname="TaskDetect"
         return myname

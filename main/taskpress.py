@@ -12,6 +12,7 @@ class TaskPress(taskobject.TaskTimed):
 
     def __init__(self,pressthis,total_sec=0.120,press_msec=60):
         super().__init__()
+        self.name="TaskPress"
         print("new TaskPress object")
         self.pressthis=pressthis
         self.step=0
@@ -45,6 +46,7 @@ class TaskPress(taskobject.TaskTimed):
         self.DebugPrint("TaskPress",indent)
 
     def NameRecursive(self):
+        gbstate.task_stack_names.append(self.name)
         myname="TaskPress"
         return myname
 

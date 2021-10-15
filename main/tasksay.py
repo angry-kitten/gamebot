@@ -13,6 +13,7 @@ class TaskSay(taskobject.Task):
 
     def __init__(self,saythis):
         super().__init__()
+        self.name="TaskSay"
         print("new TaskSay object")
         self.saythis=saythis
         self.step=0
@@ -56,6 +57,7 @@ class TaskSay(taskobject.Task):
         self.DebugPrint("TaskSay",indent)
 
     def NameRecursive(self):
+        gbstate.task_stack_names.append(self.name)
         myname="TaskSay"
         return myname
 

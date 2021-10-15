@@ -16,10 +16,13 @@ class TaskHoldTool(taskobject.Task):
 
     def __init__(self,toolname):
         super().__init__()
+        self.name="TaskHoldTool"
         print("new TaskHoldTool object")
         self.toolname=toolname
         self.step=0
         self.ratio=0.30
+        #self.move_wait=0.5 # seconds
+        self.move_wait=0.3 # seconds
 
     def Poll(self):
         """check if any action can be taken"""
@@ -86,7 +89,8 @@ class TaskHoldTool(taskobject.Task):
         self.DebugPrint("TaskHoldTool",indent)
 
     def NameRecursive(self):
-        myname="TaskHoldTool"
+        myname=self.name+" "+self.toolname
+        gbstate.task_stack_names.append(myname)
         return myname
 
     def find_tool_by_inventory_name(self,inventory_name_list):
@@ -174,7 +178,11 @@ class TaskHoldTool(taskobject.Task):
         hand_match=gbscreen.has_label_in_box('PointerHand',self.ratio,gbdata.inventory_sx1,gbdata.inventory_sx2,gbdata.inventory_sy1,gbdata.inventory_sy2)
         if hand_match is None:
             print("hand not found")
-            self.step=4 # close inventory
+            #self.step=4 # close inventory
+            # move the pointer to the right and try again
+            self.parent.Push(taskdetect.TaskDetect())
+            self.parent.Push(taskobject.TaskTimed(self.move_wait)) # wait for animation
+            self.parent.Push(taskpress.TaskPress('hat_RIGHT'))
             return
 
         # Find the slot number for the hand.
@@ -203,89 +211,89 @@ class TaskHoldTool(taskobject.Task):
                 if self.hand_slot < self.tool_slot:
                     # move pointer hand right
                     self.hand_slot+=1
-                    self.parent.Push(taskobject.TaskTimed(1.0)) # wait for animation
+                    self.parent.Push(taskobject.TaskTimed(self.move_wait)) # wait for animation
                     self.parent.Push(taskpress.TaskPress('hat_RIGHT'))
                     return
                 # move pointer hand left
                 self.hand_slot-=1
-                self.parent.Push(taskobject.TaskTimed(1.0)) # wait for animation
+                self.parent.Push(taskobject.TaskTimed(self.move_wait)) # wait for animation
                 self.parent.Push(taskpress.TaskPress('hat_LEFT'))
                 return
             # move pointer hand up
             self.hand_slot-=10
-            self.parent.Push(taskobject.TaskTimed(1.0)) # wait for animation
+            self.parent.Push(taskobject.TaskTimed(self.move_wait)) # wait for animation
             self.parent.Push(taskpress.TaskPress('hat_TOP'))
             return
         if self.tool_slot <= 19:
             if self.hand_slot <= 9:
                 # move pointer hand down
                 self.hand_slot+=10
-                self.parent.Push(taskobject.TaskTimed(1.0)) # wait for animation
+                self.parent.Push(taskobject.TaskTimed(self.move_wait)) # wait for animation
                 self.parent.Push(taskpress.TaskPress('hat_BOTTOM'))
                 return
             if self.hand_slot <= 19:
                 if self.hand_slot < self.tool_slot:
                     # move pointer hand right
                     self.hand_slot+=1
-                    self.parent.Push(taskobject.TaskTimed(1.0)) # wait for animation
+                    self.parent.Push(taskobject.TaskTimed(self.move_wait)) # wait for animation
                     self.parent.Push(taskpress.TaskPress('hat_RIGHT'))
                     return
                 # move pointer hand left
                 self.hand_slot-=1
-                self.parent.Push(taskobject.TaskTimed(1.0)) # wait for animation
+                self.parent.Push(taskobject.TaskTimed(self.move_wait)) # wait for animation
                 self.parent.Push(taskpress.TaskPress('hat_LEFT'))
                 return
             # move pointer hand up
             self.hand_slot-=10
-            self.parent.Push(taskobject.TaskTimed(1.0)) # wait for animation
+            self.parent.Push(taskobject.TaskTimed(self.move_wait)) # wait for animation
             self.parent.Push(taskpress.TaskPress('hat_TOP'))
             return
         if self.tool_slot <= 29:
             if self.hand_slot <= 19:
                 # move pointer hand down
                 self.hand_slot+=10
-                self.parent.Push(taskobject.TaskTimed(1.0)) # wait for animation
+                self.parent.Push(taskobject.TaskTimed(self.move_wait)) # wait for animation
                 self.parent.Push(taskpress.TaskPress('hat_BOTTOM'))
                 return
             if self.hand_slot <= 29:
                 if self.hand_slot < self.tool_slot:
                     # move pointer hand right
                     self.hand_slot+=1
-                    self.parent.Push(taskobject.TaskTimed(1.0)) # wait for animation
+                    self.parent.Push(taskobject.TaskTimed(self.move_wait)) # wait for animation
                     self.parent.Push(taskpress.TaskPress('hat_RIGHT'))
                     return
                 # move pointer hand left
                 self.hand_slot-=1
-                self.parent.Push(taskobject.TaskTimed(1.0)) # wait for animation
+                self.parent.Push(taskobject.TaskTimed(self.move_wait)) # wait for animation
                 self.parent.Push(taskpress.TaskPress('hat_LEFT'))
                 return
             # move pointer hand up
             self.hand_slot-=10
-            self.parent.Push(taskobject.TaskTimed(1.0)) # wait for animation
+            self.parent.Push(taskobject.TaskTimed(self.move_wait)) # wait for animation
             self.parent.Push(taskpress.TaskPress('hat_TOP'))
             return
         if self.tool_slot <= 39:
             if self.hand_slot <= 29:
                 # move pointer hand down
                 self.hand_slot+=10
-                self.parent.Push(taskobject.TaskTimed(1.0)) # wait for animation
+                self.parent.Push(taskobject.TaskTimed(self.move_wait)) # wait for animation
                 self.parent.Push(taskpress.TaskPress('hat_BOTTOM'))
                 return
             if self.hand_slot <= 39:
                 if self.hand_slot < self.tool_slot:
                     # move pointer hand right
                     self.hand_slot+=1
-                    self.parent.Push(taskobject.TaskTimed(1.0)) # wait for animation
+                    self.parent.Push(taskobject.TaskTimed(self.move_wait)) # wait for animation
                     self.parent.Push(taskpress.TaskPress('hat_RIGHT'))
                     return
                 # move pointer hand left
                 self.hand_slot-=1
-                self.parent.Push(taskobject.TaskTimed(1.0)) # wait for animation
+                self.parent.Push(taskobject.TaskTimed(self.move_wait)) # wait for animation
                 self.parent.Push(taskpress.TaskPress('hat_LEFT'))
                 return
             # move pointer hand up
             self.hand_slot-=10
-            self.parent.Push(taskobject.TaskTimed(1.0)) # wait for animation
+            self.parent.Push(taskobject.TaskTimed(self.move_wait)) # wait for animation
             self.parent.Push(taskpress.TaskPress('hat_TOP'))
             return
 
@@ -294,13 +302,19 @@ class TaskHoldTool(taskobject.Task):
         return
 
     def process_menu(self):
+        # no "clear favorite" in menu
         if not gbscreen.has_label('PointerHand',0.30,792,347,10):
-            print("no menu pointer hand")
-            # Assume there is a menu but the hand wasn't detected.
-            self.parent.Push(taskobject.TaskTimed(1.0)) # wait for menu to pop down
-            self.parent.Push(taskpress.TaskPress('B'))
-            self.step=4 # close inventory
-            return
+            print("no menu pointer hand 1")
+            # "clear favorite" is present in menu
+            if not gbscreen.has_label('PointerHand',0.30,766,306,10):
+                print("no menu pointer hand 2")
+                if not gbscreen.has_label('PointerHand',0.30,792,307,10):
+                    print("no menu pointer hand 3")
+                    # Assume there is a menu but the hand wasn't detected.
+                    self.parent.Push(taskobject.TaskTimed(1.0)) # wait for menu to pop down
+                    self.parent.Push(taskpress.TaskPress('B'))
+                    self.step=4 # close inventory
+                    return
         # select the first item in the menu. Hopefully this is "Hold". 
         self.parent.Push(taskobject.TaskTimed(1.0)) # wait for menu to pop down
         self.parent.Push(taskpress.TaskPress('A'))
