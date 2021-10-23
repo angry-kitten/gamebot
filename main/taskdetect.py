@@ -28,6 +28,8 @@ class TaskDetect(taskobject.Task):
             if gbstate.detections is None:
                 return
 
+        gbstate.pause_message=None
+        gbstate.move_since_detect=False
         print("TaskDetect done")
         self.taskdone=True
 
@@ -37,6 +39,7 @@ class TaskDetect(taskobject.Task):
         if self.started:
             return # already started
         self.started=True
+        gbstate.pause_message='Detect'
         with gbstate.detection_lock:
             gbstate.detections=None
 

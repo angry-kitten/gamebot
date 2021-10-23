@@ -1,9 +1,10 @@
 #
 # Copyright 2021 by angry-kitten
-# Look at the video at startup and see what the current screen is.
-# Move to the main playing screen.
+# Look at the current screen and capture the phone map and
+# determine player location from the pin.
 #
 
+import time
 import taskobject
 import gbdata
 import gbstate
@@ -12,20 +13,22 @@ import taskpress
 import tasksay
 import taskdetect
 import taskgotomain
+import gbscreen
+import gbtrack
 import taskupdatemini
 import taskupdatephonemap
 
-class TaskTakeStock(taskobject.Task):
-    """TaskTakeStock Object"""
+class TaskDeterminePosition(taskobject.Task):
+    """TaskDeterminePosition Object"""
 
     def __init__(self):
         super().__init__()
-        self.name="TaskTakeStock"
-        print("new TaskTakeStock object")
+        self.name="TaskDeterminePosition"
+        print("new",self.name,"object")
 
     def Poll(self):
         """check if any action can be taken"""
-        print("TaskTakeStock Poll")
+        print(self.name,"Poll")
         if not self.started:
             self.Start()
             return
@@ -34,26 +37,28 @@ class TaskTakeStock(taskobject.Task):
         if gbstate.frame is None:
             return
 
-        print("TaskTakeStock done")
+        gbstate.move_since_determine=False
+
+        print(self.name,"done")
         self.taskdone=True
         return
 
     def Start(self):
         """Cause the task to begin doing whatever."""
-        print("TaskTakeStock Start")
+        print(self.name,"Start")
         if self.started:
             return # already started
         self.started=True
-        # push tasks in reverse order
-        #self.parent.Push(tasksay.TaskSay("gamebot"))
+
+        if not gbstate.move_since_determine:
+            return
+
         self.parent.Push(taskupdatephonemap.TaskUpdatePhoneMap())
         self.parent.Push(taskupdatemini.TaskUpdateMini())
-        self.parent.Push(taskgotomain.TaskGoToMain())
 
     def DebugRecursive(self,indent=0):
-        self.DebugPrint("TaskTakeStock",indent)
+        self.DebugPrint(self.name,indent)
 
     def NameRecursive(self):
         gbstate.task_stack_names.append(self.name)
-        myname="TaskTakeStock"
-        return myname
+        return self.name

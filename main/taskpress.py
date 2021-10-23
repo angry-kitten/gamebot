@@ -13,7 +13,7 @@ class TaskPress(taskobject.TaskTimed):
     def __init__(self,pressthis,total_sec=0.120,press_msec=60):
         super().__init__()
         self.name="TaskPress"
-        print("new TaskPress object")
+        print("new",self.name,"object")
         self.pressthis=pressthis
         self.step=0
         self.press_msec=press_msec
@@ -24,7 +24,7 @@ class TaskPress(taskobject.TaskTimed):
 
     def Poll(self):
         """check if any action can be taken"""
-        print("TaskPress Poll")
+        print(self.name,"Poll")
         super().Poll()
         if not self.started:
             return
@@ -37,18 +37,17 @@ class TaskPress(taskobject.TaskTimed):
 
     def Start(self):
         """Cause the task to begin doing whatever."""
-        print("TaskPress Start")
+        print(self.name,"Start")
         super().Start()
         if self.started:
             return # already started
 
     def DebugRecursive(self,indent=0):
-        self.DebugPrint("TaskPress",indent)
+        self.DebugPrint(self.name,indent)
 
     def NameRecursive(self):
         gbstate.task_stack_names.append(self.name)
-        myname="TaskPress"
-        return myname
+        return self.name
 
     def TriggerPress(self):
         if 'A' == self.pressthis:

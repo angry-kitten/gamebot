@@ -19,6 +19,8 @@ import gbscreen
 import gbdisplay
 import random
 import taskcenterplayer
+import taskpickup
+import taskdetermineposition
 
 class TaskWeed(taskobject.Task):
     """TaskWeed Object"""
@@ -69,9 +71,9 @@ class TaskWeed(taskobject.Task):
             return # already started
         self.started=True
         # push tasks in reverse order
-        self.parent.Push(taskupdatemini.TaskUpdateMini())
+        self.parent.Push(taskdetermineposition.TaskDeterminePosition())
         self.parent.Push(taskdetect.TaskDetect())
-        self.parent.Push(taskcenterplayer.TaskCenterPlayer())
+        #self.parent.Push(taskcenterplayer.TaskCenterPlayer())
 
     def DebugRecursive(self,indent=0):
         self.DebugPrint(self.name,indent)
@@ -138,8 +140,7 @@ class TaskWeed(taskobject.Task):
         gbstate.object_target_my=my
 
         # push tasks in reverse order
-        self.parent.Push(taskupdatemini.TaskUpdateMini())
+        self.parent.Push(taskdetermineposition.TaskDeterminePosition())
         self.parent.Push(taskdetect.TaskDetect())
-        self.parent.Push(taskobject.TaskTimed(0.5)) # wait for the animation
-        self.parent.Push(taskpress.TaskPress('Y'))
+        self.parent.Push(taskpickup.TaskPickup())
         self.parent.Push(taskpathplangoto.TaskPathPlanGoTo(mx,my))

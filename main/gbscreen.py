@@ -10,11 +10,12 @@ import gbstate
 import cv2
 import taskpress
 import taskdetect
+import gbdisplay
 
 def get_pixel(x,y):
     frame=gbstate.frame
-    x=int(x)
-    y=int(y)
+    x=int(round(x))
+    y=int(round(y))
     height, width, channels=frame.shape
     if x < 0:
         x=0
@@ -36,6 +37,7 @@ def match_within(v1,v2,within):
     return False
 
 def color_match_rgb(pr,pg,pb,tr,tg,tb,within):
+    #print("color_match_rgb",pr,pg,pb,tr,tg,tb,within)
     if not match_within(tr,pr,within):
         return False
     if not match_within(tg,pg,within):
@@ -44,11 +46,18 @@ def color_match_rgb(pr,pg,pb,tr,tg,tb,within):
         return False
     return True
 
+def color_match_rgb_array(pr,pg,pb,a,within):
+    return color_match_rgb(pr,pg,pb,a[0],a[1],a[2],within)
+
 def color_match(x,y,tr,tg,tb,within):
+    x=int(round(x))
+    y=int(round(y))
     (pb,pg,pr)=get_pixel(x,y)
     return color_match_rgb(pr,pg,pb,tr,tg,tb,within)
 
 def color_match_array(x,y,a,within):
+    x=int(round(x))
+    y=int(round(y))
     return color_match(x,y,a[0],a[1],a[2],within)
 
 def is_black_screen():
@@ -117,7 +126,7 @@ def has_label_in_box(label,ratio,x1,x2,y1,y2):
             return bestmatch
         localdigested=gbstate.digested
     for det in localdigested:
-        print(det) # det is [name,score,cx,cy,bx,by]
+        #print(det) # det is [name,score,cx,cy,bx,by]
         if det[0] == label:
             if det[1] >= ratio:
                 if is_inside_box(x1,x2,y1,y2,det[2],det[3]):
@@ -278,3 +287,79 @@ def is_accept_controller_screen():
     if not has_label('ButtonA',0.80,556,597,5):
         return False
     return True
+
+def find_slot_from_array(x,y,slot_array):
+    best_slot=None
+    best_distance=None
+    l=len(slot_array)
+    for i in range(l):
+        (sx,sy)=slot_array[i]
+        d=gbdisplay.calculate_distance(x,y,sx,sy)
+        if best_distance is None:
+            best_distance=d
+            best_slot=i
+        else:
+            if d < best_distance:
+                best_distance=d
+                best_slot=i
+    return best_slot
+
+def is_phone_screen():
+    with gbstate.detection_lock:
+        if gbstate.digested is None:
+            return False
+
+    match_count=0
+    # camera, nook miles, critter,
+    # diy, design, map,
+    # chat, passport,rescue
+    match=has_label_in_box('PhoneCameraIcon',0.20,gbdata.phone_box_left_sx,gbdata.phone_box_right_sx,gbdata.phone_box_top_sy,gbdata.phone_box_bottom_sy)
+    if match is not None:
+        match_count+=1
+    match=has_label_in_box('PhoneNookMilesIcon',0.20,gbdata.phone_box_left_sx,gbdata.phone_box_right_sx,gbdata.phone_box_top_sy,gbdata.phone_box_bottom_sy)
+    if match is not None:
+        match_count+=1
+    match=has_label_in_box('PhoneCritterIcon',0.20,gbdata.phone_box_left_sx,gbdata.phone_box_right_sx,gbdata.phone_box_top_sy,gbdata.phone_box_bottom_sy)
+    if match is not None:
+        match_count+=1
+    match=has_label_in_box('PhoneDIYIcon',0.20,gbdata.phone_box_left_sx,gbdata.phone_box_right_sx,gbdata.phone_box_top_sy,gbdata.phone_box_bottom_sy)
+    if match is not None:
+        match_count+=1
+    match=has_label_in_box('PhoneCustomDesignsIcon',0.20,gbdata.phone_box_left_sx,gbdata.phone_box_right_sx,gbdata.phone_box_top_sy,gbdata.phone_box_bottom_sy)
+    if match is not None:
+        match_count+=1
+    match=has_label_in_box('PhoneMapIcon',0.10,gbdata.phone_box_left_sx,gbdata.phone_box_right_sx,gbdata.phone_box_top_sy,gbdata.phone_box_bottom_sy)
+    if match is not None:
+        match_count+=1
+    match=has_label_in_box('PhoneChatIcon',0.20,gbdata.phone_box_left_sx,gbdata.phone_box_right_sx,gbdata.phone_box_top_sy,gbdata.phone_box_bottom_sy)
+    if match is not None:
+        match_count+=1
+    match=has_label_in_box('PhonePassportIcon',0.10,gbdata.phone_box_left_sx,gbdata.phone_box_right_sx,gbdata.phone_box_top_sy,gbdata.phone_box_bottom_sy)
+    if match is not None:
+        match_count+=1
+    match=has_label_in_box('PhoneRescueServiceIcon',0.20,gbdata.phone_box_left_sx,gbdata.phone_box_right_sx,gbdata.phone_box_top_sy,gbdata.phone_box_bottom_sy)
+    if match is not None:
+        match_count+=1
+    print("match_count",match_count)
+    if match_count >= 4:
+        return True
+    return False
+
+def is_phone_map_screen():
+    match_count=0
+    if color_match_array(18,31,gbdata.phone_map_background,7):
+        match_count+=1
+    if color_match_array(28,681,gbdata.phone_map_background,7):
+        match_count+=1
+    if color_match_array(1258,17,gbdata.phone_map_background,7):
+        match_count+=1
+    if color_match_array(1263,694,gbdata.phone_map_background,7):
+        match_count+=1
+    if color_match_array(674,686,gbdata.phone_map_background,7):
+        match_count+=1
+    if color_match_array(829,708,gbdata.phone_map_background,7):
+        match_count+=1
+    print("match_count",match_count)
+    if match_count >= 5:
+        return True
+    return False

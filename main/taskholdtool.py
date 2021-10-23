@@ -144,18 +144,7 @@ class TaskHoldTool(taskobject.Task):
         return
 
     def find_inventory_slot(self,x,y):
-        best_slot=None
-        best_distance=None
-        for i in range(20):
-            (lx,ly)=gbdata.inventory_locations_20[i]
-            d=gbdisplay.calculate_distance(x,y,lx,ly)
-            if best_distance is None:
-                best_distance=d
-                best_slot=i
-            else:
-                if d < best_distance:
-                    best_distance=d
-                    best_slot=i
+        best_slot=gbscreen.find_slot_from_array(x,y,gbdata.inventory_locations_20)
         return best_slot
 
     def find_tool_and_pointer(self):

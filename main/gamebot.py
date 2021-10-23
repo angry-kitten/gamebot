@@ -33,6 +33,9 @@ import taskupdatemini
 import tasktest
 import tasktest2
 import tasktest3
+import taskupdatephonemap
+import taskdetermineposition
+import tasktrackgoto
 
 
 sys.path.append(os.path.join(os.getcwd(),"..","..","gamebot-serial","pylib"))
@@ -234,14 +237,31 @@ def process_key(key):
         debug_show_state()
         return 0
     if ord('p') == key:
-        # get current position from minimap
-        gbstate.tasks.AddToThread(0,taskupdatemini.TaskUpdateMini())
+        # get current position
+        gbstate.tasks.AddToThread(0,taskdetermineposition.TaskDeterminePosition())
         return 0
     if ord('z') == key:
         # run a test task
         #gbstate.tasks.AddToThread(0,tasktest.TaskTest())
         #gbstate.tasks.AddToThread(0,tasktest2.TaskTest2())
-        gbstate.tasks.AddToThread(0,tasktest3.TaskTest3())
+        #gbstate.tasks.AddToThread(0,tasktest3.TaskTest3())
+        gbstate.tasks.AddToThread(0,taskupdatephonemap.TaskUpdatePhoneMap())
+        return 0
+    if ord(';') == key:
+        print("test up")
+        gbstate.tasks.AddToThread(0,tasktrackgoto.TaskTrackGoTo(gbstate.player_mx,gbstate.player_my-1.0))
+        return 0
+    if ord('.') == key:
+        print("test down")
+        gbstate.tasks.AddToThread(0,tasktrackgoto.TaskTrackGoTo(gbstate.player_mx,gbstate.player_my+1.0))
+        return 0
+    if ord(',') == key:
+        print("test left")
+        gbstate.tasks.AddToThread(0,tasktrackgoto.TaskTrackGoTo(gbstate.player_mx-1.0,gbstate.player_my))
+        return 0
+    if ord('/') == key:
+        print("test right")
+        gbstate.tasks.AddToThread(0,tasktrackgoto.TaskTrackGoTo(gbstate.player_mx+1.0,gbstate.player_my))
         return 0
     return key
 
@@ -267,7 +287,7 @@ def object_detection_thread():
     localdetections=None
     localdigested=None
     while True:
-        print("odt")
+        #print("odt")
         dframe=None
         do_detect=False
         localdetections=None
@@ -286,7 +306,7 @@ def object_detection_thread():
                     gbstate.digested=localdigested
                     gbstate.detim=localim
         else:
-            print("no detection")
+            #print("no detection")
             time.sleep(1)
 
 def main_loop(vid):
@@ -302,9 +322,7 @@ def main_loop(vid):
         # makes it impossible to wake it from the USB device without
         # USB remote wakeup support.
 
-        if gbstate.frame is not None:
-            print("g_frame exists")
-        else:
+        if gbstate.frame is None:
             print("g_frame does not exist")
 
         gbstate.tasks.Poll()
@@ -315,9 +333,9 @@ def main_loop(vid):
         # get a frame
         ret, frame = vid.read()
 
-        print("ret",ret);
+        #print("ret",ret);
         height, width, channels=frame.shape
-        print("width",width,"height",height,"channels",channels)
+        #print("width",width,"height",height,"channels",channels)
 
         gbstate.frame=frame
 

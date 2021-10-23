@@ -50,8 +50,8 @@ class TaskCenterPlayer(taskobject.Task):
             return # already started
         self.started=True
 
-        if gbstate.position_minimap_x < 0:
-            print("minimap position not set")
+        if gbstate.player_mx < 0:
+            print("player position not set")
             print(self.name,"done")
             self.taskdone=True
             return
@@ -74,10 +74,8 @@ class TaskCenterPlayer(taskobject.Task):
 
     def maybe_go(self,dmx,dmy):
 
-        start_mx=gbstate.position_minimap_x
-        start_my=gbstate.position_minimap_y
-        start_mx=int(round(start_mx))
-        start_my=int(round(start_my))
+        start_mx=gbstate.player_mx
+        start_my=gbstate.player_my
 
         # check for obstructions and water
         for j in range(self.stepsize):
@@ -85,12 +83,15 @@ class TaskCenterPlayer(taskobject.Task):
             my=start_my
             mx+=dmx*j
             my+=dmy*j
-            v=gbstate.obstructionmap[mx][my]
+            rmx=int(round(mx))
+            rmy=int(round(my))
+            v=gbstate.obstructionmap[rmx][rmy]
             if v == gbdata.obstruction_maptype_obstructed:
                 return False
             if v == gbdata.obstruction_maptype_standing_on_water:
                 return False
-            v=gbstate.minimap[mx][my]
+            #v=gbstate.minimap[rmx][rmy]
+            v=gbstate.phonemap[rmx][rmy]
             if v == gbdata.maptype_water:
                 return False
 

@@ -11,6 +11,7 @@ import taskpress
 import taskdetect
 import math
 import gbtrack
+import time
 
 color_white=(255,255,255) # BGR
 color_black=(0,0,0) # BGR
@@ -119,9 +120,44 @@ def minimap_position(frame):
         return
     w=gbdata.stdscreen_size[0]
     h=gbdata.stdscreen_size[1]
-    x=int((w*3)/4)
+    x=int((w*7)/16)
     y=h-2
-    s=str(gbstate.position_minimap_x)+' '+str(gbstate.position_minimap_y)
+    s=f'{gbstate.position_minimap_x:.4f} {gbstate.position_minimap_y:.4f}'
+    cv2.putText(frame,s,(x,y),font,font_scale*0.75,color_white,font_line_width,line_type)
+
+def phonemap_position(frame):
+# cv::MARKER_CROSS = 0,
+#  cv::MARKER_TILTED_CROSS = 1,
+#  cv::MARKER_STAR = 2,
+#  cv::MARKER_DIAMOND = 3,
+#  cv::MARKER_SQUARE = 4,
+#  cv::MARKER_TRIANGLE_UP = 5,
+#  cv::MARKER_TRIANGLE_DOWN = 6
+    #for (sx,sy) in gbdata.phone_locations:
+    #    cv2.drawMarker(frame,(sx,sy),color_white,cv2.MARKER_TRIANGLE_UP)
+    #    sx2=sx+gbdata.phone_color_offset_x
+    #    sy2=sy
+    #    cv2.drawMarker(frame,(sx2,sy2),color_white,cv2.MARKER_TRIANGLE_DOWN)
+
+    if gbstate.phonemap is None:
+        return
+    if gbstate.position_phonemap_x < 0:
+        return
+    w=gbdata.stdscreen_size[0]
+    h=gbdata.stdscreen_size[1]
+    x=int((w*4)/16)
+    y=h-2
+    s=f'{gbstate.position_phonemap_x:.4f} {gbstate.position_phonemap_y:.4f}'
+    cv2.putText(frame,s,(x,y),font,font_scale*0.75,color_white,font_line_width,line_type)
+
+def player_position(frame):
+    if gbstate.player_mx < 0:
+        return
+    w=gbdata.stdscreen_size[0]
+    h=gbdata.stdscreen_size[1]
+    x=int((w*1)/16)
+    y=h-2
+    s=f'{gbstate.player_mx:.4f} {gbstate.player_my:.4f}'
     cv2.putText(frame,s,(x,y),font,font_scale*0.75,color_white,font_line_width,line_type)
 
 def convert_map_to_pixel(mx,my):
@@ -372,7 +408,8 @@ def draw_grid(frame):
             y1+=cy
             x2+=cx
             y2+=cy
-            cv2.line(frame,(int(x1),int(y1)),(int(x2),int(y2)),color_white,line_width)
+            #cv2.line(frame,(int(x1),int(y1)),(int(x2),int(y2)),color_white,line_width)
+            cv2.line(frame,(int(x1),int(y1)),(int(x1+1),int(y1)),color_white,line_width)
     # draw "vertical" lines
     for gy in range(data_h-1):
         for gx in range(data_w):
@@ -382,7 +419,8 @@ def draw_grid(frame):
             y1+=cy
             x2+=cx
             y2+=cy
-            cv2.line(frame,(int(x1),int(y1)),(int(x2),int(y2)),color_white,line_width)
+            #cv2.line(frame,(int(x1),int(y1)),(int(x2),int(y2)),color_white,line_width)
+            cv2.line(frame,(int(x1),int(y1)),(int(x1),int(y1+1)),color_white,line_width)
 
 def draw_x_at(frame,x,y,color,line_width=line_width_x):
     cv2.line(frame,(int(x)-10,int(y)-10),(int(x)+10,int(y)+10),color,line_width)
@@ -391,9 +429,21 @@ def draw_x_at(frame,x,y,color,line_width=line_width_x):
 def draw_x_at_map(frame,mx,my,color,line_width=line_width_x):
     (px,py)=convert_map_to_pixel(mx,my)
     if px < 0:
-        print("bad location")
+        #print("bad location")
         return
     draw_x_at(frame,px,py,color,line_width=line_width)
+
+def draw_marker_at(frame,marker,sx,sy,color):
+    sx=int(round(sx))
+    sy=int(round(sy))
+    cv2.drawMarker(frame,(sx,sy),color,marker)
+
+def draw_marker_at_map(frame,marker,mx,my,color):
+    (sx,sy)=convert_map_to_pixel(mx,my)
+    if sx < 0:
+        #print("bad location")
+        return
+    draw_marker_at(frame,marker,sx,sy,color)
 
 def draw_x_path(frame):
     if gbstate.center_mx >= 0:
@@ -431,11 +481,21 @@ def draw_x_path(frame):
             draw_x_at(frame,x2,y2,color_red)
 
 def draw_targets(frame):
+    if gbstate.position_minimap_x >= 0:
+        draw_marker_at_map(frame,cv2.MARKER_CROSS,gbstate.position_minimap_x,gbstate.position_minimap_y,color_blue)
+        sx=gbdata.minimap_origin_x+gbstate.position_minimap_x*gbdata.minimap_square_spacing
+        sy=gbdata.minimap_origin_y+gbstate.position_minimap_y*gbdata.minimap_square_spacing
+        draw_marker_at(frame,cv2.MARKER_CROSS,sx,sy,color_blue)
+    if gbstate.position_phonemap_x >= 0:
+        draw_marker_at_map(frame,cv2.MARKER_TILTED_CROSS,gbstate.position_phonemap_x,gbstate.position_phonemap_y,color_blue)
+        sx=gbdata.minimap_origin_x+gbstate.position_phonemap_x*gbdata.minimap_square_spacing
+        sy=gbdata.minimap_origin_y+gbstate.position_phonemap_y*gbdata.minimap_square_spacing
+        draw_marker_at(frame,cv2.MARKER_TILTED_CROSS,sx,sy,color_blue)
     if gbstate.player_mx >= 0:
-        draw_x_at_map(frame,gbstate.player_mx,gbstate.player_my,color_blue)
-        x=gbdata.minimap_origin_x+gbstate.player_mx*gbdata.minimap_square_spacing
-        y=gbdata.minimap_origin_y+gbstate.player_my*gbdata.minimap_square_spacing
-        draw_x_at(frame,x,y,color_blue)
+        draw_marker_at_map(frame,cv2.MARKER_DIAMOND,gbstate.player_mx,gbstate.player_my,color_green)
+        sx=gbdata.minimap_origin_x+gbstate.player_mx*gbdata.minimap_square_spacing
+        sy=gbdata.minimap_origin_y+gbstate.player_my*gbdata.minimap_square_spacing
+        draw_marker_at(frame,cv2.MARKER_DIAMOND,sx,sy,color_green)
     if gbstate.goto_target_mx >= 0:
         draw_x_at_map(frame,gbstate.goto_target_mx,gbstate.goto_target_my,color_red,line_width=line_width_x_wide)
         x=gbdata.minimap_origin_x+gbstate.goto_target_mx*gbdata.minimap_square_spacing
@@ -454,18 +514,15 @@ def draw_targets(frame):
 
 def draw_feet_box(frame):
     if gbstate.center_mx < 0:
-        print("unable to draw feet box 1")
+        #print("unable to draw feet box 1")
         return
-    if gbstate.feet_box_offset_mx == -2:
-        print("unable to draw feet box 2")
+    if gbstate.feet_box_center_mx < 0:
+        #print("unable to draw feet box 2")
         return
     # Start with the center_m* values so that they cancel
     # out even if incorrect.
-    center_x=gbstate.center_mx
-    center_y=gbstate.center_my
-    center_y+=gbstate.tune_fb_offset_my
-    center_x+=gbstate.feet_box_offset_mx
-    center_y+=gbstate.feet_box_offset_my
+    center_x=gbstate.feet_box_center_mx
+    center_y=gbstate.feet_box_center_my
     x1=center_x-0.5
     x2=center_x+0.5
     y1=center_y-0.5
@@ -617,15 +674,52 @@ def draw_heading(frame):
     x3=int(w/2)
     y3=int(h/2)
     radius=int(h/4)
-    (dsx,dsy)=gbtrack.calculate_dx_dy(gbstate.heading,radius)
+    (dsx,dsy)=gbtrack.calculate_dx_dy(gbstate.player_heading,radius)
     sx=int(round(x3+dsx))
     sy=int(round(y3+dsy))
     cv2.line(frame,(x3,y3),(sx,sy),color_green,line_width)
 
+def draw_distance_time_dc(frame,data,color):
+    scale=5
+    origin_sx=0
+    origin_sy=0
+    i=0
+    for v in data:
+        x=i*scale
+        sum=v[0]
+        count=v[1]
+        if count >= 1:
+            distance=sum/count
+            y=int(round(distance*10*scale))
+            x+=origin_sx
+            y+=origin_sy
+            #cv2.line(frame,(x,y),(x,y+1),color,line_width)
+            cv2.drawMarker(frame,(x,y),color,cv2.MARKER_STAR)
+        i+=1;
+
+def draw_distance_time(frame):
+    draw_distance_time_dc(frame,gbstate.data_distance_time_180,color_green)
+    draw_distance_time_dc(frame,gbstate.data_distance_time_90,color_blue)
+    draw_distance_time_dc(frame,gbstate.data_distance_time_5,color_yellow)
+    draw_distance_time_dc(frame,gbstate.data_distance_time_1,color_red)
+
+def draw_pause_message(frame):
+    if gbstate.pause_message is None:
+        return
+    w=gbdata.stdscreen_size[0]
+    h=gbdata.stdscreen_size[1]
+    sx=int(w/2)
+    sy=int(h/2)
+    cv2.putText(frame,gbstate.pause_message,(sx,sy),font,font_scale,color_red,line_width,line_type)
+
 def draw_on(frame):
     control_help(frame)
     draw_top_of_task_stack(frame)
+
     minimap_position(frame)
+    phonemap_position(frame)
+    player_position(frame)
+
     draw_grid(frame)
     draw_feet_box(frame)
     #draw_x_path(frame)
@@ -646,3 +740,7 @@ def draw_on(frame):
     #cv2.putText(frame,'Gamebot',(x3,y3),font,font_scale,color_white,line_width,line_type)
     draw_maps(frame)
     draw_heading(frame)
+
+    draw_distance_time(frame)
+
+    draw_pause_message(frame)

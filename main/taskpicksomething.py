@@ -19,6 +19,7 @@ import gbdisplay
 import random
 import taskweed
 import taskgather
+import taskdetermineposition
 
 class TaskPickSomething(taskobject.Task):
     """TaskPickSomething Object"""
@@ -69,7 +70,7 @@ class TaskPickSomething(taskobject.Task):
             return # already started
         self.started=True
         # push tasks in reverse order
-        self.parent.Push(taskupdatemini.TaskUpdateMini())
+        self.parent.Push(taskdetermineposition.TaskDeterminePosition())
         self.parent.Push(taskdetect.TaskDetect())
 
     def DebugRecursive(self,indent=0):

@@ -20,6 +20,8 @@ import taskjoy
 import gbscreen
 import gbdisplay
 import gbtrack
+import taskdetermineposition
+import taskpause
 
 class TaskTrackGoTo(taskobject.Task):
     """TaskTrackGoTo Object"""
@@ -28,12 +30,17 @@ class TaskTrackGoTo(taskobject.Task):
         super().__init__()
         self.name="TaskTrackGoTo"
         print("new TaskTrackGoTo object")
-        mx=int(round(mx))
-        my=int(round(my))
         self.target_mx=mx
         self.target_my=my
         print("go to mx",mx,"my",my)
         self.within=1.0
+        self.start_mx=-1
+        self.start_my=-1
+        self.start_heading=-1
+        self.target_heading=-1
+        self.target_seconds=-1
+        self.end_mx=-1
+        self.end_my=-1
         gbstate.move_before_mx=-1
         gbstate.move_before_my=-1
         gbstate.move_after_mx=-1
@@ -52,26 +59,36 @@ class TaskTrackGoTo(taskobject.Task):
         if gbstate.frame is None:
             return
 
-        if gbstate.position_minimap_x < 0:
-            print("minimap position not set")
+        if gbstate.player_mx < 0:
+            print("player position not set")
             gbstate.track_goto_target_mx=-1
             gbstate.track_goto_target_my=-1
             print("TaskTrackGoTo done")
             self.taskdone=True
             return
 
-        mx=gbstate.position_minimap_x
-        my=gbstate.position_minimap_y
+        mx=gbstate.player_mx
+        my=gbstate.player_my
 
         if gbstate.move_before_mx >= 0:
             print("second time")
             gbstate.move_after_mx=mx
             gbstate.move_after_my=my
+            self.end_mx=gbstate.player_mx
+            self.end_my=gbstate.player_my
+
+            gbtrack.after_move_processing(self.start_mx,self.start_my,self.start_heading,self.target_mx,self.target_my,self.target_heading,self.target_seconds,self.end_mx,self.end_my)
 
             self.process_move()
 
             gbstate.track_goto_target_mx=-1
             gbstate.track_goto_target_my=-1
+
+            # pause to allow the results of the move to be evaluated
+            #self.parent.Push(taskpause.TaskPause('Paused',30.0))
+            #self.parent.Push(taskpause.TaskPause('Paused',5.0))
+            #self.parent.Push(taskpause.TaskPause('Paused',2.0))
+
             print("TaskTrackGoTo done")
             self.taskdone=True
             return
@@ -81,6 +98,10 @@ class TaskTrackGoTo(taskobject.Task):
         gbstate.move_before_mx=mx
         gbstate.move_before_my=my
 
+        self.start_mx=gbstate.player_mx
+        self.start_my=gbstate.player_my
+        self.start_heading=gbstate.player_heading
+
         dx=self.target_mx-mx
         dy=self.target_my-my
         print("dx dy",dx,dy)
@@ -88,27 +109,22 @@ class TaskTrackGoTo(taskobject.Task):
         print("distance",distance)
         self.distance=distance
 
-        previous_heading=gbstate.heading
+        previous_heading=gbstate.player_heading
         heading=gbtrack.calculate_heading(dx,dy)
-        self.heading=heading
-        gbstate.heading=heading
+        self.target_heading=heading
+        gbstate.player_heading=heading
 
-        (turn_seconds,turn_distance)=self.turn_time_distance(previous_heading,heading)
-        print("turn_seconds",turn_seconds)
-        print("turn_distance",turn_distance)
-        if turn_distance <= distance:
-            distance-=turn_distance
-        else:
-            distance=0
+        self.parent.Push(taskdetect.TaskDetect())
+        self.parent.Push(taskdetermineposition.TaskDeterminePosition())
 
-        self.parent.Push(taskupdatemini.TaskUpdateMini())
-        seconds=self.distance_to_time(distance)
+        seconds=gbtrack.heading_change_and_distance_to_time(previous_heading,heading,distance)
         print("seconds",seconds)
-        seconds+=turn_seconds
-        print("combined seconds",seconds)
+        self.target_seconds=seconds
         msec=int(seconds*1000) # how long to activate the joystick in milliseconds
         total_sec=1+seconds # the total time for the joystick task
         self.parent.Push(taskjoy.TaskJoyLeft(heading,1.0,total_sec,msec))
+        gbstate.move_since_determine=True
+        gbstate.move_since_detect=True
         return
 
     def Start(self):
@@ -117,7 +133,7 @@ class TaskTrackGoTo(taskobject.Task):
         if self.started:
             return # already started
         self.started=True
-        self.parent.Push(taskupdatemini.TaskUpdateMini())
+        self.parent.Push(taskdetermineposition.TaskDeterminePosition())
 
     def DebugRecursive(self,indent=0):
         self.DebugPrint("TaskTrackGoTo",indent)
@@ -127,35 +143,36 @@ class TaskTrackGoTo(taskobject.Task):
         myname="TaskTrackGoTo"
         return myname
 
-    def distance_to_time(self,distance):
-        print("distance_to_time",distance)
-        ttd=gbdata.time_to_distance
-        entries=len(ttd)
-        for j in range(entries-1):
-            a=ttd[j]
-            b=ttd[j+1]
-            if distance > a[1]:
-                t=a[0]*(distance/a[1])
-                print("t",t)
-                return t
-            if distance == a[1]:
-                t=a[0]
-                print("t",t)
-                return t
-            if distance == b[1]:
-                t=b[0]
-                print("t",t)
-                return t
-            if a[1] <= distance and distance <= b[1]:
-                dt=a[0]-b[0]
-                dd=a[1]-b[1]
-                pd=distance-b[1]
-                t=b[0]+((dt/dd)*pd)
-                print("t",t)
-                return t
-        t=0
-        print("t",t)
-        return t
+# obsolete
+#     def distance_to_time(self,distance):
+#         print("distance_to_time",distance)
+#         ttd=gbdata.time_to_distance
+#         entries=len(ttd)
+#         for j in range(entries-1):
+#             a=ttd[j]
+#             b=ttd[j+1]
+#             if distance > a[1]:
+#                 t=a[0]*(distance/a[1])
+#                 print("t",t)
+#                 return t
+#             if distance == a[1]:
+#                 t=a[0]
+#                 print("t",t)
+#                 return t
+#             if distance == b[1]:
+#                 t=b[0]
+#                 print("t",t)
+#                 return t
+#             if a[1] <= distance and distance <= b[1]:
+#                 dt=a[0]-b[0]
+#                 dd=a[1]-b[1]
+#                 pd=distance-b[1]
+#                 t=b[0]+((dt/dd)*pd)
+#                 print("t",t)
+#                 return t
+#         t=0
+#         print("t",t)
+#         return t
 
     def process_move(self):
         # See if we reached the target.
@@ -175,117 +192,112 @@ class TaskTrackGoTo(taskobject.Task):
                 if gbstate.move_before_mx == gbstate.move_after_mx and gbstate.move_before_my == gbstate.move_after_my:
                     # We ran into an obstruction.
                     print("zero movement")
-                    if (self.heading >= 0 and self.heading < 45) or (self.heading >= 315 and self.heading <= 360):
+                    if (self.target_heading >= 0 and self.target_heading < 45) or (self.target_heading >= 315 and self.target_heading <= 360):
                         print("obstructed up/north")
                         mx=int(round(gbstate.move_after_mx))
                         my=int(round(gbstate.move_after_my-1))
                         gbtrack.set_obstructed(mx,my)
-                    elif self.heading >= 45 and self.heading < 135:
+                    elif self.target_heading >= 45 and self.target_heading < 135:
                         print("obstructed right/east")
                         mx=int(round(gbstate.move_after_mx+1))
                         my=int(round(gbstate.move_after_my))
                         gbtrack.set_obstructed(mx,my)
-                    elif self.heading >= 135 and self.heading < 225:
+                    elif self.target_heading >= 135 and self.target_heading < 225:
                         print("obstructed down/south")
                         mx=int(round(gbstate.move_after_mx))
                         my=int(round(gbstate.move_after_my+1))
                         gbtrack.set_obstructed(mx,my)
-                    elif self.heading >= 225 and self.heading < 315:
+                    elif self.target_heading >= 225 and self.target_heading < 315:
                         print("obstructed left/west")
                         mx=int(round(gbstate.move_after_mx-1))
                         my=int(round(gbstate.move_after_my))
                         gbtrack.set_obstructed(mx,my)
 
-        # set center if not already set
-        if gbstate.center_mx < 0:
-            gbstate.center_mx=gbstate.move_before_mx
-            gbstate.center_my=gbstate.move_before_my
-            gbstate.center_my-=gbstate.tune_fb_offset_my
-
-        # set the feet box offset if not already set
-        if gbstate.feet_box_offset_mx == -2:
-            gbstate.feet_box_offset_mx=0
-            gbstate.feet_box_offset_my=0
-
-        # calculate the starting center of the feet box
-        fbc_mx=gbstate.center_mx+gbstate.feet_box_offset_mx
-        fbc_my=gbstate.center_my+gbstate.tune_fb_offset_my+gbstate.feet_box_offset_my
-
-        # calculate the move deltas
-        dx=gbstate.move_after_mx-gbstate.move_before_mx
-        dy=gbstate.move_after_my-gbstate.move_before_my
-
-        print("dx dy",dx,dy)
-
-        # calculate the feet box sides
-        x1=fbc_mx-0.5 # left
-        x2=fbc_mx+0.5 # right
-        y1=fbc_my-0.5 # top
-        y2=fbc_my+0.5 # bottom
-
-        print(x1,x2,y1,y2)
-
-        past_x=0
-        past_y=0
-        if gbstate.move_after_mx > x2:
-            print("moved past the box to the right")
-            past_x=gbstate.move_after_mx-x2
-        elif gbstate.move_after_mx < x1:
-            print("moved past the box to the left")
-            past_x=gbstate.move_after_mx-x1
-        if gbstate.move_after_my > y2:
-            print("moved past the box to the bottom")
-            past_y=gbstate.move_after_my-y2
-        elif gbstate.move_after_my < y1:
-            print("moved past the box to the top")
-            past_y=gbstate.move_after_my-y1
-
-        print("past x y",past_x,past_y)
-
-        # the feet box moves to keep the player position inside or on
-        fbc2_mx=fbc_mx+past_x
-        fbc2_my=fbc_my+past_y
-
-        # calculate the new feet box offset based on the movement
-        # if the movement is past the box to the right, the box moves
-        # to the left relative to the center of the screen.
-        fb_move_x=-(past_x*gbstate.feet_box_ratio_x)
-        fb_move_y=-(past_y*gbstate.feet_box_ratio_y)
-
-        print("fb_move x y",fb_move_x,fb_move_y)
-
-        gbstate.feet_box_offset_mx+=fb_move_x
-        gbstate.feet_box_offset_my+=fb_move_y
-
-        # bound the movement of the offset of the feet box
-        if gbstate.feet_box_offset_mx > 0.5:
-            gbstate.feet_box_offset_mx=0.5
-        elif gbstate.feet_box_offset_mx < -0.5:
-            gbstate.feet_box_offset_mx=-0.5
-        if gbstate.feet_box_offset_my > 0.5:
-            gbstate.feet_box_offset_my=0.5
-        elif gbstate.feet_box_offset_my < -0.5:
-            gbstate.feet_box_offset_my=-0.5
-
-        # calculate the new center
-        gbstate.center_mx=fbc2_mx-gbstate.feet_box_offset_mx
-        gbstate.center_my=(fbc2_my-gbstate.feet_box_offset_my)-gbstate.tune_fb_offset_my
-
-        print("new center",gbstate.center_mx,gbstate.center_my)
+#         # set center if not already set
+#         if gbstate.center_mx < 0:
+#             gbstate.center_mx=gbstate.move_before_mx
+#             gbstate.center_my=gbstate.move_before_my
+#             gbstate.center_my-=gbstate.tune_fb_offset_my
+# 
+#         # set the feet box offset if not already set
+#         if gbstate.feet_box_offset_mx == -2:
+#             gbstate.feet_box_offset_mx=0
+#             gbstate.feet_box_offset_my=0
+# 
+#         # calculate the starting center of the feet box
+#         fbc_mx=gbstate.center_mx+gbstate.feet_box_offset_mx
+#         fbc_my=gbstate.center_my+gbstate.tune_fb_offset_my+gbstate.feet_box_offset_my
+# 
+#         # calculate the move deltas
+#         dx=gbstate.move_after_mx-gbstate.move_before_mx
+#         dy=gbstate.move_after_my-gbstate.move_before_my
+# 
+#         print("dx dy",dx,dy)
+# 
+#         # calculate the feet box sides
+#         x1=fbc_mx-0.5 # left
+#         x2=fbc_mx+0.5 # right
+#         y1=fbc_my-0.5 # top
+#         y2=fbc_my+0.5 # bottom
+# 
+#         print(x1,x2,y1,y2)
+# 
+#         past_x=0
+#         past_y=0
+#         if gbstate.move_after_mx > x2:
+#             print("moved past the box to the right")
+#             past_x=gbstate.move_after_mx-x2
+#         elif gbstate.move_after_mx < x1:
+#             print("moved past the box to the left")
+#             past_x=gbstate.move_after_mx-x1
+#         if gbstate.move_after_my > y2:
+#             print("moved past the box to the bottom")
+#             past_y=gbstate.move_after_my-y2
+#         elif gbstate.move_after_my < y1:
+#             print("moved past the box to the top")
+#             past_y=gbstate.move_after_my-y1
+# 
+#         print("past x y",past_x,past_y)
+# 
+#         # the feet box moves to keep the player position inside or on
+#         fbc2_mx=fbc_mx+past_x
+#         fbc2_my=fbc_my+past_y
+# 
+#         # calculate the new feet box offset based on the movement
+#         # if the movement is past the box to the right, the box moves
+#         # to the left relative to the center of the screen.
+#         fb_move_x=-(past_x*gbstate.feet_box_ratio_x)
+#         fb_move_y=-(past_y*gbstate.feet_box_ratio_y)
+# 
+#         print("fb_move x y",fb_move_x,fb_move_y)
+# 
+#         gbstate.feet_box_offset_mx+=fb_move_x
+#         gbstate.feet_box_offset_my+=fb_move_y
+# 
+#         # bound the movement of the offset of the feet box
+#         if gbstate.feet_box_offset_mx > 0.5:
+#             gbstate.feet_box_offset_mx=0.5
+#         elif gbstate.feet_box_offset_mx < -0.5:
+#             gbstate.feet_box_offset_mx=-0.5
+#         if gbstate.feet_box_offset_my > 0.5:
+#             gbstate.feet_box_offset_my=0.5
+#         elif gbstate.feet_box_offset_my < -0.5:
+#             gbstate.feet_box_offset_my=-0.5
+# 
+#         # calculate the new center
+#         gbstate.center_mx=fbc2_mx-gbstate.feet_box_offset_mx
+#         gbstate.center_my=(fbc2_my-gbstate.feet_box_offset_my)-gbstate.tune_fb_offset_my
+# 
+#         print("new center",gbstate.center_mx,gbstate.center_my)
 
         gbstate.move_before_mx=-1
         gbstate.move_before_my=-1
         gbstate.move_after_mx=-1
         gbstate.move_after_my=-1
 
-    def turn_time_distance(self,h1,h2):
-        dh=0
-        if h1 <= h2:
-            dh=h2-h1
-        else:
-            dh=h1-h2
-        if dh > 180:
-            dh=360-dh
-        turn_seconds=gbdata.time_turn_180_seconds*dh/180
-        turn_distance=gbdata.distance_turn_180*dh/180
-        return (turn_seconds,turn_distance)
+# obsolete
+#     def turn_time_distance(self,h1,h2):
+#         dh=gbtrack.heading_difference(h1,h2)
+#         turn_seconds=gbdata.time_turn_180_seconds*dh/180
+#         turn_distance=gbdata.distance_turn_180*dh/180
+#         return (turn_seconds,turn_distance)

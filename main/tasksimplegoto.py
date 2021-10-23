@@ -20,6 +20,7 @@ import taskjoy
 import gbscreen
 import gbdisplay
 import tasktrackgoto
+import taskdetermineposition
 
 class TaskSimpleGoTo(taskobject.Task):
     """TaskSimpleGoTo Object"""
@@ -28,11 +29,9 @@ class TaskSimpleGoTo(taskobject.Task):
         super().__init__()
         self.name="TaskSimpleGoTo"
         print("new",self.name,"object")
-        mx=int(round(mx))
-        my=int(round(my))
         self.limit=100
         self.counter=0
-        self.step_distance_limit=4
+        self.step_distance_limit=8
         self.target_mx=mx
         self.target_my=my
         print("go to mx",mx,"my",my)
@@ -53,8 +52,8 @@ class TaskSimpleGoTo(taskobject.Task):
         if gbstate.frame is None:
             return
 
-        mx=gbstate.position_minimap_x
-        my=gbstate.position_minimap_y
+        mx=gbstate.player_mx
+        my=gbstate.player_my
 
         if self.previous_mx >= 0:
             if self.previous_mx == mx and self.previous_my == my:
@@ -85,14 +84,39 @@ class TaskSimpleGoTo(taskobject.Task):
             print("dx dy",dx,dy)
             distance=math.sqrt(dx*dx+dy*dy)
             print("distance",distance)
+            #if distance > 0:
+            #    distance2=random.random()*distance
+            #    print("distance2",distance2)
+            #    ratio=distance2/distance
+            #    dx*=ratio
+            #    dy*=ratio
+            #    distance=distance2
+            #    print("distance",distance)
 
             if distance > self.step_distance_limit:
+                #distance2=self.step_distance_limit*random.random()
                 distance2=self.step_distance_limit
                 ratio=distance2/distance
                 dx*=ratio
                 dy*=ratio
                 distance=distance2
                 print("distance",distance)
+
+            if distance > 0.01:
+                if distance < 2:
+                    distance2=distance*0.75
+                    ratio=distance2/distance
+                    dx*=ratio
+                    dy*=ratio
+                    distance=distance2
+                    print("distance",distance)
+                elif distance < 1:
+                    distance2=distance*0.5
+                    ratio=distance2/distance
+                    dx*=ratio
+                    dy*=ratio
+                    distance=distance2
+                    print("distance",distance)
 
             step_target_mx=mx+dx
             step_target_my=my+dy
@@ -112,7 +136,7 @@ class TaskSimpleGoTo(taskobject.Task):
         if self.started:
             return # already started
         self.started=True
-        self.parent.Push(taskupdatemini.TaskUpdateMini())
+        self.parent.Push(taskdetermineposition.TaskDeterminePosition())
 
     def DebugRecursive(self,indent=0):
         self.DebugPrint(self.name,indent)

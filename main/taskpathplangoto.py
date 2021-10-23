@@ -28,8 +28,6 @@ class TaskPathPlanGoTo(taskobject.Task):
         super().__init__()
         self.name="TaskPathPlanGoTo"
         print("new",self.name,"object")
-        mx=int(round(mx))
-        my=int(round(my))
         self.target_mx=mx
         self.target_my=my
         print("go to mx",mx,"my",my)

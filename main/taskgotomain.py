@@ -66,56 +66,69 @@ class TaskGoToMain(taskobject.Task):
             print("continue triangle detect")
             self.parent.Push(taskdetect.TaskDetect())
             # press B to continue
-            self.parent.Push(taskpress.TaskPress('B',5.0))
+            self.parent.Push(taskpress.TaskPress('B',2.0))
             return
         if gbscreen.is_continue_triangle():
             # maybe announcements
             print("continue triangle")
             self.parent.Push(taskdetect.TaskDetect())
             # press B to continue
-            self.parent.Push(taskpress.TaskPress('B',5.0))
+            self.parent.Push(taskpress.TaskPress('B',2.0))
             return
         if gbscreen.is_selection_screen():
             print("selection screen")
             self.parent.Push(taskdetect.TaskDetect())
             # press A to continue
-            self.parent.Push(taskpress.TaskPress('A',5.0))
+            self.parent.Push(taskpress.TaskPress('A',2.0))
             return
         if gbscreen.is_selection_screen_no_ACNH():
             print("selection screen, no ACNH")
             self.parent.Push(taskdetect.TaskDetect())
             # press hat_LEFT to try to get to the ACNH tile
-            self.parent.Push(taskpress.TaskPress('hat_LEFT',5.0))
+            self.parent.Push(taskpress.TaskPress('hat_LEFT',2.0))
             return
         if gbscreen.is_user_selection_screen():
             print("user selection screen")
             self.parent.Push(taskdetect.TaskDetect())
             # press A to select default user
-            self.parent.Push(taskpress.TaskPress('A',5.0))
+            self.parent.Push(taskpress.TaskPress('A',2.0))
             return
         if gbscreen.is_main_logo_screen():
             print("main logo screen")
             self.parent.Push(taskdetect.TaskDetect())
             # press A to continue
-            self.parent.Push(taskpress.TaskPress('A',5.0))
+            self.parent.Push(taskpress.TaskPress('A',2.0))
             return
         if gbscreen.is_inventory_screen():
             print("inventory screen")
             self.parent.Push(taskdetect.TaskDetect())
             # press B to close inventory
-            self.parent.Push(taskpress.TaskPress('B',5.0))
+            self.parent.Push(taskpress.TaskPress('B',1.0))
             return
         if gbscreen.is_accept_controller_screen():
             print("accept controller screen")
             self.parent.Push(taskdetect.TaskDetect())
             # press A to accept
-            self.parent.Push(taskpress.TaskPress('A',5.0))
+            self.parent.Push(taskpress.TaskPress('A',1.0))
+            return
+        if gbscreen.is_phone_screen():
+            print("phone screen")
+            self.parent.Push(taskdetect.TaskDetect())
+            # press B to close phone
+            self.parent.Push(taskpress.TaskPress('B',1.0))
+            return
+        if gbscreen.is_phone_map_screen():
+            print("phone map screen")
+            self.parent.Push(taskdetect.TaskDetect())
+            # press B two times to close map and phone
+            self.parent.Push(taskpress.TaskPress('B',1.0))
+            self.parent.Push(taskpress.TaskPress('B',1.0))
             return
 
         # purturb the game to see if it was screen dimmed or something
         self.parent.Push(taskdetect.TaskDetect())
-        self.parent.Push(taskpress.TaskPress('right_joy_left',5.0))
-        self.parent.Push(taskpress.TaskPress('right_joy_right',5.0))
+        self.parent.Push(taskpress.TaskPress('right_joy_left',1.0))
+        self.parent.Push(taskpress.TaskPress('right_joy_right',1.0))
 
     def Start(self):
         """Cause the task to begin doing whatever."""
