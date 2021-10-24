@@ -719,7 +719,6 @@ def draw_pause_message(frame):
 
 def draw_on(frame):
     control_help(frame)
-    draw_top_of_task_stack(frame)
 
     minimap_position(frame)
     phonemap_position(frame)
@@ -749,6 +748,8 @@ def draw_on(frame):
     draw_distance_time(frame)
 
     draw_pause_message(frame)
+
+    draw_top_of_task_stack(frame)
 
 def find_detect(target_list,d_mx,d_my,distance,count,score):
     print("find_detect")

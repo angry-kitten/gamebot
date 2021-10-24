@@ -77,6 +77,7 @@ class TaskHoldTool(taskobject.Task):
             print("TaskHoldTool done")
             self.taskdone=True
             gbstate.current_tool=None
+            gbstate.player_heading=180 # down/south
             return
 
         # open inventory to check for tools
@@ -327,5 +328,6 @@ class TaskHoldTool(taskobject.Task):
         self.parent.Push(taskobject.TaskTimed(1.0)) # wait for menu to pop down
         self.parent.Push(taskpress.TaskPress('A'))
         gbstate.current_tool=self.toolname
+        gbstate.player_heading=180 # down/south
         self.step=4 # close inventory
         return

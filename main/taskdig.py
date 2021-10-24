@@ -48,7 +48,7 @@ class TaskDig(taskobject.Task):
             return
         # Find a hole
 
-        if step.self == 0:
+        if self.step == 0:
             if self.target_mx < 0:
                 # At this point a search for an item hasn't been done yet.
                 self.find_an_item()
@@ -62,7 +62,7 @@ class TaskDig(taskobject.Task):
                 self.step=1
                 return
 
-        if step.self == 1: # in front of the hole, ready to dig
+        if self.step == 1: # in front of the hole, ready to dig
             if gbdata.shovel_tools.count(gbstate.current_tool) < 1:
                 print("not holding a shovel")
                 self.step=99 # done

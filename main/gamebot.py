@@ -33,6 +33,8 @@ import taskupdatemini
 import tasktest
 import tasktest2
 import tasktest3
+import tasktest4
+import tasktest5
 import taskupdatephonemap
 import taskdetermineposition
 import tasktrackgoto
@@ -245,7 +247,9 @@ def process_key(key):
         #gbstate.tasks.AddToThread(0,tasktest.TaskTest())
         #gbstate.tasks.AddToThread(0,tasktest2.TaskTest2())
         #gbstate.tasks.AddToThread(0,tasktest3.TaskTest3())
-        gbstate.tasks.AddToThread(0,taskupdatephonemap.TaskUpdatePhoneMap())
+        #gbstate.tasks.AddToThread(0,taskupdatephonemap.TaskUpdatePhoneMap())
+        #gbstate.tasks.AddToThread(0,tasktest4.TaskTest4())
+        gbstate.tasks.AddToThread(0,tasktest5.TaskTest5())
         return 0
     if ord(';') == key:
         print("test up")
