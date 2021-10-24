@@ -1,6 +1,7 @@
 #
 # Copyright 2021 by angry-kitten
-# Look at the current screen for gatherable items and pick them.
+# Look at the current screen for treeable items and gather wood
+# and fruit.
 #
 
 import taskobject
@@ -22,17 +23,18 @@ import taskcenterplayer
 import taskpickup
 import taskdetermineposition
 
-class TaskGather(taskobject.Task):
-    """TaskGather Object"""
+class TaskDig(taskobject.Task):
+    """TaskDig Object"""
 
     def __init__(self,target_list):
         super().__init__()
-        self.name="TaskGather"
+        self.name="TaskDig"
         print("new",self.name,"object")
         self.target_list=target_list
         self.target_mx=-1
         self.target_my=-1
         self.close=6
+        self.step=0
 
     def Poll(self):
         """check if any action can be taken"""
@@ -44,18 +46,33 @@ class TaskGather(taskobject.Task):
             return
         if gbstate.frame is None:
             return
-        # Find a weed
+        # Find a hole
 
-        if self.target_mx < 0:
-            # At this point a search for an item hasn't been done yet.
-            self.find_an_item()
+        if step.self == 0:
             if self.target_mx < 0:
-                # At this point no item was found by the search.
-                print("no target found")
-                print(self.name,"done")
-                self.taskdone=True
-            # At this point a weed was found by the search and subtasks
-            # have been added to the stack.
+                # At this point a search for an item hasn't been done yet.
+                self.find_an_item()
+                if self.target_mx < 0:
+                    # At this point no item was found by the search.
+                    print("no target found")
+                    print(self.name,"done")
+                    self.taskdone=True
+                # At this point a hole was found by the search and subtasks
+                # have been added to the stack.
+                self.step=1
+                return
+
+        if step.self == 1: # in front of the hole, ready to dig
+            if gbdata.shovel_tools.count(gbstate.current_tool) < 1:
+                print("not holding a shovel")
+                self.step=99 # done
+                return
+            # close the presentation text with 'B'
+            self.parent.Push(taskpress.TaskPress('B'))
+            self.parent.Push(taskobject.TaskTimed(2.0)) # wait for the dig animation
+            # Dig with 'A'
+            self.parent.Push(taskpress.TaskPress('A'))
+            self.step=99 # done
             return
 
         gbstate.object_target_mx=-1
@@ -117,7 +134,8 @@ class TaskGather(taskobject.Task):
         self.target_my=my
 
         # push tasks in reverse order
-        self.parent.Push(taskdetermineposition.TaskDeterminePosition())
-        self.parent.Push(taskdetect.TaskDetect())
-        self.parent.Push(taskpickup.TaskPickup())
-        self.parent.Push(taskpathplangoto.TaskPathPlanGoTo(mx,my))
+        # Hold a shovel. This will also cause the player character to face
+        # down/south.
+        self.parent.Push(taskholdtool.TaskHoldTool('Shovel'))
+        # Go to the position above/north of the hole
+        self.parent.Push(taskpathplangoto.TaskPathPlanGoTo(mx,my-1))

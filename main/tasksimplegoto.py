@@ -29,13 +29,15 @@ class TaskSimpleGoTo(taskobject.Task):
         super().__init__()
         self.name="TaskSimpleGoTo"
         print("new",self.name,"object")
-        self.limit=100
+        #self.limit=100
+        self.limit=25
         self.counter=0
         self.step_distance_limit=8
         self.target_mx=mx
         self.target_my=my
         print("go to mx",mx,"my",my)
-        self.within=0.1
+        #self.within=0.1
+        self.within=0.2
         self.previous_mx=-1
         self.previous_my=-1
         gbstate.goto_target_mx=mx
@@ -103,8 +105,8 @@ class TaskSimpleGoTo(taskobject.Task):
                 print("distance",distance)
 
             if distance > 0.01:
-                if distance < 2:
-                    distance2=distance*0.75
+                if distance < 0.5:
+                    distance2=distance*0.25
                     ratio=distance2/distance
                     dx*=ratio
                     dy*=ratio
@@ -112,6 +114,13 @@ class TaskSimpleGoTo(taskobject.Task):
                     print("distance",distance)
                 elif distance < 1:
                     distance2=distance*0.5
+                    ratio=distance2/distance
+                    dx*=ratio
+                    dy*=ratio
+                    distance=distance2
+                    print("distance",distance)
+                elif distance < 2:
+                    distance2=distance*0.75
                     ratio=distance2/distance
                     dx*=ratio
                     dy*=ratio

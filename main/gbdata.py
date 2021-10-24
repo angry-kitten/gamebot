@@ -226,6 +226,51 @@ inventory_locations_20 = [
 ]
 inventory_pointer_offset_x=40
 inventory_pointer_offset_y=39
+# Screen locations for the 30 item inventory.
+inventory_locations_30 = [
+    (340,158),
+    (404,143),
+    (473,131),
+    (537,121),
+    (606,118),
+    (674,119),
+    (739,125),
+    (805,130),
+    (871,141),
+    (937,158),
+    (341,225),
+    (409,208),
+    (474,202),
+    (540,193),
+    (605,192),
+    (674,189),
+    (739,192),
+    (806,200),
+    (872,213),
+    (939,230),
+    (342,300),
+    (408,284),
+    (474,271),
+    (541,265),
+    (607,260),
+    (673,260),
+    (740,264),
+    (806,271),
+    (872,285),
+    (938,300)
+]
+
+inventory_bag_10_x=386
+inventory_bag_10_y=354
+inventory_bag_20_x=386
+inventory_bag_20_y=360
+inventory_bag_30_x=386
+inventory_bag_30_y=374
+
+inventory_hand_30_x=786
+inventory_hand_30_y=324
+inventory_hand_30_2_x=768
+inventory_hand_30_2_y=327
 
 gatherable_items=[
     "Weeds",
@@ -247,8 +292,35 @@ gatherable_items=[
     "Cherries",
     "Apple",
     "Coconut",
-    "WeedsBag"
+    "WeedsBag",
+    "WaspNest"
 ]
+
+treeable_items=[
+    "Tree",
+    "PearTree",
+    "AppleTree",
+    "OrangeTree",
+    "PineTree",
+    "PeachTree",
+    "CherryTree",
+    "PalmTree",
+    "BambooTree"
+]
+
+digable_items=[
+    "Hole",
+    "Shiny"
+]
+
+net_tools=['InvNet','InvFlimsyNet','InvGoldenNet']
+shovel_tools=['InvShovel','InvFlimsyShovel','InvGoldenShovel']
+
+cutting_axe_tools=['InvAxe','InvGoldenAxe']
+stone_axe_tools=['InvStoneAxe']
+axe_tools=stone_axe_tools.copy()
+axe_tools.extend(cutting_axe_tools)
+
 
 phone_box_top_sy=212
 phone_box_bottom_sy=584

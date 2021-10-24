@@ -271,7 +271,7 @@ class TaskUpdatePhoneMap(taskobject.Task):
     def verify_pin_shape(self,x,y):
         """Verify that there is a pin at this location and
         not some other thing that happens to have the same color"""
-        print("verify_pin_shape")
+        #print("verify_pin_shape")
 
         # Scan pixels left and right to try to find the vertical center line
         # of the orange part.
@@ -284,10 +284,10 @@ class TaskUpdatePhoneMap(taskobject.Task):
             rx=x+j
             if self.is_pin_orange(rx,y):
                 right_x=rx
-        print("left_x=",left_x)
-        print("right_x=",right_x)
+        #print("left_x=",left_x)
+        #print("right_x=",right_x)
         cx=(left_x+right_x)/2
-        print("cx=",cx)
+        #print("cx=",cx)
 
         # Scan pixels up and down to try to find vertical extent of the
         # orange part.
@@ -300,16 +300,16 @@ class TaskUpdatePhoneMap(taskobject.Task):
             dy=y+j
             if self.is_pin_orange(cx,dy):
                 down_y=dy
-        print("up_y=",up_y)
-        print("down_y=",down_y)
+        #print("up_y=",up_y)
+        #print("down_y=",down_y)
         yextent=(down_y-up_y)+1
-        print("l6")
+        #print("l6")
         if yextent < (gbdata.phonemap_pin_height-10):
             return False
-        print("l7")
+        #print("l7")
         if yextent > (gbdata.phonemap_pin_height+3):
             return False
-        print("l8")
+        #print("l8")
 
         # Find the white circle in the head of the pin.
         # Scan down from the top.
@@ -330,76 +330,76 @@ class TaskUpdatePhoneMap(taskobject.Task):
                 break # it stopped being orange
         # circle_top_y and circle_bottom_y are one pixel higher and lower
         # than the white circle.
-        print("circle_top_y=",circle_top_y)
-        print("circle_bottom_y=",circle_bottom_y)
+        #print("circle_top_y=",circle_top_y)
+        #print("circle_bottom_y=",circle_bottom_y)
         circle_center_y=(circle_bottom_y+circle_top_y)/2
-        print("circle_center_y=",circle_center_y)
+        #print("circle_center_y=",circle_center_y)
         # circle_center_y is the center of the white circle
 
         # Now use the white circle to find the vertical center line again.
         # The assumption is that it will produce a better value than
         # the one above.
         circle_center_x=self.locate_vertical_center_line(cx,circle_center_y)
-        print("circle_center_x=",circle_center_x)
+        #print("circle_center_x=",circle_center_x)
 
         # Now use the white circle to find the horizontal center line again.
         # This is an attempt to converge on a good center value.
         circle_center_y=self.locate_horizontal_center_line(circle_center_x,circle_center_y)
-        print("circle_center_y=",circle_center_y)
+        #print("circle_center_y=",circle_center_y)
 
         # Now we use these new values to scan 5 times and average.
 
         sumx=0
         tmpx=self.locate_vertical_center_line(circle_center_x,circle_center_y-2)
-        print("tmpx=",tmpx)
+        #print("tmpx=",tmpx)
         sumx+=tmpx
         tmpx=self.locate_vertical_center_line(circle_center_x,circle_center_y-1)
-        print("tmpx=",tmpx)
+        #print("tmpx=",tmpx)
         sumx+=tmpx
         tmpx=self.locate_vertical_center_line(circle_center_x,circle_center_y)
-        print("tmpx=",tmpx)
+        #print("tmpx=",tmpx)
         sumx+=tmpx
         tmpx=self.locate_vertical_center_line(circle_center_x,circle_center_y+1)
-        print("tmpx=",tmpx)
+        #print("tmpx=",tmpx)
         sumx+=tmpx
         tmpx=self.locate_vertical_center_line(circle_center_x,circle_center_y+2)
-        print("tmpx=",tmpx)
+        #print("tmpx=",tmpx)
         sumx+=tmpx
 
         sumy=0
         tmpy=self.locate_horizontal_center_line(circle_center_x-2,circle_center_y)
-        print("tmpy=",tmpy)
+        #print("tmpy=",tmpy)
         sumy+=tmpy
         tmpy=self.locate_horizontal_center_line(circle_center_x-1,circle_center_y)
-        print("tmpy=",tmpy)
+        #print("tmpy=",tmpy)
         sumy+=tmpy
         tmpy=self.locate_horizontal_center_line(circle_center_x,circle_center_y)
-        print("tmpy=",tmpy)
+        #print("tmpy=",tmpy)
         sumy+=tmpy
         tmpy=self.locate_horizontal_center_line(circle_center_x+1,circle_center_y)
-        print("tmpy=",tmpy)
+        #print("tmpy=",tmpy)
         sumy+=tmpy
         tmpy=self.locate_horizontal_center_line(circle_center_x+2,circle_center_y)
-        print("tmpy=",tmpy)
+        #print("tmpy=",tmpy)
         sumy+=tmpy
 
         circle_center_x=sumx/5
         circle_center_y=sumy/5
-        print("circle_center_x=",circle_center_x)
-        print("circle_center_y=",circle_center_y)
+        #print("circle_center_x=",circle_center_x)
+        #print("circle_center_y=",circle_center_y)
 
 
         # Calculate a tip location.
         tip_x=circle_center_x
         tip_y=circle_center_y+gbdata.phonemap_pin_center_to_tip
-        print("tip_x=",tip_x)
-        print("tip_y=",tip_y)
+        #print("tip_x=",tip_x)
+        #print("tip_y=",tip_y)
 
         # Calculate the map location from the tip location.
         map_x=(tip_x-gbdata.phonemap_origin_x)/gbdata.phonemap_square_spacing
         map_y=(tip_y-gbdata.phonemap_origin_y)/gbdata.phonemap_square_spacing
-        print("map_x=",map_x)
-        print("map_y=",map_y)
+        #print("map_x=",map_x)
+        #print("map_y=",map_y)
 
         gbstate.position_phonemap_x=map_x
         gbstate.position_phonemap_y=map_y

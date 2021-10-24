@@ -20,6 +20,8 @@ import random
 import taskweed
 import taskgather
 import taskdetermineposition
+import tasktree
+import taskdig
 
 class TaskPickSomething(taskobject.Task):
     """TaskPickSomething Object"""
@@ -85,50 +87,37 @@ class TaskPickSomething(taskobject.Task):
         print("find something")
         with gbstate.detection_lock:
             if gbstate.digested is None:
+                print("no digested")
                 return False
             localdigested=gbstate.digested
         if gbstate.center_mx < 0:
+            print("no center")
             return
-        things=[]
-        for det in localdigested:
-            print(det)
-            # det is [name,score,cx,cy,bx,by]
-            if det[0] == "Weeds":
-                things.append(det)
-        print("things",things)
-        l=len(things)
+        target_list=gbdata.gatherable_items.copy()
+        target_list.extend(gbdata.treeable_items)
+        target_list.extend(gbdata.digable_items)
+
+        found_list=gbdisplay.find_detect(target_list,gbstate.player_mx,gbstate.player_my,self.close,10,0.30)
+
+        if found_list is None:
+            print("empty found_list 1")
+            return
+
+        print("found_list",found_list)
+        l=len(found_list)
         if l < 1:
-            print("empty things list")
-            self.parent.Push(taskgather.TaskGather(gbdata.gatherable_items))
+            print("empty found_list 2")
             return
 
-        close_things=[]
-        for thing in things:
-            print(thing)
-            (mx,my)=gbdisplay.convert_pixel_to_map(thing[2],thing[3]) # use cx cy
-            d=gbdisplay.calculate_distance(mx,my,gbstate.center_mx,gbstate.center_my)
-            if d < self.close:
-                close_things.append(thing)
-
-        print("close_things",close_things)
-        l=len(close_things)
-        if l < 1:
-            print("empty close things list")
-            self.parent.Push(taskgather.TaskGather(gbdata.gatherable_items))
-            return
-
-        best_thing=None
-        for thing in close_things:
-            if best_thing is None:
-                best_thing=thing
-            elif best_thing[1] < thing[1]:
-                best_thing=thing
+        pick=random.randint(0,l-1)
+        best_thing=found_list[pick]
 
         print("best_thing",best_thing)
 
-        print("found thing",best_thing)
-
-        (mx,my)=gbdisplay.convert_pixel_to_map(best_thing[2],best_thing[3])
+        if gbdata.treeable_items.count(best_thing[0]) > 0:
+            (mx,my)=gbdisplay.convert_pixel_to_map(best_thing[4],best_thing[5])
+        else:
+            (mx,my)=gbdisplay.convert_pixel_to_map(best_thing[2],best_thing[3])
         if mx < 0:
             print("bad position")
             return
@@ -136,12 +125,22 @@ class TaskPickSomething(taskobject.Task):
 
         self.target_mx=mx
         self.target_my=my
-        #gbstate.object_target_mx=mx
-        #gbstate.object_target_my=my
 
-        if best_thing[0] == "Weeds":
-            self.parent.Push(taskweed.TaskWeed())
+        if gbdata.gatherable_items.count(best_thing[0]) > 0:
+            print("gatherable")
+            print(gbdata.gatherable_items)
+            self.parent.Push(taskgather.TaskGather(gbdata.gatherable_items))
             return
 
-        self.parent.Push(taskgather.TaskGather(gbdata.gatherable_items))
+        if gbdata.treeable_items.count(best_thing[0]) > 0:
+            print("treeable")
+            self.parent.Push(tasktree.TaskTree(gbdata.treeable_items))
+            return
+
+        if gbdata.digable_items.count(best_thing[0]) > 0:
+            print("digable")
+            self.parent.Push(taskdig.TaskDig(gbdata.digable_items))
+            return
+
+        print("nothing")
         return

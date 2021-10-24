@@ -71,9 +71,8 @@ class TaskWeed(taskobject.Task):
             return # already started
         self.started=True
         # push tasks in reverse order
-        self.parent.Push(taskdetermineposition.TaskDeterminePosition())
         self.parent.Push(taskdetect.TaskDetect())
-        #self.parent.Push(taskcenterplayer.TaskCenterPlayer())
+        self.parent.Push(taskdetermineposition.TaskDeterminePosition())
 
     def DebugRecursive(self,indent=0):
         self.DebugPrint(self.name,indent)

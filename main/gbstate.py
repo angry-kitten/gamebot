@@ -126,6 +126,7 @@ track_goto_target_my=-1
 
 # Draw inventory locations on the screen if True
 draw_inventory_locations=False
+draw_inventory_size=20
 
 current_tool=None
 

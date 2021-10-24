@@ -211,7 +211,7 @@ def calculate_distance(px1,py1,px2,py2):
     return d
 
 def convert_pixel_to_map(px,py):
-    print("convert_pixel_to_map",px,py)
+    #print("convert_pixel_to_map",px,py)
 
     if gbstate.center_mx >= 0:
         center_x=gbstate.center_mx
@@ -234,15 +234,15 @@ def convert_pixel_to_map(px,py):
     best_map_y=center_y;
     try_mx=best_map_x
     try_my=best_map_y
-    print("center try_mx",try_mx,"try_my",try_my)
+    #print("center try_mx",try_mx,"try_my",try_my)
     (try_px,try_py)=convert_map_to_pixel(try_mx,try_my)
-    print("center try_px",try_px,"try_py",try_py)
+    #print("center try_px",try_px,"try_py",try_py)
     if try_px < 0:
         return (-1,-1)
     if try_px == px and try_py == py:
         return (try_mx,try_my)
     best_distance=calculate_distance(px,py,try_px,try_py)
-    print("bd",best_distance,"bmx",best_map_x,"bmy",best_map_y,"px",px,"py",py,"tx",try_px,"ty",try_py)
+    #print("bd",best_distance,"bmx",best_map_x,"bmy",best_map_y,"px",px,"py",py,"tx",try_px,"ty",try_py)
 
     if try_px < px:
         step_x=3.1415
@@ -252,28 +252,28 @@ def convert_pixel_to_map(px,py):
         step_y=3.1415
     else:
         step_y=-3.1415
-    print("sx",step_x,"sy",step_y)
+    #print("sx",step_x,"sy",step_y)
 
     # Now loop trying to improve the estimate.
     while trylimit > 0:
         trylimit-=1
         try_mx+=step_x
         try_my+=step_y
-        print("try_mx",try_mx,"try_my",try_my)
+        #print("try_mx",try_mx,"try_my",try_my)
 
         (try_px,try_py)=convert_map_to_pixel(try_mx,try_my)
-        print("try_px",try_px,"try_py",try_py)
+        #print("try_px",try_px,"try_py",try_py)
         if try_px < 0:
             return (-1,-1)
         if try_px == px and try_py == py:
             return (try_mx,try_my)
         d=calculate_distance(px,py,try_px,try_py)
-        print("d",d)
+        #print("d",d)
         if d < best_distance:
             best_distance=d
             best_map_x=try_mx
             best_map_y=try_my
-        print("sx",step_x,"sy",step_y,"bd",best_distance,"bmx",best_map_x,"bmy",best_map_y,"px",px,"py",py,"tx",try_px,"ty",try_py)
+        #print("sx",step_x,"sy",step_y,"bd",best_distance,"bmx",best_map_x,"bmy",best_map_y,"px",px,"py",py,"tx",try_px,"ty",try_py)
 
         if math.fabs(step_x) < limit and math.fabs(step_y) < limit:
             return (best_map_x,best_map_y)
@@ -310,7 +310,7 @@ def convert_pixel_to_map(px,py):
                 # change direction and reduce step size
                 step_y=converge*(-prev_step_y)
 
-        print("sx",step_x,"sy",step_y)
+        #print("sx",step_x,"sy",step_y)
 
     return (-1,-1)
 
@@ -567,7 +567,12 @@ def draw_inventory(frame):
     if not gbstate.draw_inventory_locations:
         return
     diam=10
-    for loc in gbdata.inventory_locations_20:
+    list=gbdata.inventory_locations_20
+    if gbstate.draw_inventory_size == 20:
+        list=gbdata.inventory_locations_20
+    elif gbstate.draw_inventory_size == 30:
+        list=gbdata.inventory_locations_30
+    for loc in list:
         cv2.circle(frame,loc,diam,color_black,line_width)
 
 def draw_current_tool(frame):
@@ -744,3 +749,102 @@ def draw_on(frame):
     draw_distance_time(frame)
 
     draw_pause_message(frame)
+
+def find_detect(target_list,d_mx,d_my,distance,count,score):
+    print("find_detect")
+    found_list=None
+    with gbstate.detection_lock:
+        if gbstate.digested is None:
+            print("no digested")
+            return found_list
+        localdigested=gbstate.digested
+    if gbstate.center_mx < 0:
+        print("no center")
+        return found_list
+
+    l=len(localdigested)
+    if l < 1:
+        print("empty localdigested")
+        return found_list
+
+    if score <= 0:
+        score_list=localdigested
+    else:
+        score_list=[]
+        for det in localdigested:
+            # det is [name,score,cx,cy,bx,by]
+            if det[1] >= score:
+                score_list.append(det)
+
+    l=len(score_list)
+    if l < 1:
+        print("empty score_list")
+        return found_list
+
+    if target_list is None:
+        targeted_list=score_list
+    else:
+        targeted_list=[]
+        for det in score_list:
+            # det is [name,score,cx,cy,bx,by]
+            if target_list.count(det[0]) > 0:
+                targeted_list.append(det)
+
+    l=len(targeted_list)
+    if l < 1:
+        print("empty targeted_list")
+        return found_list
+
+    if distance < 0:
+        distance_list=targeted_list
+    else:
+        distance_list=[]
+        for thing in targeted_list:
+            if gbdata.treeable_items.count(thing[0]) > 0:
+                # use bx by
+                sx=thing[4]
+                sy=thing[5]
+            else:
+                # use cx cy
+                sx=thing[2]
+                sy=thing[3]
+            (mx,my)=convert_pixel_to_map(sx,sy)
+            d=calculate_distance(mx,my,d_mx,d_my)
+            if d <= distance:
+                distance_list.append(thing)
+
+    print("distance_list",distance_list)
+    l=len(distance_list)
+    if l < 1:
+        print("empty distance_list")
+        return found_list
+
+    if count <= 0:
+        count_list=distance_list
+    else:
+        l=len(distance_list)
+        if l <= count:
+            count_list=distance_list
+        else:
+            sorted_scores=[]
+            for det in distance_list:
+                # det is [name,score,cx,cy,bx,by]
+                sorted_scores.append(det[1])
+            print("sorted_scores",sorted_scores)
+            sorted_scores.sort(reversed=True)
+            print("sorted_scores",sorted_scores)
+            score_limit=sorted_scores[count]
+            count_list=[]
+            for det in distance_list:
+                if det[1] >= score_limit:
+                    count_list.append(det)
+            del count_list[count:]
+
+    print("count_list",count_list)
+    l=len(count_list)
+    if l < 1:
+        print("empty count_list")
+        return found_list
+
+    found_list=count_list
+    return found_list

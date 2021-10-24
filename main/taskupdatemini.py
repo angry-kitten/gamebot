@@ -28,7 +28,7 @@ class TaskUpdateMini(taskobject.Task):
 
     def Poll(self):
         """check if any action can be taken"""
-        print(self.name,"Poll")
+        #print(self.name,"Poll")
         if not self.started:
             self.Start()
             return
@@ -47,7 +47,7 @@ class TaskUpdateMini(taskobject.Task):
             return
 
         if not gbscreen.is_minimap():
-            print("minimap not visible yet")
+            #print("minimap not visible yet")
             return
 
         print("minimap visible")
@@ -171,10 +171,10 @@ class TaskUpdateMini(taskobject.Task):
                 break
         # circle_right_y and circle_left_y are one pixel right and left
         # of the white circle.
-        print("circle_left_x=",circle_left_x)
-        print("circle_right_x=",circle_right_x)
+        #print("circle_left_x=",circle_left_x)
+        #print("circle_right_x=",circle_right_x)
         circle_center_x=(circle_left_x+circle_right_x)/2
-        print("circle_center_x=",circle_center_x)
+        #print("circle_center_x=",circle_center_x)
         return circle_center_x
 
     def locate_horizontal_center_line(self,startx,starty):
@@ -195,10 +195,10 @@ class TaskUpdateMini(taskobject.Task):
                 break
         # circle_top_y and circle_bottom_y are one pixel above and below
         # the white circle.
-        print("circle_top_y=",circle_top_y)
-        print("circle_bottom_y=",circle_bottom_y)
+        #print("circle_top_y=",circle_top_y)
+        #print("circle_bottom_y=",circle_bottom_y)
         circle_center_y=(circle_top_y+circle_bottom_y)/2
-        print("circle_center_y=",circle_center_y)
+        #print("circle_center_y=",circle_center_y)
         return circle_center_y
 
     def verify_pin_shape(self,x,y):
@@ -216,10 +216,10 @@ class TaskUpdateMini(taskobject.Task):
             rx=x+j
             if self.is_pin_orange(rx,y):
                 right_x=rx
-        print("left_x=",left_x)
-        print("right_x=",right_x)
+        #print("left_x=",left_x)
+        #print("right_x=",right_x)
         cx=(left_x+right_x)/2
-        print("cx=",cx)
+        #print("cx=",cx)
 
         # Scan pixels up and down to try to find vertical extent of the
         # orange part.
@@ -232,8 +232,8 @@ class TaskUpdateMini(taskobject.Task):
             dy=y+j
             if self.is_pin_orange(cx,dy):
                 down_y=dy
-        print("up_y=",up_y)
-        print("down_y=",down_y)
+        #print("up_y=",up_y)
+        #print("down_y=",down_y)
         yextent=(down_y-up_y)+1
         if yextent < (gbdata.minimap_pin_height-5):
             return False
@@ -259,57 +259,57 @@ class TaskUpdateMini(taskobject.Task):
                 break # it stopped being orange
         # circle_top_y and circle_bottom_y are one pixel higher and lower
         # than the white circle.
-        print("circle_top_y=",circle_top_y)
-        print("circle_bottom_y=",circle_bottom_y)
+        #print("circle_top_y=",circle_top_y)
+        #print("circle_bottom_y=",circle_bottom_y)
         circle_center_y=(circle_bottom_y+circle_top_y)/2
-        print("circle_center_y=",circle_center_y)
+        #print("circle_center_y=",circle_center_y)
         # circle_center_y is the center of the white circle
 
         # Now use the white circle to find the vertical center line again.
         # The assumption is that it will produce a better value than
         # the one above.
         circle_center_x=self.locate_vertical_center_line(cx,circle_center_y)
-        print("circle_center_x=",circle_center_x)
+        #print("circle_center_x=",circle_center_x)
 
         # Now use the white circle to find the horizontal center line again.
         # This is an attempt to converge on a good center value.
         circle_center_y=self.locate_horizontal_center_line(circle_center_x,circle_center_y)
-        print("circle_center_y=",circle_center_y)
+        #print("circle_center_y=",circle_center_y)
 
         # Now we use these new values to scan 5 times and average.
 
         sumx=0
         tmpx=self.locate_vertical_center_line(circle_center_x,circle_center_y-2)
-        print("tmpx=",tmpx)
+        #print("tmpx=",tmpx)
         sumx+=tmpx
         tmpx=self.locate_vertical_center_line(circle_center_x,circle_center_y-1)
-        print("tmpx=",tmpx)
+        #print("tmpx=",tmpx)
         sumx+=tmpx
         tmpx=self.locate_vertical_center_line(circle_center_x,circle_center_y)
-        print("tmpx=",tmpx)
+        #print("tmpx=",tmpx)
         sumx+=tmpx
         tmpx=self.locate_vertical_center_line(circle_center_x,circle_center_y+1)
-        print("tmpx=",tmpx)
+        #print("tmpx=",tmpx)
         sumx+=tmpx
         tmpx=self.locate_vertical_center_line(circle_center_x,circle_center_y+2)
-        print("tmpx=",tmpx)
+        #print("tmpx=",tmpx)
         sumx+=tmpx
 
         sumy=0
         tmpy=self.locate_horizontal_center_line(circle_center_x-2,circle_center_y)
-        print("tmpy=",tmpy)
+        #print("tmpy=",tmpy)
         sumy+=tmpy
         tmpy=self.locate_horizontal_center_line(circle_center_x-1,circle_center_y)
-        print("tmpy=",tmpy)
+        #print("tmpy=",tmpy)
         sumy+=tmpy
         tmpy=self.locate_horizontal_center_line(circle_center_x,circle_center_y)
-        print("tmpy=",tmpy)
+        #print("tmpy=",tmpy)
         sumy+=tmpy
         tmpy=self.locate_horizontal_center_line(circle_center_x+1,circle_center_y)
-        print("tmpy=",tmpy)
+        #print("tmpy=",tmpy)
         sumy+=tmpy
         tmpy=self.locate_horizontal_center_line(circle_center_x+2,circle_center_y)
-        print("tmpy=",tmpy)
+        #print("tmpy=",tmpy)
         sumy+=tmpy
 
         circle_center_x=sumx/5
@@ -321,18 +321,18 @@ class TaskUpdateMini(taskobject.Task):
         # Calculate a tip location.
         tip_x=circle_center_x
         tip_y=circle_center_y+gbdata.minimap_pin_center_to_tip
-        print("tip_x=",tip_x)
-        print("tip_y=",tip_y)
+        #print("tip_x=",tip_x)
+        #print("tip_y=",tip_y)
 
         # Calculate the map location from the tip location.
         map_x=(tip_x-gbdata.minimap_origin_x)/gbdata.minimap_square_spacing
         map_y=(tip_y-gbdata.minimap_origin_y)/gbdata.minimap_square_spacing
-        print("map_x=",map_x)
-        print("map_y=",map_y)
+        #print("map_x=",map_x)
+        #print("map_y=",map_y)
         map_x+=gbdata.minimap_pin_tune_mx
         map_y+=gbdata.minimap_pin_tune_my
-        print("map_x=",map_x)
-        print("map_y=",map_y)
+        #print("map_x=",map_x)
+        #print("map_y=",map_y)
 
         if not gbtrack.in_map_bounds(map_x,map_y):
             return False

@@ -24,7 +24,7 @@ class TaskPress(taskobject.TaskTimed):
 
     def Poll(self):
         """check if any action can be taken"""
-        print(self.name,"Poll")
+        #print(self.name,"Poll")
         super().Poll()
         if not self.started:
             return

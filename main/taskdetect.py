@@ -18,7 +18,7 @@ class TaskDetect(taskobject.Task):
 
     def Poll(self):
         """check if any action can be taken"""
-        print("TaskDetect Poll")
+        #print("TaskDetect Poll")
         if not self.started:
             self.Start()
             return

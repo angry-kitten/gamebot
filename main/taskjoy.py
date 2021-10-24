@@ -26,7 +26,7 @@ class TaskJoyLeft(taskobject.TaskTimed):
 
     def Poll(self):
         """check if any action can be taken"""
-        print("TaskJoyLeft Poll")
+        #print("TaskJoyLeft Poll")
         super().Poll()
         if not self.started:
             return

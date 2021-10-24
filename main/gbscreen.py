@@ -172,26 +172,26 @@ def is_minimap():
     return True
 
 def is_main_screen():
-    print("is_main_screen 1")
+    #print("is_main_screen 1")
     # check for phone
     if not color_match(62,26,243,247,223,5):
         return False
-    print("is_main_screen 2")
+    #print("is_main_screen 2")
     if not color_match(89,94,243,247,223,5):
         return False
-    print("is_main_screen 3")
+    #print("is_main_screen 3")
     # check for minimap
     if not is_minimap():
         return False
-    print("is_main_screen 4")
+    #print("is_main_screen 4")
     # check for date line
     #if not color_match(64,646,250,255,233,5):
     #    return False
     #print("is_main_screen 5")
     #if not color_match(274,647,247,255,230,5):
     #    return False
-    print("is_main_screen 6")
-    print("main screen")
+    #print("is_main_screen 6")
+    #print("main screen")
     return True
 
 def is_loading_screen():
@@ -272,8 +272,10 @@ def is_inventory_screen():
             return False
     if not has_label('PointerHand',0.30,-1,-1,-1):
         return False
-    if not has_label('BellBagStar',0.30,386,354,20):
-        return False
+    if not has_label('BellBagStar',0.30,gbdata.inventory_bag_10_x,gbdata.inventory_bag_10_y,20):
+        if not has_label('BellBagStar',0.30,gbdata.inventory_bag_20_x,gbdata.inventory_bag_20_y,20):
+            if not has_label('BellBagStar',0.30,gbdata.inventory_bag_30_x,gbdata.inventory_bag_30_y,20):
+                return False
     if not has_label('ButtonA',0.30,1130,692,5):
         return False
     if not has_label('ButtonB',0.15,1001,693,5):

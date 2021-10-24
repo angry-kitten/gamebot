@@ -40,8 +40,8 @@ class TaskDoSomething(taskobject.Task):
             return
 
         self.parent.Push(taskrandomwalk.TaskRandomWalk())
-        #self.parent.Push(taskweed.TaskWeed())
-        #self.parent.Push(taskweedsearch.TaskWeedSearch())
+        ##self.parent.Push(taskweed.TaskWeed())
+        ##self.parent.Push(taskweedsearch.TaskWeedSearch())
         self.parent.Push(taskpicksomethingsearch.TaskPickSomethingSearch())
         #self.parent.Push(taskholdtool.TaskHoldTool('None'))
         #self.parent.Push(taskholdtool.TaskHoldTool('Pole'))

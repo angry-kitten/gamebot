@@ -109,16 +109,16 @@ class TaskHoldTool(taskobject.Task):
     def find_tool(self):
         print("find_tool",self.toolname)
         if self.toolname == 'Axe':
-            self.find_tool_by_inventory_name(['InvAxe','InvGoldenAxe'])
+            self.find_tool_by_inventory_name(gbdata.cutting_axe_tools)
             return
         if self.toolname == 'StoneAxe':
-            self.find_tool_by_inventory_name(['InvStoneAxe'])
+            self.find_tool_by_inventory_name(gbdata.stone_axe_tools)
             return
         if self.toolname == 'Net':
-            self.find_tool_by_inventory_name(['InvNet','InvFlimsyNet','InvGoldenNet'])
+            self.find_tool_by_inventory_name(gbdata.net_tools)
             return
         if self.toolname == 'Shovel':
-            self.find_tool_by_inventory_name(['InvShovel','InvFlimsyShovel','InvGoldenShovel'])
+            self.find_tool_by_inventory_name(gbdata.shovel_tools)
             return
         if self.toolname == 'WateringCan':
             self.find_tool_by_inventory_name(['InvWateringCan'])
@@ -148,6 +148,15 @@ class TaskHoldTool(taskobject.Task):
         return best_slot
 
     def find_tool_and_pointer(self):
+        # Find the inventory size.
+        gbstate.draw_inventory_locations=True
+        gbstate.draw_inventory_size=20
+
+        if gbscreen.has_label('BellBagStar',0.50,gbdata.inventory_bag_20_x,gbdata.inventory_bag_20_y,5):
+            gbstate.draw_inventory_size=20
+        elif gbscreen.has_label('BellBagStar',0.50,gbdata.inventory_bag_30_x,gbdata.inventory_bag_30_y,5):
+            gbstate.draw_inventory_size=30
+
         # Find the tool
         self.find_tool()
         # If not on step 0 still, then tool was not found.
@@ -291,14 +300,24 @@ class TaskHoldTool(taskobject.Task):
         return
 
     def process_menu(self):
-        # no "clear favorite" in menu
-        if not gbscreen.has_label('PointerHand',0.30,792,347,10):
-            print("no menu pointer hand 1")
-            # "clear favorite" is present in menu
-            if not gbscreen.has_label('PointerHand',0.30,766,306,10):
-                print("no menu pointer hand 2")
-                if not gbscreen.has_label('PointerHand',0.30,792,307,10):
-                    print("no menu pointer hand 3")
+        if gbstate.draw_inventory_size == 20:
+            if not gbscreen.has_label('PointerHand',0.30,792,347,10):
+                print("no menu pointer hand 1")
+                # "clear favorite" is present in menu
+                if not gbscreen.has_label('PointerHand',0.30,766,306,10):
+                    print("no menu pointer hand 2")
+                    if not gbscreen.has_label('PointerHand',0.30,792,307,10):
+                        print("no menu pointer hand 3")
+                        # Assume there is a menu but the hand wasn't detected.
+                        self.parent.Push(taskobject.TaskTimed(1.0)) # wait for menu to pop down
+                        self.parent.Push(taskpress.TaskPress('B'))
+                        self.step=4 # close inventory
+                        return
+        elif gbstate.draw_inventory_size == 30:
+            if not gbscreen.has_label('PointerHand',0.30,gbdata.inventory_hand_30_x,gbdata.inventory_hand_30_y,10):
+                print("no menu pointer hand 4")
+                if not gbscreen.has_label('PointerHand',0.30,gbdata.inventory_hand_30_2_x,gbdata.inventory_hand_30_2_y,10):
+                    print("no menu pointer hand 5")
                     # Assume there is a menu but the hand wasn't detected.
                     self.parent.Push(taskobject.TaskTimed(1.0)) # wait for menu to pop down
                     self.parent.Push(taskpress.TaskPress('B'))

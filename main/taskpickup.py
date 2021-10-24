@@ -60,7 +60,7 @@ class TaskPickup(taskobject.Task):
         self.started=True
         # push tasks in reverse order
         self.parent.Push(taskdetect.TaskDetect())
-        self.parent.Push(taskobject.TaskTimed(0.5)) # wait for the animation
+        self.parent.Push(taskobject.TaskTimed(1.0)) # wait for the animation
         self.parent.Push(taskpress.TaskPress('Y')) # pick up the item
 
     def DebugRecursive(self,indent=0):

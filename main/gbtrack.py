@@ -649,7 +649,7 @@ def after_move_processing(start_mx, start_my, start_heading, target_mx, target_m
             feet_sx=player_match[4]
             feet_sy=player_match[5]
             feet_sx+=0
-            feet_sy+=15
+            feet_sy-=15
             use_feet=True
 
     if use_feet:
