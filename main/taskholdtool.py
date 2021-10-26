@@ -17,7 +17,7 @@ class TaskHoldTool(taskobject.Task):
     def __init__(self,toolname):
         super().__init__()
         self.name="TaskHoldTool"
-        print("new TaskHoldTool object")
+        print("new",self.name,"object")
         self.toolname=toolname
         self.step=0
         self.ratio=0.30
@@ -26,7 +26,7 @@ class TaskHoldTool(taskobject.Task):
 
     def Poll(self):
         """check if any action can be taken"""
-        print("TaskHoldTool Poll")
+        print(self.name,"Poll")
         if not self.started:
             self.Start()
             return
@@ -60,12 +60,12 @@ class TaskHoldTool(taskobject.Task):
         self.parent.Push(taskobject.TaskTimed(2.0)) # wait for the inventory to close
         self.parent.Push(taskpress.TaskPress('B'))
         gbstate.draw_inventory_locations=False
-        print("TaskHoldTool done")
+        print(self.name,"done")
         self.taskdone=True
 
     def Start(self):
         """Cause the task to begin doing whatever."""
-        print("TaskHoldTool Start",self.toolname)
+        print(self.name,"Start",self.toolname)
         if self.started:
             return # already started
         self.started=True
@@ -74,7 +74,7 @@ class TaskHoldTool(taskobject.Task):
         if self.toolname == 'None':
             self.parent.Push(taskobject.TaskTimed(2.0)) # wait for animation
             self.parent.Push(taskpress.TaskPress('hat_BOTTOM'))
-            print("TaskHoldTool done")
+            print(self.name,"done")
             self.taskdone=True
             gbstate.current_tool=None
             gbstate.player_heading=180 # down/south
@@ -87,7 +87,7 @@ class TaskHoldTool(taskobject.Task):
         gbstate.draw_inventory_locations=True
 
     def DebugRecursive(self,indent=0):
-        self.DebugPrint("TaskHoldTool",indent)
+        self.DebugPrint(self.name,indent)
 
     def NameRecursive(self):
         myname=self.name+" "+self.toolname
@@ -144,19 +144,16 @@ class TaskHoldTool(taskobject.Task):
         self.step=4 # close inventory
         return
 
-    def find_inventory_slot(self,x,y):
-        best_slot=gbscreen.find_slot_from_array(x,y,gbdata.inventory_locations_20)
-        return best_slot
-
     def find_tool_and_pointer(self):
         # Find the inventory size.
         gbstate.draw_inventory_locations=True
-        gbstate.draw_inventory_size=20
+        if gbstate.inventory_size < 20:
+            gbstate.inventory_size=20
 
         if gbscreen.has_label('BellBagStar',0.50,gbdata.inventory_bag_20_x,gbdata.inventory_bag_20_y,5):
-            gbstate.draw_inventory_size=20
+            gbstate.inventory_size=20
         elif gbscreen.has_label('BellBagStar',0.50,gbdata.inventory_bag_30_x,gbdata.inventory_bag_30_y,5):
-            gbstate.draw_inventory_size=30
+            gbstate.inventory_size=30
 
         # Find the tool
         self.find_tool()
@@ -165,7 +162,7 @@ class TaskHoldTool(taskobject.Task):
             return;
         # Find the slot number for the tool.
         # match is [name,score,cx,cy,bx,by]
-        slot=self.find_inventory_slot(self.match[2],self.match[3])
+        slot=gbscreen.find_inventory_slot(self.match[2],self.match[3])
         print("slot is",slot)
         if slot is None:
             print("slot not found")
@@ -190,7 +187,7 @@ class TaskHoldTool(taskobject.Task):
         # Estimate the inventory position the hand is pointing at.
         x-=gbdata.inventory_pointer_offset_x
         y-=gbdata.inventory_pointer_offset_y
-        hand_slot=self.find_inventory_slot(x,y)
+        hand_slot=gbscreen.find_inventory_slot(x,y)
         print("hand_slot is",hand_slot)
         if hand_slot is None:
             print("hand_slot not found")
@@ -301,7 +298,7 @@ class TaskHoldTool(taskobject.Task):
         return
 
     def process_menu(self):
-        if gbstate.draw_inventory_size == 20:
+        if gbstate.inventory_size == 20:
             if not gbscreen.has_label('PointerHand',0.30,792,347,10):
                 print("no menu pointer hand 1")
                 # "clear favorite" is present in menu
@@ -314,7 +311,7 @@ class TaskHoldTool(taskobject.Task):
                         self.parent.Push(taskpress.TaskPress('B'))
                         self.step=4 # close inventory
                         return
-        elif gbstate.draw_inventory_size == 30:
+        elif gbstate.inventory_size == 30:
             if not gbscreen.has_label('PointerHand',0.30,gbdata.inventory_hand_30_x,gbdata.inventory_hand_30_y,10):
                 print("no menu pointer hand 4")
                 if not gbscreen.has_label('PointerHand',0.30,gbdata.inventory_hand_30_2_x,gbdata.inventory_hand_30_2_y,10):

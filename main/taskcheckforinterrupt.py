@@ -14,6 +14,10 @@ import taskdetect
 import taskgotomain
 import taskupdatemini
 import gbscreen
+import taskchat
+import taskmuseum
+import tasksell
+import taskstore
 
 class TaskCheckForInterrupt(taskobject.Task):
     """TaskCheckForInterrupt Object"""
@@ -21,11 +25,11 @@ class TaskCheckForInterrupt(taskobject.Task):
     def __init__(self):
         super().__init__()
         self.name="TaskCheckForInterrupt"
-        print("new TaskCheckForInterrupt object")
+        print("new",self.name,"object")
 
     def Poll(self):
         """check if any action can be taken"""
-        print("TaskCheckForInterrupt Poll")
+        print(self.name,"Poll")
         if not self.started:
             self.Start()
             return
@@ -58,7 +62,24 @@ class TaskCheckForInterrupt(taskobject.Task):
 
         if gbscreen.is_main_screen():
             print("main screen")
-            print("TaskCheckForInterrupt done")
+
+            if gbscreen.is_resident_nearby():
+                self.parent.Push(taskchat.TaskChat())
+                return
+
+            if gbstate.inventory_slots_full == gbstate.inventory_size:
+                self.parent.Push(taskmuseum.TaskMuseum())
+                self.parent.Push(tasksell.TaskSell())
+                self.parent.Push(taskstore.TaskStore())
+                return
+
+            if gbstate.inventory_slots_full > 0 and gbstate.inventory_slots_free == 0:
+                self.parent.Push(taskmuseum.TaskMuseum())
+                self.parent.Push(tasksell.TaskSell())
+                self.parent.Push(taskstore.TaskStore())
+                return
+
+            print(self.name,"done")
             self.taskdone=True
             return
 
@@ -67,7 +88,7 @@ class TaskCheckForInterrupt(taskobject.Task):
 
     def Start(self):
         """Cause the task to begin doing whatever."""
-        print("TaskCheckForInterrupt Start")
+        print(self.name,"Start")
         if self.started:
             return # already started
         self.started=True
@@ -75,9 +96,8 @@ class TaskCheckForInterrupt(taskobject.Task):
         self.parent.Push(taskdetect.TaskDetect())
 
     def DebugRecursive(self,indent=0):
-        self.DebugPrint("TaskCheckForInterrupt",indent)
+        self.DebugPrint(self.name,indent)
 
     def NameRecursive(self):
         gbstate.task_stack_names.append(self.name)
-        myname="TaskCheckForInterrupt"
-        return myname
+        return self.name

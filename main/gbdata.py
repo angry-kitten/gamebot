@@ -45,7 +45,7 @@ minimap_pin_width=19
 minimap_pin_height=26
 #minimap_pin_center_to_tip=18
 minimap_pin_center_to_tip=19
-minimap_pin_tune_mx=-0.5
+minimap_pin_tune_mx=-0.25
 minimap_pin_tune_my=0.0
 
 # phonemap pin info
@@ -56,6 +56,8 @@ phonemap_pin_height=41
 #phonemap_pin_center_to_tip=23
 #phonemap_pin_center_to_tip=23.25
 phonemap_pin_center_to_tip=23.50
+phonemap_pin_tune_mx=0.25
+phonemap_pin_tune_my=0.25
 
 # Some of the busy text screens can have about 200 characters to detect.
 object_count=200
@@ -228,7 +230,7 @@ inventory_pointer_offset_x=40
 inventory_pointer_offset_y=39
 # Screen locations for the 30 item inventory.
 inventory_locations_30 = [
-    (340,158),
+    (341,157),
     (404,143),
     (473,131),
     (537,121),

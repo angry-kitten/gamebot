@@ -113,6 +113,12 @@ class TaskGather(taskobject.Task):
             return
         print("target thing mx",mx,"my",my)
 
+        # Assume the object in in the center of a map square. Adjust the
+        # location to show that.
+        mx=int(mx)+0.5
+        my=int(my)+0.5
+        print("target thing mx",mx,"my",my)
+
         self.target_mx=mx
         self.target_my=my
 

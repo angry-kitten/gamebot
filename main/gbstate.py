@@ -126,7 +126,12 @@ track_goto_target_my=-1
 
 # Draw inventory locations on the screen if True
 draw_inventory_locations=False
-draw_inventory_size=20
+inventory_size=20
+inventory_slots_full=0
+inventory_slots_free=0
+inventory_slots_unknown=0
+inventory=None
+inventory_name=None
 
 current_tool=None
 
@@ -159,3 +164,5 @@ data_distance_time_170=[]
 data_distance_time_180=[]
 
 pause_message=None
+
+screen_chars=[]

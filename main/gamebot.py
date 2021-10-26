@@ -38,6 +38,8 @@ import tasktest5
 import taskupdatephonemap
 import taskdetermineposition
 import tasktrackgoto
+import tasktakeinventory
+import gbscreenread
 
 
 sys.path.append(os.path.join(os.getcwd(),"..","..","gamebot-serial","pylib"))
@@ -104,7 +106,7 @@ def process_detections(d):
         bx=cx
         by=y2
         #print(cx,cy)
-        found=[name,score,cx,cy,bx,by]
+        found=[name,score,cx,cy,bx,by,x1,x2,y1,y2]
         #print("found=",found)
         digested.append(found)
     #print(digested)
@@ -249,7 +251,9 @@ def process_key(key):
         #gbstate.tasks.AddToThread(0,tasktest3.TaskTest3())
         #gbstate.tasks.AddToThread(0,taskupdatephonemap.TaskUpdatePhoneMap())
         #gbstate.tasks.AddToThread(0,tasktest4.TaskTest4())
-        gbstate.tasks.AddToThread(0,tasktest5.TaskTest5())
+        #gbstate.tasks.AddToThread(0,tasktest5.TaskTest5())
+        gbstate.tasks.AddToThread(0,tasktakeinventory.TaskTakeInventory())
+        # yyy
         return 0
     if ord(';') == key:
         print("test up")
@@ -427,6 +431,7 @@ def setup_run_cleanup():
     time.sleep(5)
 
     gbstate.tasks=taskobject.TaskThreads()
+    # yyy
     gbstate.tasks.AddToThread(0,taskdosomething.TaskDoSomething())
     #gbstate.tasks.AddToThread(0,tasksay.TaskSay("gamebot"))
     gbstate.tasks.AddToThread(0,tasktakestock.TaskTakeStock())

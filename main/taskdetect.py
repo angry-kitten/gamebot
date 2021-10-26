@@ -7,6 +7,7 @@
 import taskobject
 import gbdata
 import gbstate
+import gbscreenread
 
 class TaskDetect(taskobject.Task):
     """TaskDetect Object"""
@@ -27,6 +28,8 @@ class TaskDetect(taskobject.Task):
         with gbstate.detection_lock:
             if gbstate.detections is None:
                 return
+
+        gbscreenread.screen_read()
 
         gbstate.pause_message=None
         gbstate.move_since_detect=False

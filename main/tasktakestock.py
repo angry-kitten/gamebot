@@ -14,6 +14,7 @@ import taskdetect
 import taskgotomain
 import taskupdatemini
 import taskupdatephonemap
+import tasktakeinventory
 
 class TaskTakeStock(taskobject.Task):
     """TaskTakeStock Object"""
@@ -46,6 +47,7 @@ class TaskTakeStock(taskobject.Task):
         self.started=True
         # push tasks in reverse order
         #self.parent.Push(tasksay.TaskSay("gamebot"))
+        self.parent.Push(tasktakeinventory.TaskTakeInventory())
         self.parent.Push(taskupdatephonemap.TaskUpdatePhoneMap())
         self.parent.Push(taskupdatemini.TaskUpdateMini())
         self.parent.Push(taskgotomain.TaskGoToMain())

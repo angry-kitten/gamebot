@@ -146,7 +146,7 @@ def is_start_continue_screen():
         return False
     if not has_label('ButtonY',0.30,65,645,5):
         return False
-    if not has_label('SymbolBattery',0.30,1199,64,5):
+    if not has_label('SymbolBattery',0.20,1199,64,5):
         return False
     if not has_label('SymbolWiFi',0.20,1140,65,5):
         return False
@@ -306,6 +306,14 @@ def find_slot_from_array(x,y,slot_array):
                 best_slot=i
     return best_slot
 
+def find_inventory_slot(x,y):
+    best_slot=None
+    if gbstate.inventory_size == 20:
+        best_slot=find_slot_from_array(x,y,gbdata.inventory_locations_20)
+    elif gbstate.inventory_size == 30:
+        best_slot=find_slot_from_array(x,y,gbdata.inventory_locations_30)
+    return best_slot
+
 def is_phone_screen():
     with gbstate.detection_lock:
         if gbstate.digested is None:
@@ -364,4 +372,7 @@ def is_phone_map_screen():
     print("match_count",match_count)
     if match_count >= 5:
         return True
+    return False
+
+def is_resident_nearby():
     return False

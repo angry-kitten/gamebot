@@ -1,6 +1,6 @@
 #
 # Copyright 2021 by angry-kitten
-# Look at the current screen for weeds and pick them.
+# Go the the museum and evaluate fossils and donate items.
 #
 
 import taskobject
@@ -12,21 +12,14 @@ import tasksay
 import taskdetect
 import taskgotomain
 import taskupdatemini
-import taskrandomwalk
-import tasksimplegoto
 import gbscreen
-import gbdisplay
-import random
-import taskweed
-import tasksearchpattern
-import taskpicksomething
 
-class TaskPickSomethingSearch(taskobject.Task):
-    """TaskPickSomethingSearch Object"""
+class TaskMuseum(taskobject.Task):
+    """TaskMuseum Object"""
 
     def __init__(self):
         super().__init__()
-        self.name="TaskPickSomethingSearch"
+        self.name="TaskMuseum"
         print("new",self.name,"object")
 
     def Poll(self):
@@ -51,19 +44,9 @@ class TaskPickSomethingSearch(taskobject.Task):
             return # already started
         self.started=True
 
-        # push tasks in reverse order
-        self.parent.Push(tasksearchpattern.TaskSearchPattern(2,self.picksomething))
-
     def DebugRecursive(self,indent=0):
         self.DebugPrint(self.name,indent)
 
     def NameRecursive(self):
         gbstate.task_stack_names.append(self.name)
         return self.name
-
-    def picksomething(self):
-        print("picksomething")
-        #self.parent.Push(taskpicksomething.TaskPickSomething())
-        #self.parent.Push(taskpicksomething.TaskPickSomething())
-        #self.parent.Push(taskpicksomething.TaskPickSomething())
-        self.parent.Push(taskpicksomething.TaskPickSomething())

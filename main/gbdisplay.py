@@ -12,6 +12,7 @@ import taskdetect
 import math
 import gbtrack
 import time
+import gbscreenread
 
 color_white=(255,255,255) # BGR
 color_black=(0,0,0) # BGR
@@ -120,7 +121,7 @@ def minimap_position(frame):
         return
     w=gbdata.stdscreen_size[0]
     h=gbdata.stdscreen_size[1]
-    x=int((w*7)/16)
+    x=int((w*8)/16)
     y=h-2
     s=f'{gbstate.position_minimap_x:.4f} {gbstate.position_minimap_y:.4f}'
     cv2.putText(frame,s,(x,y),font,font_scale*0.75,color_white,font_line_width,line_type)
@@ -145,7 +146,7 @@ def phonemap_position(frame):
         return
     w=gbdata.stdscreen_size[0]
     h=gbdata.stdscreen_size[1]
-    x=int((w*4)/16)
+    x=int((w*5)/16)
     y=h-2
     s=f'{gbstate.position_phonemap_x:.4f} {gbstate.position_phonemap_y:.4f}'
     cv2.putText(frame,s,(x,y),font,font_scale*0.75,color_white,font_line_width,line_type)
@@ -155,7 +156,7 @@ def player_position(frame):
         return
     w=gbdata.stdscreen_size[0]
     h=gbdata.stdscreen_size[1]
-    x=int((w*1)/16)
+    x=int((w*2)/16)
     y=h-2
     s=f'{gbstate.player_mx:.4f} {gbstate.player_my:.4f}'
     cv2.putText(frame,s,(x,y),font,font_scale*0.75,color_white,font_line_width,line_type)
@@ -560,7 +561,7 @@ def draw_top_of_task_stack(frame):
     y=i
     l=len(gbstate.task_stack_names)
     for n in gbstate.task_stack_names:
-        cv2.putText(frame,n,(x,y),font,font_scale_50,color_white,font_line_width,line_type)
+        cv2.putText(frame,n,(x,y),font,font_scale_50,color_red,font_line_width,line_type)
         y+=i
 
 def draw_inventory(frame):
@@ -568,9 +569,9 @@ def draw_inventory(frame):
         return
     diam=10
     list=gbdata.inventory_locations_20
-    if gbstate.draw_inventory_size == 20:
+    if gbstate.inventory_size == 20:
         list=gbdata.inventory_locations_20
-    elif gbstate.draw_inventory_size == 30:
+    elif gbstate.inventory_size == 30:
         list=gbdata.inventory_locations_30
     for loc in list:
         cv2.circle(frame,loc,diam,color_black,line_width)
@@ -750,6 +751,8 @@ def draw_on(frame):
     draw_pause_message(frame)
 
     draw_top_of_task_stack(frame)
+
+    gbscreenread.draw_screen_read(frame)
 
 def find_detect(target_list,d_mx,d_my,distance,count,score):
     print("find_detect")

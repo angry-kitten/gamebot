@@ -400,6 +400,10 @@ class TaskUpdatePhoneMap(taskobject.Task):
         map_y=(tip_y-gbdata.phonemap_origin_y)/gbdata.phonemap_square_spacing
         #print("map_x=",map_x)
         #print("map_y=",map_y)
+        map_x+=gbdata.phonemap_pin_tune_mx
+        map_y+=gbdata.phonemap_pin_tune_my
+        #print("map_x=",map_x)
+        #print("map_y=",map_y)
 
         gbstate.position_phonemap_x=map_x
         gbstate.position_phonemap_y=map_y

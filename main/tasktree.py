@@ -68,34 +68,47 @@ class TaskTree(taskobject.Task):
                 self.step=1
                 return
 
-        if self.step == 1: # in front of the tree, ready to shake
+        if self.step == 1: # Verify the net
             print("tasktree step 1")
             print("current_tool",gbstate.current_tool)
-            #if gbdata.net_tools.count(gbstate.current_tool) < 1:
             if gbstate.current_tool != "Net":
                 print("not holding a net")
                 self.step=99 # done
                 # Put any tools away just in case.
                 self.parent.Push(taskholdtool.TaskHoldTool('None'))
                 return
+
+            # push tasks in reverse order
+            # Face up/north to face the tree.
+            self.parent.Push(tasktrackturn.TaskTrackTurn(0))
+
+            # Go to the tree facing north.
+            self.parent.Push(taskpathplangoto.TaskPathPlanGoTo(self.target_mx,self.target_my))
+            # Go to one square in front of the tree.
+            self.parent.Push(taskpathplangoto.TaskPathPlanGoTo(self.target_mx,self.target_my+1))
+            self.step=2
+            return
+
+        if self.step == 2: # in front of the tree, ready to shake
+            print("tasktree step 2")
             # Swing the net just in case a wasp nest was triggered.
             self.parent.Push(taskpress.TaskPress('A'))
             # Wait for a possible wasp nest animation.
             self.parent.Push(taskobject.TaskTimed(3.0))
             # Shake the tree with 'A' and maybe trigger a wasp nest.
             self.parent.Push(taskpress.TaskPress('A'))
-            self.step=2 # continue to selecting a stone axe
+            self.step=3 # continue to selecting a stone axe
             return
 
-        if self.step == 2: # select a stone axe
-            print("tasktree step 2")
+        if self.step == 3: # select a stone axe
+            print("tasktree step 3")
             self.parent.Push(taskholdtool.TaskHoldTool('StoneAxe'))
             self.parent.Push(taskholdtool.TaskHoldTool('None'))
-            self.step=3 # continue to verify the axe and then use it
+            self.step=4 # continue to verify the axe and then use it
             return
 
-        if self.step == 3: # verify the axe and then use it
-            print("tasktree step 3")
+        if self.step == 4: # verify the axe and then use it
+            print("tasktree step 4")
             print("current_tool",gbstate.current_tool)
             #if gbdata.stone_axe_tools.count(gbstate.current_tool) < 1:
             if gbstate.current_tool != "StoneAxe":
@@ -192,15 +205,15 @@ class TaskTree(taskobject.Task):
             return
         print("target thing mx",mx,"my",my)
 
+        # Assume the object in in the center of a map square. Adjust the
+        # location to show that.
+        mx=int(mx)+0.5
+        my=int(my)+0.5
+        print("target thing mx",mx,"my",my)
+
         self.target_mx=mx
         self.target_my=my
 
-        # push tasks in reverse order
-        self.parent.Push(taskpause.TaskPause('process tree',2.0))
-        # Go to the tree facing north.
-        self.parent.Push(taskpathplangoto.TaskPathPlanGoTo(mx,my))
-        # Go to one square in front of the tree.
-        self.parent.Push(taskpathplangoto.TaskPathPlanGoTo(mx,my+1))
         # Start holding the net now because it causes the player character to
         # face down/south.
         self.parent.Push(taskholdtool.TaskHoldTool('Net'))

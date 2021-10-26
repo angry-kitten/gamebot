@@ -106,21 +106,21 @@ class TaskSimpleGoTo(taskobject.Task):
 
             if distance > 0.01:
                 if distance < 0.5:
-                    distance2=distance*0.25
+                    distance2=distance*0.70
                     ratio=distance2/distance
                     dx*=ratio
                     dy*=ratio
                     distance=distance2
                     print("distance",distance)
                 elif distance < 1:
-                    distance2=distance*0.5
+                    distance2=distance*0.80
                     ratio=distance2/distance
                     dx*=ratio
                     dy*=ratio
                     distance=distance2
                     print("distance",distance)
                 elif distance < 2:
-                    distance2=distance*0.75
+                    distance2=distance*0.90
                     ratio=distance2/distance
                     dx*=ratio
                     dy*=ratio
