@@ -4,6 +4,7 @@
 #
 
 import time
+import gbdata
 
 keydown_time_ms=250 # milliseconds
 debug_every=10 # seconds
@@ -127,6 +128,7 @@ track_goto_target_my=-1
 # Draw inventory locations on the screen if True
 draw_inventory_locations=False
 inventory_size=20
+inventory_locations=gbdata.inventory_locations_20
 inventory_slots_full=0
 inventory_slots_free=0
 inventory_slots_unknown=0
@@ -166,3 +168,5 @@ data_distance_time_180=[]
 pause_message=None
 
 screen_chars=[]
+
+gray_circle_list=[]

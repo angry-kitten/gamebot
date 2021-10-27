@@ -252,7 +252,8 @@ def process_key(key):
         #gbstate.tasks.AddToThread(0,taskupdatephonemap.TaskUpdatePhoneMap())
         #gbstate.tasks.AddToThread(0,tasktest4.TaskTest4())
         #gbstate.tasks.AddToThread(0,tasktest5.TaskTest5())
-        gbstate.tasks.AddToThread(0,tasktakeinventory.TaskTakeInventory())
+        #gbstate.tasks.AddToThread(0,tasktakeinventory.TaskTakeInventory())
+        gbstate.tasks.AddToThread(0,taskupdatephonemap.TaskUpdatePhoneMap())
         # yyy
         return 0
     if ord(';') == key:
@@ -432,7 +433,7 @@ def setup_run_cleanup():
 
     gbstate.tasks=taskobject.TaskThreads()
     # yyy
-    gbstate.tasks.AddToThread(0,taskdosomething.TaskDoSomething())
+    #gbstate.tasks.AddToThread(0,taskdosomething.TaskDoSomething())
     #gbstate.tasks.AddToThread(0,tasksay.TaskSay("gamebot"))
     gbstate.tasks.AddToThread(0,tasktakestock.TaskTakeStock())
     gbstate.tasks.AddToThread(0,taskdetect.TaskDetect())

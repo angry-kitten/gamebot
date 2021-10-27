@@ -149,7 +149,8 @@ def is_start_continue_screen():
     if not has_label('SymbolBattery',0.20,1199,64,5):
         return False
     if not has_label('SymbolWiFi',0.20,1140,65,5):
-        return False
+        if not has_label('SymbolWiFi',0.20,1077,66,5):
+            return False
     return True
 
 def is_minimap():
@@ -219,12 +220,13 @@ def is_selection_screen_no_ACNH():
     with gbstate.detection_lock:
         if gbstate.digested is None:
             return False
-    if not has_label('SOnlineLogo',0.30,314,546,5):
+    if not has_label('SOnlineLogo',0.30,316,546,5):
         return False
-    if not has_label('SymbolBattery',0.30,1199,64,5):
+    if not has_label('SymbolBattery',0.30,1199,65,5):
         return False
-    if not has_label('SymbolWiFi',0.20,1139,64,5):
-        return False
+    if not has_label('SymbolWiFi',0.20,1140,65,5):
+        if not has_label('SymbolWiFi',0.20,1077,66,5):
+            return False
     return True
 
 def is_selection_screen():
@@ -233,7 +235,7 @@ def is_selection_screen():
             return False
     if not is_selection_screen_no_ACNH():
         return False
-    if not has_label('ACNHTile',0.30,234,318,5):
+    if not has_label('ACNHTile',0.30,236,323,5):
         return False
     return True
 
@@ -242,6 +244,11 @@ def is_user_selection_screen():
         if gbstate.digested is None:
             return False
     if not has_label('ButtonPlus',0.30,780,517,5):
+        if not has_label('ButtonPlus',0.30,855,517,5):
+            return False
+    if not has_label('ButtonB',0.30,1029,684,5):
+        return False
+    if not has_label('ButtonA',0.30,1159,684,5):
         return False
     return True
 
@@ -251,7 +258,7 @@ def is_main_logo_screen():
             return False
     if not has_label('ACNHMainLogo',0.30,625,200,20):
         return False
-    if not has_label('ButtonA',0.30,693,635,5):
+    if not has_label('ButtonA',0.15,693,635,5):
         return False
     return True
 
@@ -307,11 +314,7 @@ def find_slot_from_array(x,y,slot_array):
     return best_slot
 
 def find_inventory_slot(x,y):
-    best_slot=None
-    if gbstate.inventory_size == 20:
-        best_slot=find_slot_from_array(x,y,gbdata.inventory_locations_20)
-    elif gbstate.inventory_size == 30:
-        best_slot=find_slot_from_array(x,y,gbdata.inventory_locations_30)
+    best_slot=find_slot_from_array(x,y,gbstate.inventory_locations)
     return best_slot
 
 def is_phone_screen():
@@ -376,3 +379,55 @@ def is_phone_map_screen():
 
 def is_resident_nearby():
     return False
+
+def locate_vertical_transition(color,sx,sy1,sy2):
+
+    # Get the initial location to determine if we are looking for the
+    # color to go away or to appear.
+
+    if color_match_array(sx,sy1,color,5):
+        # We are looking for the color to go away.
+        for sy in range(sy1+1,sy2+1):
+            if not color_match_array(sx,sy,color,5):
+                return sy-1 # return the last location where the color was found
+    else:
+        # We are looking for the color to appear.
+        for sy in range(sy1+1,sy2+1):
+            if color_match_array(sx,sy,color,5):
+                return sy # return the first location where the color was found
+    return -1
+
+def locate_horizontal_extent(color,sy,sx1,sx2):
+    extent_sx=sx1
+    if sx1 < sx2:
+        # search right
+        start_sx=sx1
+        end_sx=sx2+1
+        step=1
+    else:
+        # search left
+        start_sx=sx1
+        end_sx=sx2-1
+        step=-1
+    for sx in range(start_sx,end_sx,step):
+        if color_match_array(sx,sy,color,5):
+            extent_sx=sx
+    return extent_sx
+
+def locate_vertical_extent(color,sx,sy1,sy2):
+    extent_sy=sy1
+    if sy1 < sy2:
+        # search down
+        start_sy=sy1
+        end_sy=sy2+1
+        step=1
+    else:
+        # search up
+        start_sy=sy1
+        end_sy=sy2-1
+        step=-1
+    #print(start_sy,end_sy,step)
+    for sy in range(start_sy,end_sy,step):
+        if color_match_array(sx,sy,color,5):
+            extent_sy=sy
+    return extent_sy

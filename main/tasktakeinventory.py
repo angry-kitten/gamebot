@@ -5,10 +5,10 @@
 
 import taskobject
 import gbdata
+import gbstate
 import taskpress
 import taskdetect
 import gbscreen
-import gbstate
 import gbdisplay
 
 class TaskTakeInventory(taskobject.Task):
@@ -73,13 +73,8 @@ class TaskTakeInventory(taskobject.Task):
     def determine_slots(self):
         # Find the inventory size.
         gbstate.draw_inventory_locations=True
-        if gbstate.inventory_size < 20:
-            gbstate.inventory_size=20
 
-        if gbscreen.has_label('BellBagStar',0.50,gbdata.inventory_bag_20_x,gbdata.inventory_bag_20_y,5):
-            gbstate.inventory_size=20
-        elif gbscreen.has_label('BellBagStar',0.50,gbdata.inventory_bag_30_x,gbdata.inventory_bag_30_y,5):
-            gbstate.inventory_size=30
+        determine_slots_bubble()
 
         # Get the pointer hand out of the way by moving it to the clothing
         # "slot".
@@ -87,15 +82,15 @@ class TaskTakeInventory(taskobject.Task):
         # Try to move the pointer hand right and down to snag it in the clothing
         # "slot".
         for i in range(9):
-            self.parent.Push(taskobject.TaskTimed(0.3)) # wait for animation
+            #self.parent.Push(taskobject.TaskTimed(0.3)) # wait for animation
             self.parent.Push(taskpress.TaskPress('hat_BOTTOM'))
-            self.parent.Push(taskobject.TaskTimed(0.3)) # wait for animation
+            #self.parent.Push(taskobject.TaskTimed(0.3)) # wait for animation
             self.parent.Push(taskpress.TaskPress('hat_RIGHT'))
 
-        # Try to move the pointer hand down four to take into account the
+        # Try to move the pointer hand down to take into account the
         # largest inventory size, 40.
-        for i in range(6):
-            self.parent.Push(taskobject.TaskTimed(0.3)) # wait for animation
+        for i in range(4):
+            #self.parent.Push(taskobject.TaskTimed(0.3)) # wait for animation
             self.parent.Push(taskpress.TaskPress('hat_BOTTOM'))
 
         self.step=1 # pointer hand should be out of the way
@@ -107,10 +102,7 @@ class TaskTakeInventory(taskobject.Task):
                 self.step=99
             localdigested=gbstate.digested
 
-        if gbstate.inventory_size == 20:
-            slot_array=gbdata.inventory_locations_20
-        elif gbstate.inventory_size == 30:
-            slot_array=gbdata.inventory_locations_30
+        slot_array=gbstate.inventory_locations
 
         gbstate.inventory_name=['' for x in range(gbstate.inventory_size)]
         inventory_det=[None for x in range(gbstate.inventory_size)]
@@ -149,3 +141,37 @@ class TaskTakeInventory(taskobject.Task):
         print("inventory_slots_full",gbstate.inventory_slots_full)
         print("inventory_slots_unknown",gbstate.inventory_slots_unknown)
         print("inventory_slots_free",gbstate.inventory_slots_free)
+
+def determine_slots_bubble():
+    # Find the inventory size.
+    if gbstate.inventory_size < 10:
+        gbstate.inventory_size=20
+        gbstate.inventory_locations=gbdata.inventory_locations_20
+
+    ## It turns out the BellBagStar location is nearly the same for 30 and 40 :(.
+    ## if gbscreen.has_label('BellBagStar',0.50,gbdata.inventory_bag_20_x,gbdata.inventory_bag_20_y,5):
+    ##     gbstate.inventory_size=20
+    ##     gbstate.inventory_locations=gbdata.inventory_locations_20
+    ## elif gbscreen.has_label('BellBagStar',0.50,gbdata.inventory_bag_30_x,gbdata.inventory_bag_30_y,5):
+    ##     gbstate.inventory_size=30
+    ##     gbstate.inventory_locations=gbdata.inventory_locations_30
+    ## elif gbscreen.has_label('BellBagStar',0.50,gbdata.inventory_bag_40_x,gbdata.inventory_bag_40_y,5):
+    ##     gbstate.inventory_size=40
+    ##     gbstate.inventory_locations=gbdata.inventory_locations_40
+
+    w=gbdata.stdscreen_size[0]
+    sx=int(round(w/2))
+
+    top_sy=gbscreen.locate_vertical_transition(gbdata.inventory_bubble_color,sx,gbdata.inventory_bubble_40_top_sy-gbdata.inventory_bubble_range,gbdata.inventory_bubble_20_top_sy+gbdata.inventory_bubble_range)
+    bottom_sy=gbscreen.locate_vertical_transition(gbdata.inventory_bubble_color,sx,gbdata.inventory_bubble_20_bottom_sy-gbdata.inventory_bubble_range,gbdata.inventory_bubble_40_bottom_sy+gbdata.inventory_bubble_range)
+
+    if gbscreen.match_within(top_sy,gbdata.inventory_bubble_20_top_sy,gbdata.inventory_bubble_range) and gbscreen.match_within(bottom_sy,gbdata.inventory_bubble_20_bottom_sy,gbdata.inventory_bubble_range):
+         gbstate.inventory_size=20
+         gbstate.inventory_locations=gbdata.inventory_locations_20
+    elif gbscreen.match_within(top_sy,gbdata.inventory_bubble_30_top_sy,gbdata.inventory_bubble_range) and gbscreen.match_within(bottom_sy,gbdata.inventory_bubble_30_bottom_sy,gbdata.inventory_bubble_range):
+         gbstate.inventory_size=30
+         gbstate.inventory_locations=gbdata.inventory_locations_30
+    elif gbscreen.match_within(top_sy,gbdata.inventory_bubble_40_top_sy,gbdata.inventory_bubble_range) and gbscreen.match_within(bottom_sy,gbdata.inventory_bubble_40_bottom_sy,gbdata.inventory_bubble_range):
+         gbstate.inventory_size=40
+         gbstate.inventory_locations=gbdata.inventory_locations_40
+    return

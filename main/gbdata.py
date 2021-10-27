@@ -59,6 +59,11 @@ phonemap_pin_center_to_tip=23.50
 phonemap_pin_tune_mx=0.25
 phonemap_pin_tune_my=0.25
 
+phonemap_gray_search_x=6
+phonemap_gray_search_y=6
+phonemap_circle_gray=[82,77,65] # rgb
+phonemap_circle_diameter=38
+
 # Some of the busy text screens can have about 200 characters to detect.
 object_count=200
 
@@ -196,11 +201,20 @@ for key in maptypes:
 distance_to_time=0.26976168054446614 # seconds per map square distance
 angle_to_time=0.001950835441527321 # seconds per degree
 
-# This is the extent of the inventory area in screen pixels.
-inventory_sy1=75
-inventory_sy2=450
-inventory_sx1=300
-inventory_sx2=980
+# This is the extent of the inventory area in screen pixels. This
+# is big enough for 40.
+inventory_sy1=58
+inventory_sy2=473
+inventory_sx1=276
+inventory_sx2=1083
+inventory_bubble_range=4 # + or - this amount
+inventory_bubble_20_top_sy=93
+inventory_bubble_20_bottom_sy=316
+inventory_bubble_30_top_sy=52
+inventory_bubble_30_bottom_sy=325
+inventory_bubble_40_top_sy=38
+inventory_bubble_40_bottom_sy=361
+inventory_bubble_color=[253,249,228] # rgb
 
 # Screen locations for the 20 item inventory. The
 # dot ones are the center of the InvEmpty dots.
@@ -240,8 +254,8 @@ inventory_locations_30 = [
     (805,130),
     (871,141),
     (937,158),
-    (341,225),
-    (409,208),
+    (341,227), # 10
+    (407,212),
     (474,202),
     (540,193),
     (605,192),
@@ -250,16 +264,60 @@ inventory_locations_30 = [
     (806,200),
     (872,213),
     (939,230),
-    (342,300),
-    (408,284),
+    (342,300), # 20
+    (408,283),
     (474,271),
-    (541,265),
-    (607,260),
-    (673,260),
-    (740,264),
-    (806,271),
+    (540,264),
+    (607,259),
+    (673,259),
+    (739,264),
+    (806,270),
     (872,285),
-    (938,300)
+    (938,299)
+]
+
+# Screen locations for the 40 item inventory.
+inventory_locations_40 = [
+    (344,148),
+    (411,136),
+    (475,118),
+    (541,115),
+    (607,110),
+    (673,110),
+    (738,115),
+    (804,118),
+    (869,136),
+    (935,148),
+    (344,211), # 10
+    (411,193),
+    (475,183),
+    (541,178),
+    (607,172),
+    (673,172),
+    (738,178),
+    (804,183),
+    (869,193),
+    (935,211),
+    (344,276), # 20
+    (411,256),
+    (475,245),
+    (541,238),
+    (607,234),
+    (673,234),
+    (738,238),
+    (804,245),
+    (869,256),
+    (935,276),
+    (344,338), # 30
+    (411,320),
+    (475,308),
+    (541,301),
+    (607,297),
+    (673,297),
+    (738,301),
+    (804,309),
+    (869,320),
+    (935,338)
 ]
 
 inventory_bag_10_x=386
@@ -268,6 +326,8 @@ inventory_bag_20_x=386
 inventory_bag_20_y=360
 inventory_bag_30_x=386
 inventory_bag_30_y=374
+inventory_bag_40_x=387
+inventory_bag_40_y=378
 
 inventory_hand_30_x=786
 inventory_hand_30_y=324

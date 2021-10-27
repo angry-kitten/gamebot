@@ -45,7 +45,7 @@ class TaskUpdatePhoneMap(taskobject.Task):
         if self.step == 1:
             if not gbscreen.is_phone_map_screen():
                 print("not on phone map screen")
-                self.step=4
+                self.step=99
                 self.parent.Push(taskpress.TaskPress('B',1.0))
                 self.parent.Push(taskpress.TaskPress('B',1.0))
                 self.parent.Push(taskpress.TaskPress('B',1.0))
@@ -53,6 +53,7 @@ class TaskUpdatePhoneMap(taskobject.Task):
             print("yes on phone map screen")
             self.gather_phonemap()
             self.position_from_phonemap()
+            self.locate_buildings()
             self.step=2
             return
 
@@ -65,7 +66,7 @@ class TaskUpdatePhoneMap(taskobject.Task):
         if self.step == 3:
             # close phone
             self.parent.Push(taskpress.TaskPress('B',1.0))
-            self.step=4
+            self.step=99
             return
 
         print(self.name,"done")
@@ -82,18 +83,20 @@ class TaskUpdatePhoneMap(taskobject.Task):
 
         # Move the pointer hand to the lower right so we know
         # where it is.
-        #self.parent.Push(taskpress.TaskPress('hat_BOTTOM',1.0))
-        #self.parent.Push(taskpress.TaskPress('hat_BOTTOM',1.0))
-        #self.parent.Push(taskpress.TaskPress('hat_BOTTOM',1.0))
-        #self.parent.Push(taskpress.TaskPress('hat_RIGHT',1.0))
-        #self.parent.Push(taskpress.TaskPress('hat_RIGHT',1.0))
-        #self.parent.Push(taskpress.TaskPress('hat_RIGHT',1.0))
-        self.parent.Push(taskpress.TaskPress('hat_BOTTOM'))
         self.parent.Push(taskpress.TaskPress('hat_BOTTOM'))
         self.parent.Push(taskpress.TaskPress('hat_BOTTOM'))
         self.parent.Push(taskpress.TaskPress('hat_RIGHT'))
         self.parent.Push(taskpress.TaskPress('hat_RIGHT'))
-        self.parent.Push(taskpress.TaskPress('hat_RIGHT'))
+
+        # Move to the upper left.
+        self.parent.Push(taskpress.TaskPress('hat_LEFT'))
+        self.parent.Push(taskpress.TaskPress('hat_LEFT'))
+        self.parent.Push(taskpress.TaskPress('hat_LEFT'))
+        self.parent.Push(taskpress.TaskPress('hat_LEFT'))
+        self.parent.Push(taskpress.TaskPress('hat_LEFT'))
+        self.parent.Push(taskpress.TaskPress('hat_TOP'))
+        self.parent.Push(taskpress.TaskPress('hat_TOP'))
+        self.parent.Push(taskpress.TaskPress('hat_TOP'))
 
         # Wait for the phone screen to pop up.
         self.parent.Push(taskobject.TaskTimed(1.0))
@@ -217,6 +220,13 @@ class TaskUpdatePhoneMap(taskobject.Task):
         if gbscreen.color_match_array(pixel_x,pixel_y,gbdata.pin_orange1,5):
             return True
         if gbscreen.color_match_array(pixel_x,pixel_y,gbdata.pin_orange2,5):
+            return True
+        return False
+
+    def is_circle_gray(self,pixel_x,pixel_y):
+        pixel_x=int(round(pixel_x))
+        pixel_y=int(round(pixel_y))
+        if gbscreen.color_match_array(pixel_x,pixel_y,gbdata.phonemap_circle_gray,5):
             return True
         return False
 
@@ -416,7 +426,6 @@ class TaskUpdatePhoneMap(taskobject.Task):
         print("position_from_phonemap")
         gbstate.position_phonemap_x=-1
         gbstate.position_phonemap_y=-1
-        print("l4")
         """Find the orange pin."""
         search_w=gbdata.phonemap_right-gbdata.phonemap_left
         search_h=gbdata.phonemap_bottom-gbdata.phonemap_top_pin
@@ -428,5 +437,67 @@ class TaskUpdatePhoneMap(taskobject.Task):
                     print("found phonemap pin at",pixel_x,pixel_y)
                     if self.verify_pin_shape(pixel_x,pixel_y):
                         return
-        print("l5")
+        return
+
+    def locate_buildings(self):
+        # find gray circles
+        search_w=gbdata.phonemap_right-gbdata.phonemap_left
+        search_h=gbdata.phonemap_bottom-gbdata.phonemap_top_pin
+        for local_y in range(0,search_h,gbdata.phonemap_gray_search_y):
+            pixel_y=gbdata.phonemap_top+local_y
+            for local_x in range(0,search_w,gbdata.phonemap_gray_search_x):
+                pixel_x=gbdata.phonemap_left+local_x
+                if self.is_circle_gray(pixel_x,pixel_y):
+                    print("found possible circle at",pixel_x,pixel_y)
+                    self.verify_circle(pixel_x,pixel_y)
+        return
+
+    def verify_circle(self,start_sx,start_sy):
+        print("verify_circle",start_sx,start_sy)
+        max_diameter=gbdata.phonemap_circle_diameter+4
+        color=gbdata.phonemap_circle_gray
+        # Step left and right looking for the edges.
+        left_sx=gbscreen.locate_horizontal_extent(color,start_sy,start_sx,start_sx-max_diameter)
+        right_sx=gbscreen.locate_horizontal_extent(color,start_sy,start_sx,start_sx+max_diameter)
+        print("left_sx",left_sx)
+        print("right_sx",right_sx)
+
+        w=right_sx-left_sx
+        print("w",w)
+        if w > (gbdata.phonemap_circle_diameter+4):
+            # overlapping circles
+            return
+
+        center_sx=int(round((left_sx+right_sx)/2))
+        print("center_sx",center_sx)
+
+        # Step up and down looking for the edges.
+        top_sy=gbscreen.locate_vertical_extent(color,start_sx,start_sy,start_sy-max_diameter)
+        bottom_sy=gbscreen.locate_vertical_extent(color,start_sx,start_sy,start_sy+max_diameter)
+
+        print("top_sy",top_sy)
+        print("bottom_sy",bottom_sy)
+
+        h=bottom_sy-top_sy
+        print("h",h)
+        if not gbscreen.match_within(h,gbdata.phonemap_circle_diameter,4):
+            print("these are not the droids we are looking for")
+            return
+
+        center_sy=int(round((top_sy+bottom_sy)/2))
+        print("center_sy",center_sy)
+
+        self.add_gray_circle(center_sx,center_sy)
+
+        return
+
+    def add_gray_circle(self,center_sx,center_sy):
+        # first see if it is already there
+        for c in gbstate.gray_circle_list:
+            if gbscreen.match_within(center_sx,c[0],3) and gbscreen.match_within(center_sy,c[1],3):
+                # already there
+                return
+        gbstate.gray_circle_list.append([center_sx,center_sy])
+        l=len(gbstate.gray_circle_list)
+        print("l",l)
         return

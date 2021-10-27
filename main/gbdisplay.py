@@ -568,11 +568,7 @@ def draw_inventory(frame):
     if not gbstate.draw_inventory_locations:
         return
     diam=10
-    list=gbdata.inventory_locations_20
-    if gbstate.inventory_size == 20:
-        list=gbdata.inventory_locations_20
-    elif gbstate.inventory_size == 30:
-        list=gbdata.inventory_locations_30
+    list=gbstate.inventory_locations
     for loc in list:
         cv2.circle(frame,loc,diam,color_black,line_width)
 
@@ -754,6 +750,8 @@ def draw_on(frame):
 
     gbscreenread.draw_screen_read(frame)
 
+    draw_buildings(frame)
+
 def find_detect(target_list,d_mx,d_my,distance,count,score):
     print("find_detect")
     found_list=None
@@ -852,3 +850,9 @@ def find_detect(target_list,d_mx,d_my,distance,count,score):
 
     found_list=count_list
     return found_list
+
+def draw_buildings(frame):
+    radius=int(round(gbdata.phonemap_circle_diameter/2))
+    for c in gbstate.gray_circle_list:
+        cv2.circle(frame,(c[0],c[1]),radius,color_red,line_width)
+    return

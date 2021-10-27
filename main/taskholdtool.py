@@ -5,11 +5,12 @@
 
 import taskobject
 import gbdata
+import gbstate
 import taskpress
 import taskdetect
 import gbscreen
-import gbstate
 import gbdisplay
+import tasktakeinventory
 
 class TaskHoldTool(taskobject.Task):
     """TaskHoldTool Object"""
@@ -147,13 +148,8 @@ class TaskHoldTool(taskobject.Task):
     def find_tool_and_pointer(self):
         # Find the inventory size.
         gbstate.draw_inventory_locations=True
-        if gbstate.inventory_size < 20:
-            gbstate.inventory_size=20
 
-        if gbscreen.has_label('BellBagStar',0.50,gbdata.inventory_bag_20_x,gbdata.inventory_bag_20_y,5):
-            gbstate.inventory_size=20
-        elif gbscreen.has_label('BellBagStar',0.50,gbdata.inventory_bag_30_x,gbdata.inventory_bag_30_y,5):
-            gbstate.inventory_size=30
+        tasktakeinventory.determine_slots_bubble()
 
         # Find the tool
         self.find_tool()

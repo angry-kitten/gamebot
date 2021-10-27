@@ -26,16 +26,33 @@ def screen_read():
     first_pass=[]
     for det in localdigested:
         print(det) # det is [name,score,cx,cy,bx,by,x1,x2,y1,y2]
-        name=det[0]
-        prefix=name[0:4] # The first 4 letters of name
-        if prefix == 'Char':
-            body=name[4:] # Everything after the first 4 characters
-            print(name,prefix,body)
-            l=len(body)
-            if l == 1:
-                # It's one of the basic characters.
-                # entry is [name,score,cx,cy,x1,x2,y1,y2]
-                entry=[body,det[1],det[2],det[3],det[6],det[7],det[8],det[9]]
+        # Set a minimum score of 10%
+        if det[1] >= 0.1:
+            name=det[0]
+            prefix=name[0:4] # The first 4 letters of name
+            if prefix == 'Char':
+                body=name[4:] # Everything after the first 4 characters
+                print(name,prefix,body)
+                l=len(body)
+                body2=body
+                if l == 1:
+                    # It's one of the basic characters.
+                    # entry is [name,score,cx,cy,x1,x2,y1,y2]
+                    body2=body
+                elif body == 'Dot':
+                    body2='.'
+                elif body == 'PercentSign':
+                    body2='%'
+                elif body == 'Colon':
+                    body2=':'
+                elif body == 'Comma':
+                    body2=','
+                elif body == 'Exclamation':
+                    body2='!'
+                elif body == 'Apostrophe':
+                    body2="'"
+
+                entry=[body2,det[1],det[2],det[3],det[6],det[7],det[8],det[9]]
                 first_pass.append(entry)
 
     # Now go through the list and clear out overlaps.
@@ -89,7 +106,7 @@ def check_no_overlap(entry,new_list):
 
 def draw_screen_read(frame):
     """Draw the detected characters on the main window."""
-    print("draw_screen_read")
+    #print("draw_screen_read")
 
     for entry in gbstate.screen_chars:
         # entry is [name,score,cx,cy,x1,x2,y1,y2]
