@@ -5,6 +5,7 @@
 #
 
 import time
+import numpy
 import taskobject
 import gbdata
 import gbstate
@@ -15,6 +16,7 @@ import taskdetect
 import taskgotomain
 import gbscreen
 import gbtrack
+import gbdisplay
 
 class TaskUpdatePhoneMap(taskobject.Task):
     """TaskUpdatePhoneMap Object"""
@@ -24,6 +26,7 @@ class TaskUpdatePhoneMap(taskobject.Task):
         self.name="TaskUpdatePhoneMap"
         print("new",self.name,"object")
         self.step=0 # pop up phone
+        self.icons=[]
 
     def Poll(self):
         """check if any action can be taken"""
@@ -227,6 +230,13 @@ class TaskUpdatePhoneMap(taskobject.Task):
         pixel_x=int(round(pixel_x))
         pixel_y=int(round(pixel_y))
         if gbscreen.color_match_array(pixel_x,pixel_y,gbdata.phonemap_circle_gray,5):
+            return True
+        return False
+
+    def is_circle_icon(self,pixel_x,pixel_y):
+        pixel_x=int(round(pixel_x))
+        pixel_y=int(round(pixel_y))
+        if gbscreen.color_match_array(pixel_x,pixel_y,gbdata.phonemap_circle_icon,2):
             return True
         return False
 
@@ -450,10 +460,22 @@ class TaskUpdatePhoneMap(taskobject.Task):
                 if self.is_circle_gray(pixel_x,pixel_y):
                     print("found possible circle at",pixel_x,pixel_y)
                     self.verify_circle(pixel_x,pixel_y)
+
+        # Gather the icons from inside the circles.
+        self.gather_icons()
+
+        # Match the icons with known icons.
+        self.match_icons()
+
         return
 
     def verify_circle(self,start_sx,start_sy):
         print("verify_circle",start_sx,start_sy)
+
+        if self.is_already_found(start_sx,start_sy):
+            print("already found")
+            return
+
         max_diameter=gbdata.phonemap_circle_diameter+4
         color=gbdata.phonemap_circle_gray
         # Step left and right looking for the edges.
@@ -500,4 +522,157 @@ class TaskUpdatePhoneMap(taskobject.Task):
         gbstate.gray_circle_list.append([center_sx,center_sy])
         l=len(gbstate.gray_circle_list)
         print("l",l)
+        return
+
+    def is_already_found(self,start_sx,start_sy):
+        radius=gbdata.phonemap_circle_diameter/2
+        for c in gbstate.gray_circle_list:
+            d=gbdisplay.calculate_distance(start_sx,start_sy,c[0],c[1])
+            if d <= radius:
+                # already found
+                return True
+        return False
+
+    def gather_icons(self):
+        self.icons=[]
+        radius=gbdata.phonemap_circle_diameter/2
+        for c in gbstate.gray_circle_list:
+            icon=self.gather_an_icon(c[0],c[1])
+            whereicon=[c[0],c[1],icon]
+            self.icons.append(whereicon)
+        return
+
+    def gather_an_icon(self,start_sx,start_sy):
+        diameter=gbdata.phonemap_circle_diameter
+        radius=int(round(diameter/2))
+        sx1=start_sx-radius
+        sy1=start_sy-radius
+        icon=[0 for i in range(diameter*diameter)]
+        for sy2 in range(0,diameter):
+            for sx2 in range(0,diameter):
+                sx=sx1+sx2
+                sy=sy1+sy2
+                i=(sy2*diameter)+sx2
+                # only collect info inside the circle
+                d=gbdisplay.calculate_distance(start_sx,start_sy,sx,sy)
+                if d <= radius:
+                    if self.is_circle_icon(sx,sy):
+                        icon[i]=1
+        #print("icon",icon)
+        #self.print_icon(icon)
+        return icon
+
+    def print_icon(self,icon):
+        diameter=gbdata.phonemap_circle_diameter
+        print("icon=[")
+
+        for sy in range(0,diameter):
+            for sx in range(0,diameter):
+                i=(sy*diameter)+sx
+                v=icon[i]
+                print(v,",",sep='',end='')
+            print("")
+
+        print("]")
+        return
+
+    def match_icons(self):
+        for whereicon in self.icons:
+            self.match_an_icon(whereicon)
+
+        # These aren't needed any more.
+        self.icons=[]
+        return
+
+    def match_an_icon(self,whereicon):
+        best_co=None
+        best_match=None
+        for ni in gbdata.named_icons:
+            #print(ni[0])
+            co=self.do_icon_match(whereicon[2],ni[1])
+            if best_co is None:
+                best_co=co
+                best_match=ni
+            else:
+                if best_co < co:
+                    best_co=co
+                    best_match=ni
+        if best_co is not None:
+            print("found match")
+            print(best_match[0],"is at",whereicon[0],whereicon[1])
+            self.set_building(best_match[0],whereicon[0],whereicon[1])
+            return
+        return
+
+    def do_icon_match(self,icon1,icon2):
+        best_co=None
+        off_by=1
+        for offset_y in range(-off_by,off_by+1):
+            for offset_x in range(-off_by,off_by+1):
+                co=self.compare_icons_offsets(icon1,icon2,offset_x,offset_y)
+                if best_co is None:
+                    best_co=co
+                else:
+                    if best_co < co:
+                        best_co=co
+        return best_co
+
+    def compare_icons_offsets(self,icon1,icon2,ox,oy):
+        i1=icon1.copy()
+        i2=icon2.copy()
+        # offsets ox, oy are how much to adjust icon1
+        diameter=gbdata.phonemap_circle_diameter
+        adjust=(diameter*oy)+ox
+        if adjust < 0:
+            # Chop off the beginning of icon1 and append
+            # zeros to the end.
+            n=-adjust
+            i1=i1[n:]
+            i1.extend([0 for j in range(n)])
+        elif adjust > 0:
+            # Chop off the end of icon1 and append
+            # zeros to the beginning.
+            n=adjust
+            i1tmp=[0 for j in range(n)]
+            i1tmp.extend(i1[0:-n])
+            i1=i1tmp
+
+        l1=len(i1)
+        l2=len(i2)
+        #print("l1 l2",l1,l2)
+        co=self.compare_icons(i1,i2)
+        #print("co",co)
+        return co
+
+    def compare_icons(self,icon1,icon2):
+        co=numpy.correlate(icon1,icon2)
+        #print("co",co)
+        return co
+
+    def set_building(self,name,sx,sy):
+        # Calculate the map location given the screen location.
+        mx=(sx-gbdata.phonemap_origin_x)/gbdata.phonemap_square_spacing
+        my=(sy-gbdata.phonemap_origin_y)/gbdata.phonemap_square_spacing
+
+        # binfo is [name,centermx,centermy,doormx,doormy]
+        if name == 'campsite':
+            binfo=[name,mx,my,mx,my+3]
+            gbstate.building_info_campsite=binfo
+        elif name == 'museum':
+            binfo=[name,mx,my,mx,my+3]
+            gbstate.building_info_museum=binfo
+        elif name == 'cranny':
+            binfo=[name,mx,my,mx,my+3]
+            gbstate.building_info_cranny=binfo
+        elif name == 'services':
+            binfo=[name,mx,my,mx,my+3]
+            gbstate.building_info_services=binfo
+        elif name == 'tailors':
+            binfo=[name,mx,my,mx,my+3]
+            gbstate.building_info_tailors=binfo
+        elif name == 'airport':
+            binfo=[name,mx,my,mx,my+3]
+            gbstate.building_info_airport=binfo
+        else:
+            print("unknown building name")
         return

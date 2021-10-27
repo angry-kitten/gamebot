@@ -170,3 +170,11 @@ pause_message=None
 screen_chars=[]
 
 gray_circle_list=[]
+
+# binfo is [name,centermx,centermy,doormx,doormy]
+building_info_campsite=None
+building_info_museum=None
+building_info_cranny=None
+building_info_services=None
+building_info_tailors=None
+building_info_airport=None
