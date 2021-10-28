@@ -22,6 +22,7 @@ import random
 import taskcenterplayer
 import taskpickup
 import taskdetermineposition
+import taskholdtool
 
 class TaskDig(taskobject.Task):
     """TaskDig Object"""

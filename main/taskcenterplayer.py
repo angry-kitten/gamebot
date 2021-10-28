@@ -85,13 +85,13 @@ class TaskCenterPlayer(taskobject.Task):
             my+=dmy*j
             rmx=int(round(mx))
             rmy=int(round(my))
-            v=gbstate.obstructionmap[rmx][rmy]
-            if v == gbdata.obstruction_maptype_obstructed:
+            mo=gbstate.mainmap[rmx][rmy]
+            v=mo.objstruction_status
+            if v == gbmap.Obstructed:
                 return False
-            if v == gbdata.obstruction_maptype_standing_on_water:
+            if v == gbmap.ObStandingOnWater:
                 return False
-            #v=gbstate.minimap[rmx][rmy]
-            v=gbstate.phonemap[rmx][rmy]
+            v=gbstate.mainmap[rmx][rmy].phonemap
             if v == gbdata.maptype_water:
                 return False
 

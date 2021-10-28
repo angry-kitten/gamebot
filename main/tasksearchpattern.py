@@ -61,6 +61,8 @@ class TaskSearchPattern(taskobject.Task):
         print("search at",self.search_mx,self.search_my)
         self.callme()
 
+        self.parent.Push(taskcheckforinterrupt.TaskCheckForInterrupt())
+
         self.pattern_poll()
 
         self.parent.Push(taskcheckforinterrupt.TaskCheckForInterrupt())
@@ -94,10 +96,10 @@ class TaskSearchPattern(taskobject.Task):
 
     def pattern0_poll(self):
         self.search_mx+=self.search_step
-        if self.search_mx >= gbdata.minimap_width:
+        if self.search_mx >= gbdata.map_width:
             self.search_mx=0
             self.search_my+=self.search_step
-            if self.search_my >= gbdata.minimap_height:
+            if self.search_my >= gbdata.map_height:
                 self.search_my=0
                 print("TaskSearchPattern done")
                 self.taskdone=True
@@ -110,8 +112,8 @@ class TaskSearchPattern(taskobject.Task):
         self.search_my=0
         self.search_step=7
         self.search_list=[]
-        for my in range(0,gbdata.minimap_height,self.search_step):
-            for mx in range(0,gbdata.minimap_width,self.search_step):
+        for my in range(0,gbdata.map_height,self.search_step):
+            for mx in range(0,gbdata.map_width,self.search_step):
                 self.search_list.append((mx,my))
 
     def pattern1_start(self):
@@ -147,12 +149,12 @@ class TaskSearchPattern(taskobject.Task):
         self.search_my=0
         self.search_step=4
         self.search_list=[]
-        #for my in range(0,gbdata.minimap_height,self.search_step):
-        #    for mx in range(0,gbdata.minimap_width,self.search_step):
-        #        self.search_list.append((mx,my))
-        for my in range(0,int(gbdata.minimap_height/2),self.search_step):
-            for mx in range(0,int(gbdata.minimap_width/2),self.search_step):
-                self.search_list.append((mx,int(gbdata.minimap_height/2)+my))
+        for my in range(0,gbdata.map_height,self.search_step):
+            for mx in range(0,gbdata.map_width,self.search_step):
+                self.search_list.append((mx,my))
+        #for my in range(0,int(gbdata.map_height/2),self.search_step):
+        #    for mx in range(0,int(gbdata.map_width/2),self.search_step):
+        #        self.search_list.append((mx,int(gbdata.map_height/2)+my))
 
     def pattern2_start(self):
         l=len(self.search_list)

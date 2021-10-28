@@ -18,6 +18,7 @@ import taskchat
 import taskmuseum
 import tasksell
 import taskstore
+import tasktakeinventory
 
 class TaskCheckForInterrupt(taskobject.Task):
     """TaskCheckForInterrupt Object"""
@@ -26,6 +27,7 @@ class TaskCheckForInterrupt(taskobject.Task):
         super().__init__()
         self.name="TaskCheckForInterrupt"
         print("new",self.name,"object")
+        self.step=0
 
     def Poll(self):
         """check if any action can be taken"""
@@ -63,20 +65,25 @@ class TaskCheckForInterrupt(taskobject.Task):
         if gbscreen.is_main_screen():
             print("main screen")
 
+            if self.step == 0:
+                self.parent.Push(tasktakeinventory.TaskTakeInventory())
+                self.step=1
+                return
+
             if gbscreen.is_resident_nearby():
                 self.parent.Push(taskchat.TaskChat())
                 return
 
             if gbstate.inventory_slots_full == gbstate.inventory_size:
-                self.parent.Push(taskmuseum.TaskMuseum())
-                self.parent.Push(tasksell.TaskSell())
                 self.parent.Push(taskstore.TaskStore())
+                self.parent.Push(tasksell.TaskSell())
+                self.parent.Push(taskmuseum.TaskMuseum())
                 return
 
             if gbstate.inventory_slots_full > 0 and gbstate.inventory_slots_free == 0:
-                self.parent.Push(taskmuseum.TaskMuseum())
-                self.parent.Push(tasksell.TaskSell())
                 self.parent.Push(taskstore.TaskStore())
+                self.parent.Push(tasksell.TaskSell())
+                self.parent.Push(taskmuseum.TaskMuseum())
                 return
 
             print(self.name,"done")
@@ -92,6 +99,7 @@ class TaskCheckForInterrupt(taskobject.Task):
         if self.started:
             return # already started
         self.started=True
+        self.step=0
         # push tasks in reverse order
         self.parent.Push(taskdetect.TaskDetect())
 

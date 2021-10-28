@@ -13,6 +13,7 @@ import math
 import gbdisplay
 import time
 import gbscreen
+import gbmap
 
 # Tracking the player position is difficult. The player character is not
 # rooted to the center of the screen. We can get the player position from
@@ -42,10 +43,10 @@ def evaluate_position(mx,my):
     my=int(round(my))
     if not in_map_bounds(mx,my):
         return
-    if gbstate.minimap is None:
+    if gbstate.mainmap is None:
         return
-    v=gbstate.minimap[mx][my]
-    if v == gbdata.maptype_water:
+    v=gbstate.mainmap[mx][my].phonemap
+    if v == gbmap.MapTypeWater:
         set_standing_on_water(mx,my)
 
 def set_current_position(map_x,map_y):
@@ -135,78 +136,30 @@ def calculate_dx_dy(heading,distance):
 
     return (dx,dy)
 
-def build_default_obstruction_map():
-    gbstate.obstructionmap=[0 for x in range(gbdata.map_width)]
-    for data_x in range(gbdata.map_width):
-        # Set all to 0 or unknown.
-        gbstate.obstructionmap[data_x]=[0 for y in range(gbdata.map_height)]
-
 def in_map_bounds(mx,my):
     mx=int(round(mx))
     my=int(round(my))
-    if mx < 0:
-        return False
-    if my < 0:
-        return False
-    if mx >= gbdata.map_width:
-        return False
-    if my >= gbdata.map_height:
-        return False
-    return True
-
-def debug_obstructionmap():
-    if gbstate.obstructionmap is None:
-        print("no obstructionmap")
-        return
-    for y in range(gbdata.map_height):
-        line=''
-        for x in range(gbdata.map_width):
-            v=gbstate.obstructionmap[x][y]
-            c=' '
-            if v == 1:
-                c='u'
-            elif v == 2:
-                c='o'
-            line+=c
-        print(line)
+    return not gbmap.is_bad_location(mx,my)
 
 def set_obstructed(mx,my):
     mx=int(round(mx))
     my=int(round(my))
-    if not in_map_bounds(mx,my):
-        return
-    if gbstate.obstructionmap is None:
-        build_default_obstruction_map()
-    gbstate.obstructionmap[mx][my]=2
+    gbmap.set_obstruction(mx,my,gbmap.Obstructed)
 
 def set_not_obstructed(mx,my):
     mx=int(round(mx))
     my=int(round(my))
-    if not in_map_bounds(mx,my):
-        return
-    if gbstate.obstructionmap is None:
-        build_default_obstruction_map()
-    gbstate.obstructionmap[mx][my]=1
-    #debug_obstructionmap()
+    gbmap.set_obstruction(mx,my,gbmap.ObOpen)
 
 def set_unknown(mx,my):
     mx=int(round(mx))
     my=int(round(my))
-    if not in_map_bounds(mx,my):
-        return
-    if gbstate.obstructionmap is None:
-        build_default_obstruction_map()
-    gbstate.obstructionmap[mx][my]=0
+    gbmap.set_obstruction(mx,my,gbmap.ObUnknown)
 
 def set_standing_on_water(mx,my):
     mx=int(round(mx))
     my=int(round(my))
-    if not in_map_bounds(mx,my):
-        return
-    print("standing on water",mx,my)
-    if gbstate.obstructionmap is None:
-        build_default_obstruction_map()
-    gbstate.obstructionmap[mx][my]=3
+    gbmap.set_obstruction(mx,my,gbmap.ObStandingOnWater)
 
 def heading_difference(h1,h2):
     dh=0
@@ -685,4 +638,8 @@ def heading_change_and_distance_to_time(heading1,heading2,distance):
     dh=heading_difference(heading1,heading2)
     seconds=dh*gbdata.angle_to_time
     seconds+=distance*gbdata.distance_to_time
+    return seconds
+
+def estimate_distance_to_time(distance):
+    seconds=distance*gbdata.distance_to_time
     return seconds

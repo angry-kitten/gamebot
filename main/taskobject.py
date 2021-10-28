@@ -16,7 +16,7 @@ class Task:
         self.myid=Task.id
         Task.id=Task.id+1
         #print("b Task.id is",Task.id)
-        print("new Task object",self.myid)
+        print("new",self.name,"object",self.myid)
         self.taskdone=False
         self.started=False
         self.parent=None # parent in the task tree, not inheritence
@@ -46,10 +46,10 @@ class Task:
 
     def DebugRecursive(self,indent=0):
         gbstate.task_stack_names.append(self.name)
-        self.DebugPrint("Task "+str(self.myid),indent)
+        self.DebugPrint(self.name,indent)
 
     def NameRecursive(self):
-        myname="Task "+str(self.myid)
+        myname=self.name
         return myname
 
 class TaskStack(Task):
@@ -58,7 +58,7 @@ class TaskStack(Task):
     def __init__(self):
         super().__init__()
         self.name="TaskStack"
-        print("new TaskStack object",self.myid)
+        print("new",self.name,"object",self.myid)
         self.thestack=[]
 
     def Poll(self):
@@ -87,7 +87,7 @@ class TaskStack(Task):
         self.thestack=[]
 
     def DebugRecursive(self,indent=0):
-        self.DebugPrint("TaskStack "+str(self.myid),indent)
+        self.DebugPrint(self.name,indent)
         indent=indent+self.indent_increment
 
         self.DebugPrint("bottom of stack",indent)
@@ -99,7 +99,7 @@ class TaskStack(Task):
         gbstate.task_stack_names.append(self.name)
         l=len(self.thestack)
         if l < 1:
-            myname="TaskStack "+str(self.myid)
+            myname=self.name
             return myname
         elif l > 1:
             for j in range(0,l-1):
@@ -120,7 +120,7 @@ class TaskThreads(Task):
     def __init__(self):
         super().__init__()
         self.name="TaskThreads"
-        print("new TaskThreads object",self.myid)
+        print("new",self.name,"object",self.myid)
         self.threadlist=[]
 
     def Poll(self):
@@ -149,7 +149,7 @@ class TaskThreads(Task):
         self.threadlist=[]
 
     def DebugRecursive(self,indent=0):
-        self.DebugPrint("TaskThreads "+str(self.myid),indent)
+        self.DebugPrint(self.name,indent)
         indent=indent+self.indent_increment
 
         for t in self.threadlist:
@@ -157,10 +157,10 @@ class TaskThreads(Task):
 
     def NameRecursive(self):
         gbstate.task_stack_names=[]
-        gbstate.task_stack_names.append("TaskThreads")
+        gbstate.task_stack_names.append(self.name)
         l=len(self.threadlist)
         if l < 1:
-            myname="TaskThreads "+str(self.myid)
+            myname=self.name
             return myname
         return self.threadlist[l-1].NameRecursive()
 
@@ -192,7 +192,7 @@ class TaskTimed(Task):
     def __init__(self,time_seconds=1.0):
         super().__init__()
         self.name="TaskTimed"
-        print("new TaskTimed object",self.myid)
+        print("new",self.name,"object",self.myid)
         self.starttime_sec=0 # monotonic time value
         self.endtime_sec=0 # when it should end, monotonic time value
         self.duration_sec=time_seconds
@@ -222,8 +222,8 @@ class TaskTimed(Task):
         self.taskdone=True
 
     def DebugRecursive(self,indent=0):
-        self.DebugPrint("TaskTimed",indent)
+        self.DebugPrint(self.name,indent)
 
     def NameRecursive(self):
-        myname="TaskTimed"
-        return myname
+        gbstate.task_stack_names.append(self.name)
+        return self.name

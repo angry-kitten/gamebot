@@ -15,6 +15,7 @@ import taskdetect
 import taskgotomain
 import gbscreen
 import gbtrack
+import gbmap
 
 class TaskUpdateMini(taskobject.Task):
     """TaskUpdateMini Object"""
@@ -90,42 +91,37 @@ class TaskUpdateMini(taskobject.Task):
     def process_location(self,data_x,data_y,pixel_x,pixel_y):
         (b,g,r)=gbscreen.get_pixel(pixel_x,pixel_y)
         if gbscreen.color_match_rgb_array(r,g,b,gbdata.minimap_color_water1,5):
-            gbstate.minimap[data_x][data_y]=gbdata.maptypes['Water'][0]
+            gbstate.mainmap[data_x][data_y].minimap=gbmap.MapTypeWater
             return
         if gbscreen.color_match_rgb_array(r,g,b,gbdata.minimap_color_water2,5):
-            gbstate.minimap[data_x][data_y]=gbdata.maptypes['Water'][0]
+            gbstate.mainmap[data_x][data_y].minimap=gbmap.MapTypeWater
             return
         if gbscreen.color_match_rgb_array(r,g,b,gbdata.minimap_color_rock,5):
-            gbstate.minimap[data_x][data_y]=gbdata.maptypes['Rock'][0]
+            gbstate.mainmap[data_x][data_y].minimap=gbmap.MapTypeRock
             return
         if gbscreen.color_match_rgb_array(r,g,b,gbdata.minimap_color_grass0,5):
-            gbstate.minimap[data_x][data_y]=gbdata.maptypes['Grass0'][0]
+            gbstate.mainmap[data_x][data_y].minimap=gbmap.MapTypeGrass0
             return
         if gbscreen.color_match_rgb_array(r,g,b,gbdata.minimap_color_grass1,5):
-            gbstate.minimap[data_x][data_y]=gbdata.maptypes['Grass1'][0]
+            gbstate.mainmap[data_x][data_y].minimap=gbmap.MapTypeGrass1
             return
         if gbscreen.color_match_rgb_array(r,g,b,gbdata.minimap_color_grass2,5):
-            gbstate.minimap[data_x][data_y]=gbdata.maptypes['Grass2'][0]
+            gbstate.mainmap[data_x][data_y].minimap=gbmap.MapTypeGrass2
             return
         if gbscreen.color_match_rgb_array(r,g,b,gbdata.minimap_color_sand,5):
-            gbstate.minimap[data_x][data_y]=gbdata.maptypes['Sand'][0]
+            gbstate.mainmap[data_x][data_y].minimap=gbmap.MapTypeSand
             return
         if gbscreen.color_match_rgb_array(r,g,b,gbdata.minimap_color_dock,5):
-            gbstate.minimap[data_x][data_y]=gbdata.maptypes['Dock'][0]
+            gbstate.mainmap[data_x][data_y].minimap=gbmap.MapTypeDock
             return
         if gbscreen.color_match_rgb_array(r,g,b,gbdata.minimap_color_dirt,5):
-            gbstate.minimap[data_x][data_y]=gbdata.maptypes['Dirt'][0]
+            gbstate.mainmap[data_x][data_y].minimap=gbmap.MapTypeDirt
             return
-        #gbstate.minimap[data_x][data_y]=gbdata.maptypes['Unknown'][0]
 
     def gather_minimap(self):
-        if gbstate.minimap is None:
-            gbstate.minimap=[0 for x in range(gbdata.minimap_width)]
-            for data_x in range(gbdata.minimap_width):
-                gbstate.minimap[data_x]=[0 for y in range(gbdata.minimap_height)]
+        if gbstate.mainmap is None:
+            gbmap.init_map()
 
-        #pixel_start_x=gbdata.minimap_dashes_L2R_0-gbdata.minimap_dashes_step
-        #pixel_start_y=gbdata.minimap_dashes_T2B_0-gbdata.minimap_dashes_step
         pixel_start_x=gbdata.minimap_origin_x
         pixel_start_y=gbdata.minimap_origin_y
         for data_x in range(gbdata.minimap_width):
@@ -135,13 +131,13 @@ class TaskUpdateMini(taskobject.Task):
                 self.process_location(data_x,data_y,pixel_x,pixel_y)
 
     def debug_minimap(self):
-        if gbstate.minimap is None:
-            print("no minimap")
+        if gbstate.mainmap is None:
+            print("no mainmap")
             return
-        for y in range(gbdata.minimap_height):
+        for y in range(gbdata.map_height):
             line=''
-            for x in range(gbdata.minimap_width):
-                line+=gbdata.maptype_rev[gbstate.minimap[x][y]][1]
+            for x in range(gbdata.map_width):
+                line+=gbmap.maptype_rev[gbstate.mainmap[x][y].minimap][1]
             print(line)
 
     def is_pin_orange(self,pixel_x,pixel_y):

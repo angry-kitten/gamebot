@@ -17,6 +17,7 @@ import taskgotomain
 import gbscreen
 import gbtrack
 import gbdisplay
+import gbmap
 
 class TaskUpdatePhoneMap(taskobject.Task):
     """TaskUpdatePhoneMap Object"""
@@ -161,60 +162,57 @@ class TaskUpdatePhoneMap(taskobject.Task):
     def process_location(self,data_x,data_y,pixel_x,pixel_y):
         (b,g,r)=gbscreen.get_pixel(pixel_x,pixel_y)
         if gbscreen.color_match_rgb_array(r,g,b,gbdata.phonemap_color_water1,8):
-            gbstate.phonemap[data_x][data_y]=gbdata.maptypes['Water'][0]
+            gbstate.mainmap[data_x][data_y].phonemap=gbmap.MapTypeWater
             return
         if gbscreen.color_match_rgb_array(r,g,b,gbdata.phonemap_color_water2,8):
-            gbstate.phonemap[data_x][data_y]=gbdata.maptypes['Water'][0]
+            gbstate.mainmap[data_x][data_y].phonemap=gbmap.MapTypeWater
             return
         if gbscreen.color_match_rgb_array(r,g,b,gbdata.phonemap_color_rock,8):
-            gbstate.phonemap[data_x][data_y]=gbdata.maptypes['Rock'][0]
+            gbstate.mainmap[data_x][data_y].phonemap=gbmap.MapTypeRock
             return
         if gbscreen.color_match_rgb_array(r,g,b,gbdata.phonemap_color_grass0,8):
-            gbstate.phonemap[data_x][data_y]=gbdata.maptypes['Grass0'][0]
+            gbstate.mainmap[data_x][data_y].phonemap=gbmap.MapTypeGrass0
             return
         if gbscreen.color_match_rgb_array(r,g,b,gbdata.phonemap_color_grass1,8):
-            gbstate.phonemap[data_x][data_y]=gbdata.maptypes['Grass1'][0]
+            gbstate.mainmap[data_x][data_y].phonemap=gbmap.MapTypeGrass1
             return
         if gbscreen.color_match_rgb_array(r,g,b,gbdata.phonemap_color_grass2,8):
-            gbstate.phonemap[data_x][data_y]=gbdata.maptypes['Grass2'][0]
+            gbstate.mainmap[data_x][data_y].phonemap=gbmap.MapTypeGrass2
             return
         if gbscreen.color_match_rgb_array(r,g,b,gbdata.phonemap_color_sand,8):
-            gbstate.phonemap[data_x][data_y]=gbdata.maptypes['Sand'][0]
+            gbstate.mainmap[data_x][data_y].phonemap=gbmap.MapTypeSand
             return
         if gbscreen.color_match_rgb_array(r,g,b,gbdata.phonemap_color_dock,8):
-            gbstate.phonemap[data_x][data_y]=gbdata.maptypes['Dock'][0]
+            gbstate.mainmap[data_x][data_y].phonemap=gbmap.MapTypeDock
             return
         if gbscreen.color_match_rgb_array(r,g,b,gbdata.phonemap_color_dirt,8):
-            gbstate.phonemap[data_x][data_y]=gbdata.maptypes['Dirt'][0]
+            gbstate.mainmap[data_x][data_y].phonemap=gbmap.MapTypeDirt
             return
-        #gbstate.phonemap[data_x][data_y]=gbdata.maptypes['Unknown'][0]
 
     def gather_phonemap(self):
         print("l1")
-        if gbstate.phonemap is None:
-            gbstate.phonemap=[0 for x in range(gbdata.phonemap_width)]
-            for data_x in range(gbdata.phonemap_width):
-                gbstate.phonemap[data_x]=[0 for y in range(gbdata.phonemap_height)]
+        if gbstate.mainmap is None:
+            gbmap.init_map()
 
         print("l2")
         square_center_offset=gbdata.phonemap_square_spacing/2
         pixel_start_x=gbdata.phonemap_origin_x+square_center_offset
         pixel_start_y=gbdata.phonemap_origin_y+square_center_offset
-        for data_x in range(gbdata.phonemap_width):
+        for data_x in range(gbdata.map_width):
             pixel_x=int(round((data_x*gbdata.phonemap_square_spacing)+pixel_start_x))
-            for data_y in range(gbdata.phonemap_height):
+            for data_y in range(gbdata.map_height):
                 pixel_y=int(round((data_y*gbdata.phonemap_square_spacing)+pixel_start_y))
                 self.process_location(data_x,data_y,pixel_x,pixel_y)
         print("l3")
 
     def debug_phonemap(self):
-        if gbstate.phonemap is None:
-            print("no phonemap")
+        if gbstate.mainmap is None:
+            print("no mainmap")
             return
-        for y in range(gbdata.phonemap_height):
+        for y in range(gbdata.map_height):
             line=''
-            for x in range(gbdata.phonemap_width):
-                line+=gbdata.maptype_rev[gbstate.phonemap[x][y]][1]
+            for x in range(gbdata.map_width):
+                line+=gbmap.maptype_rev[gbstate.mainmap[x][y].phonemap][1]
             print(line)
 
     def is_pin_orange(self,pixel_x,pixel_y):
@@ -258,10 +256,10 @@ class TaskUpdatePhoneMap(taskobject.Task):
                 break
         # circle_right_y and circle_left_y are one pixel right and left
         # of the white circle.
-        print("circle_left_x=",circle_left_x)
-        print("circle_right_x=",circle_right_x)
+        #print("circle_left_x=",circle_left_x)
+        #print("circle_right_x=",circle_right_x)
         circle_center_x=(circle_left_x+circle_right_x)/2
-        print("circle_center_x=",circle_center_x)
+        #print("circle_center_x=",circle_center_x)
         return circle_center_x
 
     def locate_horizontal_center_line(self,startx,starty):
@@ -282,10 +280,10 @@ class TaskUpdatePhoneMap(taskobject.Task):
                 break
         # circle_top_y and circle_bottom_y are one pixel above and below
         # the white circle.
-        print("circle_top_y=",circle_top_y)
-        print("circle_bottom_y=",circle_bottom_y)
+        #print("circle_top_y=",circle_top_y)
+        #print("circle_bottom_y=",circle_bottom_y)
         circle_center_y=(circle_top_y+circle_bottom_y)/2
-        print("circle_center_y=",circle_center_y)
+        #print("circle_center_y=",circle_center_y)
         return circle_center_y
 
     def verify_pin_shape(self,x,y):
@@ -502,7 +500,7 @@ class TaskUpdatePhoneMap(taskobject.Task):
 
         h=bottom_sy-top_sy
         print("h",h)
-        if not gbscreen.match_within(h,gbdata.phonemap_circle_diameter,4):
+        if not gbscreen.match_within(h,gbdata.phonemap_circle_diameter,3):
             print("these are not the droids we are looking for")
             return
 
@@ -528,7 +526,7 @@ class TaskUpdatePhoneMap(taskobject.Task):
         radius=gbdata.phonemap_circle_diameter/2
         for c in gbstate.gray_circle_list:
             d=gbdisplay.calculate_distance(start_sx,start_sy,c[0],c[1])
-            if d <= radius:
+            if d <= (radius+4):
                 # already found
                 return True
         return False

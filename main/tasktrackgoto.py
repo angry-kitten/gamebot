@@ -119,7 +119,8 @@ class TaskTrackGoTo(taskobject.Task):
         self.parent.Push(taskdetermineposition.TaskDeterminePosition())
 
         #seconds=gbtrack.heading_change_and_distance_to_time(previous_heading,heading,distance)
-        seconds=gbtrack.heading_change_and_distance_to_time(heading,heading,distance)
+        #seconds=gbtrack.heading_change_and_distance_to_time(heading,heading,distance)
+        seconds=gbtrack.estimate_distance_to_time(distance)
         print("seconds",seconds)
         self.target_seconds=seconds
         msec=int(seconds*1000) # how long to activate the joystick in milliseconds
@@ -127,6 +128,8 @@ class TaskTrackGoTo(taskobject.Task):
         self.parent.Push(taskjoy.TaskJoyLeft(heading,1.0,total_sec,msec))
         gbstate.move_since_determine=True
         gbstate.move_since_detect=True
+
+        #self.parent.Push(taskobject.TaskTimed(1.0))
 
         self.parent.Push(tasktrackturn.TaskTrackTurn(heading))
         return

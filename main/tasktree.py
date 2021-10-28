@@ -26,6 +26,7 @@ import taskpause
 import taskholdtool
 import taskgather
 import tasktrackturn
+import taskheadinggoto
 
 class TaskTree(taskobject.Task):
     """TaskTree Object"""
@@ -78,9 +79,14 @@ class TaskTree(taskobject.Task):
                 self.parent.Push(taskholdtool.TaskHoldTool('None'))
                 return
 
+            #self.parent.Push(taskobject.TaskTimed(1.0))
+
             # push tasks in reverse order
             # Face up/north to face the tree.
             self.parent.Push(tasktrackturn.TaskTrackTurn(0))
+
+            # walk up against the tree
+            self.parent.Push(taskheadinggoto.TaskHeadingGoTo(0,1))
 
             # Go to the tree facing north.
             self.parent.Push(taskpathplangoto.TaskPathPlanGoTo(self.target_mx,self.target_my))
@@ -139,8 +145,13 @@ class TaskTree(taskobject.Task):
             # Swing the stone axe
             self.parent.Push(taskpress.TaskPress('A'))
 
+            #self.parent.Push(taskobject.TaskTimed(1.0))
+
             # Face up/north to face the tree.
             self.parent.Push(tasktrackturn.TaskTrackTurn(0))
+
+            # walk up against the tree
+            self.parent.Push(taskheadinggoto.TaskHeadingGoTo(0,1))
 
             ## Go to the tree facing north.
             #self.parent.Push(taskpathplangoto.TaskPathPlanGoTo(self.target_mx,self.target_my))

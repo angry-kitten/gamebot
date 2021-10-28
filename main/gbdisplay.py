@@ -13,6 +13,7 @@ import math
 import gbtrack
 import time
 import gbscreenread
+import gbmap
 
 color_white=(255,255,255) # BGR
 color_black=(0,0,0) # BGR
@@ -115,7 +116,7 @@ def control_help(frame):
     cv2.putText(frame,'z=test',(x,y),font,font_scale,color_green,font_line_width,line_type)
 
 def minimap_position(frame):
-    if gbstate.minimap is None:
+    if gbstate.mainmap is None:
         return
     if gbstate.position_minimap_x < 0:
         return
@@ -140,7 +141,7 @@ def phonemap_position(frame):
     #    sy2=sy
     #    cv2.drawMarker(frame,(sx2,sy2),color_white,cv2.MARKER_TRIANGLE_DOWN)
 
-    if gbstate.phonemap is None:
+    if gbstate.mainmap is None:
         return
     if gbstate.position_phonemap_x < 0:
         return
@@ -346,20 +347,20 @@ def draw_grid(frame):
     map_high_y=center_y+square_surround
     if map_low_x < 0:
         map_low_x=0
-    elif map_low_x >= gbdata.minimap_width:
-        map_low_x=gbdata.minimap_width-1
+    elif map_low_x >= gbdata.map_width:
+        map_low_x=gbdata.map_width-1
     if map_low_y < 0:
         map_low_y=0
-    elif map_low_y >= gbdata.minimap_height:
-        map_low_y=gbdata.minimap_height-1
+    elif map_low_y >= gbdata.map_height:
+        map_low_y=gbdata.map_height-1
     if map_high_x < 0:
         map_high_x=0
-    elif map_high_x >= gbdata.minimap_width:
-        map_high_x=gbdata.minimap_width-1
+    elif map_high_x >= gbdata.map_width:
+        map_high_x=gbdata.map_width-1
     if map_high_y < 0:
         map_high_y=0
-    elif map_high_y >= gbdata.minimap_height:
-        map_high_y=gbdata.minimap_height-1
+    elif map_high_y >= gbdata.map_height:
+        map_high_y=gbdata.map_height-1
     #print("map_low_x",map_low_x)
     #print("map_high_x",map_high_x)
     #print("map_low_y",map_low_y)
@@ -590,11 +591,11 @@ def draw_maps(frame):
     origin_sy=int(h/2)                # origin (upper left) screen y
 
     # draw phonemap
-    if gbstate.phonemap is not None:
+    if gbstate.mainmap is not None:
         cv2.rectangle(frame,(origin_sx,origin_sy),(origin_sx+gbdata.map_width,origin_sy+gbdata.map_height),color_red,1)
         for y in range(gbdata.map_height):
             for x in range(gbdata.map_width):
-                v=gbstate.phonemap[x][y]
+                v=gbstate.mainmap[x][y].phonemap
                 color=None
                 if v == 1: # water
                     color=color_water
@@ -620,18 +621,19 @@ def draw_maps(frame):
 
     origin_sx+=gbdata.map_width
 
-    # draw obstructionmap
-    if gbstate.obstructionmap is not None:
+    # draw obstruction map
+    if gbstate.mainmap is not None:
         cv2.rectangle(frame,(origin_sx,origin_sy),(origin_sx+gbdata.map_width,origin_sy+gbdata.map_height),color_red,1)
         for y in range(gbdata.map_height):
             for x in range(gbdata.map_width):
-                v=gbstate.obstructionmap[x][y]
+                mo=gbstate.mainmap[x][y]
+                v=mo.objstruction_status
                 color=None
-                if v == gbdata.obstruction_maptype_not_obstructed:
+                if v == gbmap.ObOpen:
                     color=color_green # not obstructed
-                elif v == gbdata.obstruction_maptype_obstructed:
+                elif v == gbmap.Obstructed:
                     color=color_red # obstructed
-                elif v == gbdata.obstruction_maptype_standing_on_water:
+                elif v == gbmap.ObStandingOnWater:
                     color=color_white
                 if color is not None:
                     sx=origin_sx+x
@@ -642,11 +644,11 @@ def draw_maps(frame):
     origin_sx+=gbdata.map_width
 
     # draw minimap
-    if gbstate.minimap is not None:
+    if gbstate.mainmap is not None:
         cv2.rectangle(frame,(origin_sx,origin_sy),(origin_sx+gbdata.map_width,origin_sy+gbdata.map_height),color_red,1)
         for y in range(gbdata.map_height):
             for x in range(gbdata.map_width):
-                v=gbstate.minimap[x][y]
+                v=gbstate.mainmap[x][y].minimap
                 color=None
                 if v == 1: # water
                     color=color_water
