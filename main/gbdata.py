@@ -66,7 +66,9 @@ phonemap_circle_icon=[254,252,251] # rgb
 phonemap_circle_diameter=38
 
 # Some of the busy text screens can have about 200 characters to detect.
-object_count=200
+# ocr isn't working, tune this down to 100
+#object_count=200
+object_count=100
 
 # The map starts in the upper left with mx=0,my=0. The center of
 # the upper left square is mx=0.5,my=0.5.
@@ -212,10 +214,10 @@ inventory_locations_30 = [
     (473,130),
     (538,121),
     (606,118),
-    (674,119),
-    (739,124),
-    (805,129),
-    (871,141),
+    (673,118),
+    (739,122),
+    (806,128),
+    (871,142),
     (938,157),
     (341,227), # 10
     (407,212),

@@ -272,7 +272,7 @@ def take_data(hcas, distance, seconds):
 # target mx my heading seconds 38 84 90 1.7571428571428507
 # end mx my heading 37.25 83.94999999999999 89.46949868332608
 #
-def after_move_processing(start_mx, start_my, start_heading, target_mx, target_my, target_heading, target_seconds, end_mx, end_my):
+def after_move_processing(start_mx, start_my, start_heading, target_mx, target_my, target_heading, target_seconds, end_mx, end_my, use_detect):
     print("yyy after_move_processing")
     end_dmx=end_mx-start_mx
     end_dmy=end_my-start_my
@@ -280,6 +280,7 @@ def after_move_processing(start_mx, start_my, start_heading, target_mx, target_m
     print("start mx my heading", start_mx, start_my, start_heading)
     print("target mx my heading seconds", target_mx, target_my, target_heading, target_seconds)
     print("end mx my heading", end_mx, end_my, end_heading)
+    print("use_detect",use_detect)
 
     target_distance=gbdisplay.calculate_distance(start_mx,start_my,target_mx,target_my)
     print("target_distance",target_distance)
@@ -579,58 +580,61 @@ def after_move_processing(start_mx, start_my, start_heading, target_mx, target_m
     gbstate.center_mx=adjusted_screen_center_mx
     gbstate.center_my=adjusted_screen_center_my-gbstate.tune_sc_offset_my
 
-    # Use detecting the feet as the big hammer.
-    feet_match=gbscreen.has_label_in_box('Feet',0.20,gbdata.feet_region_x1,gbdata.feet_region_x2,gbdata.feet_region_y1,gbdata.feet_region_y2)
-    if feet_match is not None:
-        print("found feet",feet_match)
+    if use_detect:
+        # Use detecting the feet as the big hammer.
+        feet_match=gbscreen.has_label_in_box('Feet',0.20,gbdata.feet_region_x1,gbdata.feet_region_x2,gbdata.feet_region_y1,gbdata.feet_region_y2)
+        if feet_match is not None:
+            print("found feet",feet_match)
 
-    player_match=gbscreen.has_label_in_box('Player',0.30,gbdata.player_region_x1,gbdata.player_region_x2,gbdata.player_region_y1,gbdata.player_region_y2)
-    if player_match is not None:
-        print("found player",player_match)
-
-    use_feet=False
-    feet_sx=0
-    feet_sy=0
-    if feet_match is not None:
-        # Use the object center.
-        feet_sx=feet_match[2]
-        feet_sy=feet_match[3]
-        use_feet=True
-    else:
+        player_match=gbscreen.has_label_in_box('Player',0.30,gbdata.player_region_x1,gbdata.player_region_x2,gbdata.player_region_y1,gbdata.player_region_y2)
         if player_match is not None:
-            # Use the object base.
-            feet_sx=player_match[4]
-            feet_sy=player_match[5]
-            feet_sx+=0
-            feet_sy-=15
+            print("found player",player_match)
+
+        use_feet=False
+        feet_sx=0
+        feet_sy=0
+        if feet_match is not None:
+            # Use the object center.
+            feet_sx=feet_match[2]
+            feet_sy=feet_match[3]
             use_feet=True
+        else:
+            if player_match is not None:
+                # Use the object base.
+                feet_sx=player_match[4]
+                feet_sy=player_match[5]
+                feet_sx+=0
+                feet_sy-=15
+                use_feet=True
 
-    if use_feet:
-        # Update the screen center based on object detection.
+        if use_feet:
+            # Update the screen center based on object detection.
 
-        # set center if not already set
-        if gbstate.center_mx < 0:
-            gbstate.center_mx=gbstate.move_before_mx
-            gbstate.center_my=gbstate.move_before_my
+            # set center if not already set
+            if gbstate.center_mx < 0:
+                gbstate.center_mx=gbstate.move_before_mx
+                gbstate.center_my=gbstate.move_before_my
 
-        # Calculate the map position of the feet as if the
-        # center values were accurate.
-        (mx,my)=gbdisplay.convert_pixel_to_map(feet_sx,feet_sy)
-        print("center",gbstate.center_mx,gbstate.center_my)
-        print("feet",mx,my)
+            # Calculate the map position of the feet as if the
+            # center values were accurate.
+            (mx,my)=gbdisplay.convert_pixel_to_map(feet_sx,feet_sy)
+            print("center",gbstate.center_mx,gbstate.center_my)
+            print("feet",mx,my)
 
-        # Since we know the real player position we can calculate
-        # the difference from mx,my. This will give the error in
-        # both the feet and center positions.
-        error_mx=end_mx-mx
-        error_my=end_my-my
-        print("error",error_mx,error_my)
+            # Since we know the real player position we can calculate
+            # the difference from mx,my. This will give the error in
+            # both the feet and center positions.
+            error_mx=end_mx-mx
+            error_my=end_my-my
+            print("error",error_mx,error_my)
 
-        # Adding the error to mx,my will give the real player position.
-        # Adding the error to center_mx,center_my will give the real center position.
-        gbstate.center_mx+=error_mx
-        gbstate.center_my+=error_my
-        print("new center",gbstate.center_mx,gbstate.center_my)
+            # Adding the error to mx,my will give the real player position.
+            # Adding the error to center_mx,center_my will give the real center position.
+            gbstate.center_mx+=error_mx
+            gbstate.center_my+=error_my
+            print("new center",gbstate.center_mx,gbstate.center_my)
+
+    return
 
 # distance_to_time=0.26976168054446614 # seconds per map square distance
 # angle_to_time=0.001950835441527321 # seconds per degree

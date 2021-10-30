@@ -55,6 +55,10 @@ def screen_read():
                     body2='#'
                 elif body == 'Ampersand':
                     body2='&'
+                elif body == 'LeftParen':
+                    body2='('
+                elif body == 'RightParen':
+                    body2=')'
 
                 entry=[body2,det[1],det[2],det[3],det[6],det[7],det[8],det[9]]
                 first_pass.append(entry)

@@ -27,13 +27,14 @@ import tasktrackturn
 class TaskTrackGoTo(taskobject.Task):
     """TaskTrackGoTo Object"""
 
-    def __init__(self,mx,my):
+    def __init__(self,mx,my,low_precision=False):
         super().__init__()
         self.name="TaskTrackGoTo"
         print("new",self.name,"object")
         self.target_mx=mx
         self.target_my=my
         print("go to mx",mx,"my",my)
+        self.low_precision=low_precision
         self.within=1.0
         self.start_mx=-1
         self.start_my=-1
@@ -46,8 +47,6 @@ class TaskTrackGoTo(taskobject.Task):
         gbstate.move_before_my=-1
         gbstate.move_after_mx=-1
         gbstate.move_after_my=-1
-        gbstate.track_goto_target_mx=mx
-        gbstate.track_goto_target_my=my
 
     def Poll(self):
         """check if any action can be taken"""
@@ -78,7 +77,8 @@ class TaskTrackGoTo(taskobject.Task):
             self.end_mx=gbstate.player_mx
             self.end_my=gbstate.player_my
 
-            gbtrack.after_move_processing(self.start_mx,self.start_my,self.start_heading,self.target_mx,self.target_my,self.target_heading,self.target_seconds,self.end_mx,self.end_my)
+            use_detect=not self.low_precision
+            gbtrack.after_move_processing(self.start_mx,self.start_my,self.start_heading,self.target_mx,self.target_my,self.target_heading,self.target_seconds,self.end_mx,self.end_my,use_detect)
 
             self.process_move()
 
@@ -103,6 +103,8 @@ class TaskTrackGoTo(taskobject.Task):
         self.start_my=gbstate.player_my
         self.start_heading=gbstate.player_heading
 
+        print("track going from to",mx,my,self.target_mx,self.target_my)
+
         dx=self.target_mx-mx
         dy=self.target_my-my
         print("dx dy",dx,dy)
@@ -115,8 +117,12 @@ class TaskTrackGoTo(taskobject.Task):
         self.target_heading=heading
         #gbstate.player_heading=heading
 
-        self.parent.Push(taskdetect.TaskDetect())
-        self.parent.Push(taskdetermineposition.TaskDeterminePosition())
+        if not self.low_precision:
+            # This detect is here to get the feet position. Which will
+            # be used in gbtrack.after_move_processing
+            self.parent.Push(taskdetect.TaskDetect())
+
+        self.parent.Push(taskdetermineposition.TaskDeterminePosition(low_precision=self.low_precision))
 
         #seconds=gbtrack.heading_change_and_distance_to_time(previous_heading,heading,distance)
         #seconds=gbtrack.heading_change_and_distance_to_time(heading,heading,distance)
@@ -140,7 +146,9 @@ class TaskTrackGoTo(taskobject.Task):
         if self.started:
             return # already started
         self.started=True
-        self.parent.Push(taskdetermineposition.TaskDeterminePosition())
+        gbstate.track_goto_target_mx=self.target_mx
+        gbstate.track_goto_target_my=self.target_my
+        self.parent.Push(taskdetermineposition.TaskDeterminePosition(low_precision=self.low_precision))
 
     def DebugRecursive(self,indent=0):
         self.DebugPrint(self.name,indent)
@@ -161,7 +169,7 @@ class TaskTrackGoTo(taskobject.Task):
             print("got",gbstate.move_after_mx,gbstate.move_after_my)
             # We might have passed an obstruction. Or we might be running
             # into one.
-            if self.distance >= 1:
+            if self.distance >= 0.70:
                 # Don't evaluate short moves because they could trigger the
                 # obstruction code by accident.
                 if gbstate.move_before_mx == gbstate.move_after_mx and gbstate.move_before_my == gbstate.move_after_my:

@@ -29,6 +29,7 @@ task_stack_names=[]
 label_id_offset=1
 
 mainmap=None
+unreachable=False
 
 # The map position calculated from the minimap.
 position_minimap_x=-1
@@ -115,6 +116,10 @@ object_target_my=-1
 # The target map position of TaskTrackGoTo
 track_goto_target_mx=-1
 track_goto_target_my=-1
+
+# The target map position of TaskPathPlanGoTo
+plan_goto_target_mx=-1
+plan_goto_target_my=-1
 
 # Draw inventory locations on the screen if True
 draw_inventory_locations=False

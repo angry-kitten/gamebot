@@ -109,7 +109,7 @@ class TaskStack(Task):
         return self.thestack[l-1].NameRecursive()
 
     def Push(self,atask):
-        print("Push")
+        #print("Push")
         atask.SetParent(self)
         self.thestack.append(atask)
 

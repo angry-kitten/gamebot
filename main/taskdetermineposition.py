@@ -21,10 +21,11 @@ import taskupdatephonemap
 class TaskDeterminePosition(taskobject.Task):
     """TaskDeterminePosition Object"""
 
-    def __init__(self):
+    def __init__(self,low_precision=False):
         super().__init__()
         self.name="TaskDeterminePosition"
         print("new",self.name,"object")
+        self.low_precision=low_precision
 
     def Poll(self):
         """check if any action can be taken"""
@@ -53,7 +54,8 @@ class TaskDeterminePosition(taskobject.Task):
         if not gbstate.move_since_determine:
             return
 
-        self.parent.Push(taskupdatephonemap.TaskUpdatePhoneMap())
+        if not self.low_precision:
+            self.parent.Push(taskupdatephonemap.TaskUpdatePhoneMap())
         self.parent.Push(taskupdatemini.TaskUpdateMini())
 
     def DebugRecursive(self,indent=0):

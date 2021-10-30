@@ -25,7 +25,7 @@ import taskdetermineposition
 class TaskSimpleGoTo(taskobject.Task):
     """TaskSimpleGoTo Object"""
 
-    def __init__(self,mx,my):
+    def __init__(self,mx,my,low_precision=False):
         super().__init__()
         self.name="TaskSimpleGoTo"
         print("new",self.name,"object")
@@ -35,13 +35,14 @@ class TaskSimpleGoTo(taskobject.Task):
         self.step_distance_limit=8
         self.target_mx=mx
         self.target_my=my
+        self.low_precision=low_precision
         print("go to mx",mx,"my",my)
         #self.within=0.1
         self.within=0.2
         self.previous_mx=-1
         self.previous_my=-1
-        gbstate.goto_target_mx=mx
-        gbstate.goto_target_my=my
+        if self.low_precision:
+            self.within=1
 
     def Poll(self):
         """check if any action can be taken"""
@@ -56,6 +57,8 @@ class TaskSimpleGoTo(taskobject.Task):
 
         mx=gbstate.player_mx
         my=gbstate.player_my
+
+        print("simple going from to",mx,my,self.target_mx,self.target_my)
 
         if self.previous_mx >= 0:
             if self.previous_mx == mx and self.previous_my == my:
@@ -112,25 +115,25 @@ class TaskSimpleGoTo(taskobject.Task):
                     dy*=ratio
                     distance=distance2
                     print("distance",distance)
-                elif distance < 1:
-                    distance2=distance*0.80
-                    ratio=distance2/distance
-                    dx*=ratio
-                    dy*=ratio
-                    distance=distance2
-                    print("distance",distance)
-                elif distance < 2:
-                    distance2=distance*0.90
-                    ratio=distance2/distance
-                    dx*=ratio
-                    dy*=ratio
-                    distance=distance2
-                    print("distance",distance)
+                #elif distance < 1:
+                #    distance2=distance*0.80
+                #    ratio=distance2/distance
+                #    dx*=ratio
+                #    dy*=ratio
+                #    distance=distance2
+                #    print("distance",distance)
+                #elif distance < 2:
+                #    distance2=distance*0.90
+                #    ratio=distance2/distance
+                #    dx*=ratio
+                #    dy*=ratio
+                #    distance=distance2
+                #    print("distance",distance)
 
             step_target_mx=mx+dx
             step_target_my=my+dy
 
-            self.parent.Push(tasktrackgoto.TaskTrackGoTo(step_target_mx,step_target_my))
+            self.parent.Push(tasktrackgoto.TaskTrackGoTo(step_target_mx,step_target_my,low_precision=self.low_precision))
             return
 
         gbstate.goto_target_mx=-1
@@ -145,7 +148,9 @@ class TaskSimpleGoTo(taskobject.Task):
         if self.started:
             return # already started
         self.started=True
-        self.parent.Push(taskdetermineposition.TaskDeterminePosition())
+        gbstate.goto_target_mx=self.target_mx
+        gbstate.goto_target_my=self.target_my
+        self.parent.Push(taskdetermineposition.TaskDeterminePosition(low_precision=self.low_precision))
 
     def DebugRecursive(self,indent=0):
         self.DebugPrint(self.name,indent)

@@ -54,7 +54,8 @@ class TaskDoSomething(taskobject.Task):
         #self.parent.Push(taskholdtool.TaskHoldTool('Net'))
         #self.parent.Push(taskholdtool.TaskHoldTool('StoneAxe'))
         #self.parent.Push(taskholdtool.TaskHoldTool('None'))
-        self.parent.Push(taskcheckforinterrupt.TaskCheckForInterrupt())
+
+        #self.parent.Push(taskcheckforinterrupt.TaskCheckForInterrupt())
         return
 
     def Start(self):

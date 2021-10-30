@@ -488,31 +488,44 @@ def draw_targets(frame):
         sx=gbdata.minimap_origin_x+gbstate.position_minimap_x*gbdata.minimap_square_spacing
         sy=gbdata.minimap_origin_y+gbstate.position_minimap_y*gbdata.minimap_square_spacing
         draw_marker_at(frame,cv2.MARKER_CROSS,sx,sy,color_blue)
+
     if gbstate.position_phonemap_x >= 0:
         draw_marker_at_map(frame,cv2.MARKER_TILTED_CROSS,gbstate.position_phonemap_x,gbstate.position_phonemap_y,color_blue)
         sx=gbdata.minimap_origin_x+gbstate.position_phonemap_x*gbdata.minimap_square_spacing
         sy=gbdata.minimap_origin_y+gbstate.position_phonemap_y*gbdata.minimap_square_spacing
         draw_marker_at(frame,cv2.MARKER_TILTED_CROSS,sx,sy,color_blue)
+
     if gbstate.player_mx >= 0:
         draw_marker_at_map(frame,cv2.MARKER_DIAMOND,gbstate.player_mx,gbstate.player_my,color_green)
         sx=gbdata.minimap_origin_x+gbstate.player_mx*gbdata.minimap_square_spacing
         sy=gbdata.minimap_origin_y+gbstate.player_my*gbdata.minimap_square_spacing
         draw_marker_at(frame,cv2.MARKER_DIAMOND,sx,sy,color_green)
+
     if gbstate.goto_target_mx >= 0:
         draw_x_at_map(frame,gbstate.goto_target_mx,gbstate.goto_target_my,color_red,line_width=line_width_x_wide)
         x=gbdata.minimap_origin_x+gbstate.goto_target_mx*gbdata.minimap_square_spacing
         y=gbdata.minimap_origin_y+gbstate.goto_target_my*gbdata.minimap_square_spacing
         draw_x_at(frame,x,y,color_red,line_width=line_width_x_wide)
+
     if gbstate.object_target_mx >= 0:
         draw_x_at_map(frame,gbstate.object_target_mx,gbstate.object_target_my,color_green,line_width=line_width_x_wide)
         x=gbdata.minimap_origin_x+gbstate.object_target_mx*gbdata.minimap_square_spacing
         y=gbdata.minimap_origin_y+gbstate.object_target_my*gbdata.minimap_square_spacing
         draw_x_at(frame,x,y,color_green,line_width=line_width_x_wide)
+
     if gbstate.track_goto_target_mx >= 0:
         draw_x_at_map(frame,gbstate.track_goto_target_mx,gbstate.track_goto_target_my,color_orange,line_width=line_width_x_narrow)
         x=gbdata.minimap_origin_x+gbstate.track_goto_target_mx*gbdata.minimap_square_spacing
         y=gbdata.minimap_origin_y+gbstate.track_goto_target_my*gbdata.minimap_square_spacing
         draw_x_at(frame,x,y,color_orange,line_width=line_width_x_narrow)
+
+    if gbstate.plan_goto_target_mx >= 0:
+        draw_marker_at_map(frame,cv2.MARKER_STAR,gbstate.plan_goto_target_mx,gbstate.plan_goto_target_my,color_yellow)
+        x=gbdata.minimap_origin_x+gbstate.plan_goto_target_mx*gbdata.minimap_square_spacing
+        y=gbdata.minimap_origin_y+gbstate.plan_goto_target_my*gbdata.minimap_square_spacing
+        draw_marker_at(frame,cv2.MARKER_STAR,x,y,color_yellow)
+
+    return
 
 def draw_feet_box(frame):
     if gbstate.center_mx < 0:
@@ -671,6 +684,27 @@ def draw_maps(frame):
                     sy=origin_sy+y
                     # use a rectangle to draw a pixel
                     cv2.rectangle(frame,(sx,sy),(sx+1,sy+1),color,-1)
+
+    origin_sy-=gbdata.map_height
+    # draw path planning
+    if gbstate.mainmap is not None:
+        cv2.rectangle(frame,(origin_sx,origin_sy),(origin_sx+gbdata.map_width,origin_sy+gbdata.map_height),color_red,1)
+        for y in range(gbdata.map_height):
+            for x in range(gbdata.map_width):
+                v=gbstate.mainmap[x][y].planning_distance
+                v=v%256
+                if v > 0:
+                    color=(v,v,v) # BGR
+                    sx=origin_sx+x
+                    sy=origin_sy+y
+                    # use a rectangle to draw a pixel
+                    cv2.rectangle(frame,(sx,sy),(sx+1,sy+1),color,-1)
+        for wp in gbmap.waypoints:
+            sx=origin_sx+wp[0]
+            sy=origin_sy+wp[1]
+            # use a rectangle to draw a pixel
+            cv2.rectangle(frame,(sx,sy),(sx+1,sy+1),color_red,-1)
+            #cv2.rectangle(frame,(sx,sy),(sx+10,sy+10),color_red,-1)
 
 def draw_heading(frame):
     w=gbdata.stdscreen_size[0]

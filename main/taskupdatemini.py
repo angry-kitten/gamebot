@@ -42,7 +42,7 @@ class TaskUpdateMini(taskobject.Task):
         # off.
         time_now=time.monotonic()
         elapsed=time_now-self.start_time
-        if elapsed > 1.0:
+        if elapsed > 4.0:
             print(self.name,"time elapsed")
             self.taskdone=True
             return
@@ -329,8 +329,10 @@ class TaskUpdateMini(taskobject.Task):
         map_y+=gbdata.minimap_pin_tune_my
         #print("map_x=",map_x)
         #print("map_y=",map_y)
+        print("pin position mx my",map_x,map_y)
 
         if not gbtrack.in_map_bounds(map_x,map_y):
+            print("pin position not in bounds")
             return False
 
         gbstate.position_minimap_x=map_x

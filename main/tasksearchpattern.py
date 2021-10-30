@@ -59,13 +59,17 @@ class TaskSearchPattern(taskobject.Task):
             return
 
         print("search at",self.search_mx,self.search_my)
-        self.callme()
+        if gbstate.unreachable:
+            # Skip this one.
+            gbstate.unreachable=False
+        else:
+            self.callme()
 
-        self.parent.Push(taskcheckforinterrupt.TaskCheckForInterrupt())
+        #self.parent.Push(taskcheckforinterrupt.TaskCheckForInterrupt())
 
         self.pattern_poll()
 
-        self.parent.Push(taskcheckforinterrupt.TaskCheckForInterrupt())
+        #self.parent.Push(taskcheckforinterrupt.TaskCheckForInterrupt())
 
         return
 
