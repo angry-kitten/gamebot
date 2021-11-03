@@ -94,8 +94,10 @@ class TaskPickSomething(taskobject.Task):
             print("no center")
             return
         target_list=gbdata.gatherable_items.copy()
-        target_list.extend(gbdata.treeable_items)
-        target_list.extend(gbdata.digable_items)
+        if gbstate.inventory_has_net:
+            target_list.extend(gbdata.treeable_items)
+        if gbstate.inventory_has_shovel:
+            target_list.extend(gbdata.digable_items)
 
         found_list=gbdisplay.find_detect(target_list,gbstate.player_mx,gbstate.player_my,self.close,10,0.30)
 

@@ -49,6 +49,13 @@ def color_match_rgb(pr,pg,pb,tr,tg,tb,within):
 def color_match_rgb_array(pr,pg,pb,a,within):
     return color_match_rgb(pr,pg,pb,a[0],a[1],a[2],within)
 
+def color_match_rgb_array_list(pr,pg,pb,l,within):
+    for a in l:
+        b=color_match_rgb(pr,pg,pb,a[0],a[1],a[2],within)
+        if b:
+            return b
+    return False
+
 def color_match(x,y,tr,tg,tb,within):
     x=int(round(x))
     y=int(round(y))
@@ -119,6 +126,31 @@ def has_label(label,ratio,x,y,within):
                         return True
     return False
 
+def has_label_prefix(label_prefix,ratio,x,y,within):
+    with gbstate.detection_lock:
+        if gbstate.digested is None:
+            return False
+        localdigested=gbstate.digested
+
+    prefix_len=len(label_prefix)
+
+    for det in localdigested:
+        print(det) # det is [name,score,cx,cy,bx,by]
+        name=det[0]
+        prefix=name[0:prefix_len]
+        print("prefix name",prefix,name)
+        if prefix == label_prefix:
+            if det[1] >= ratio:
+                if x < 0:
+                    # don't match on location
+                    print("has with no location")
+                    return True
+                if match_within(det[2],x,within):
+                    if match_within(det[3],y,within):
+                        print("has")
+                        return True
+    return False
+
 def has_label_in_box(label,ratio,x1,x2,y1,y2):
     bestmatch=None
     with gbstate.detection_lock:
@@ -142,15 +174,22 @@ def is_start_continue_screen():
     with gbstate.detection_lock:
         if gbstate.digested is None:
             return False
+    count=0
     if not has_label('ButtonA',0.30,726,646,5):
         return False
-    if not has_label('ButtonY',0.30,65,645,5):
+    # If there is no current game, then thereis a ButtonHome.
+    if has_label('ButtonHome',0.30,818,347,5):
+        count+=1
+    if has_label('ButtonY',0.30,65,645,5):
+        count+=1
+    if not has_label('SymbolBattery',0.20,1199,64,15):
         return False
-    if not has_label('SymbolBattery',0.20,1199,64,5):
+    if not has_label('SymbolWiFi',0.20,1140,65,15):
+        if not has_label('SymbolWiFi',0.20,1095,66,15):
+            if not has_label('SymbolWiFi',0.20,1077,66,15):
+                return False
+    if count < 1:
         return False
-    if not has_label('SymbolWiFi',0.20,1140,65,5):
-        if not has_label('SymbolWiFi',0.20,1077,66,5):
-            return False
     return True
 
 def is_minimap():
@@ -222,11 +261,12 @@ def is_selection_screen_no_ACNH():
             return False
     if not has_label('SOnlineLogo',0.30,316,546,5):
         return False
-    if not has_label('SymbolBattery',0.30,1199,65,5):
+    if not has_label('SymbolBattery',0.30,1199,65,15):
         return False
-    if not has_label('SymbolWiFi',0.20,1140,65,5):
-        if not has_label('SymbolWiFi',0.20,1077,66,5):
-            return False
+    if not has_label('SymbolWiFi',0.20,1140,65,15):
+        if not has_label('SymbolWiFi',0.20,1095,65,15):
+            if not has_label('SymbolWiFi',0.20,1077,66,15):
+                return False
     return True
 
 def is_selection_screen():
@@ -378,6 +418,8 @@ def is_phone_map_screen():
     return False
 
 def is_resident_nearby():
+    if has_label_prefix('Res',0.30,-1,-1,-1):
+        return True
     return False
 
 def locate_vertical_transition(color,sx,sy1,sy2):

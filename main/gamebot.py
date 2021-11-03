@@ -292,6 +292,22 @@ def query_state(ps):
     print(f"cem={cem}")
     print(f"echo_count={echo_count}")
 
+def object_detection_wakeup():
+    print("before wakeup")
+    gbstate.detection_condition.acquire()
+    gbstate.detection_condition.notify()
+    gbstate.detection_condition.release()
+    print("after wakeup")
+    return
+
+def object_detection_wait():
+    print("before wait")
+    gbstate.detection_condition.acquire()
+    gbstate.detection_condition.wait()
+    gbstate.detection_condition.release()
+    print("after wait")
+    return
+
 def object_detection_thread():
     dframe=None
     do_detect=False
@@ -299,15 +315,18 @@ def object_detection_thread():
     localdigested=None
     while True:
         #print("odt")
+        print("odt 1")
         dframe=None
         do_detect=False
         localdetections=None
         localdigested=None
+        print("odt 2")
         with gbstate.detection_lock:
             if gbstate.detection_frame is not None:
                 if gbstate.detections is None:
                     dframe=gbstate.detection_frame
                     do_detect=True
+        print("odt 3")
         if do_detect:
             print("start a detection")
             (localdetections,localdigested,localim)=do_one_object_detect(dframe)
@@ -316,9 +335,14 @@ def object_detection_thread():
                     gbstate.detections=localdetections
                     gbstate.digested=localdigested
                     gbstate.detim=localim
-        else:
-            #print("no detection")
-            time.sleep(1)
+        #else:
+        #    #print("no detection")
+        #    time.sleep(1)
+        print("odt 4")
+
+        object_detection_wait()
+        print("odt 5")
+    return
 
 def main_loop(vid):
 
@@ -443,6 +467,8 @@ def setup_run_cleanup():
     # create the lock to synchronize data with the object detection
     # thread
     gbstate.detection_lock=threading.Lock()
+
+    gbstate.detection_condition=threading.Condition()
 
     # start the object detection thread
     odt=threading.Thread(target=object_detection_thread,daemon=True)

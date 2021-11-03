@@ -609,7 +609,7 @@ def draw_maps(frame):
         for y in range(gbdata.map_height):
             for x in range(gbdata.map_width):
                 v=gbstate.mainmap[x][y].phonemap
-                color=None
+                color=color_red
                 if v == 1: # water
                     color=color_water
                 elif v == 2: # rock (coastal)
@@ -630,7 +630,7 @@ def draw_maps(frame):
                     sx=origin_sx+x
                     sy=origin_sy+y
                     # use a rectangle to draw a pixel
-                    cv2.rectangle(frame,(sx,sy),(sx+1,sy+1),color,-1)
+                    cv2.rectangle(frame,(sx,sy),(sx,sy),color,-1)
 
     origin_sx+=gbdata.map_width
 
@@ -652,7 +652,7 @@ def draw_maps(frame):
                     sx=origin_sx+x
                     sy=origin_sy+y
                     # use a rectangle to draw a pixel
-                    cv2.rectangle(frame,(sx,sy),(sx+1,sy+1),color,-1)
+                    cv2.rectangle(frame,(sx,sy),(sx,sy),color,-1)
 
     origin_sx+=gbdata.map_width
 
@@ -662,7 +662,7 @@ def draw_maps(frame):
         for y in range(gbdata.map_height):
             for x in range(gbdata.map_width):
                 v=gbstate.mainmap[x][y].minimap
-                color=None
+                color=color_red
                 if v == 1: # water
                     color=color_water
                 elif v == 2: # rock (coastal)
@@ -683,7 +683,7 @@ def draw_maps(frame):
                     sx=origin_sx+x
                     sy=origin_sy+y
                     # use a rectangle to draw a pixel
-                    cv2.rectangle(frame,(sx,sy),(sx+1,sy+1),color,-1)
+                    cv2.rectangle(frame,(sx,sy),(sx,sy),color,-1)
 
     origin_sy-=gbdata.map_height
     # draw path planning
@@ -698,13 +698,48 @@ def draw_maps(frame):
                     sx=origin_sx+x
                     sy=origin_sy+y
                     # use a rectangle to draw a pixel
-                    cv2.rectangle(frame,(sx,sy),(sx+1,sy+1),color,-1)
+                    cv2.rectangle(frame,(sx,sy),(sx,sy),color,-1)
+
+        # Draw the waypoint lines first then the points.
+        psx=-1
+        psy=-1
+        n=0
+        for wp in gbmap.waypoints:
+            sx=origin_sx+wp[0]
+            sy=origin_sy+wp[1]
+            if psx >= 0:
+                g=127+(n*32)%128
+                c=[0,g,0]
+                cv2.line(frame,(psx,psy),(sx,sy),c,line_width)
+            psx=sx
+            psy=sy
         for wp in gbmap.waypoints:
             sx=origin_sx+wp[0]
             sy=origin_sy+wp[1]
             # use a rectangle to draw a pixel
-            cv2.rectangle(frame,(sx,sy),(sx+1,sy+1),color_red,-1)
-            #cv2.rectangle(frame,(sx,sy),(sx+10,sy+10),color_red,-1)
+            cv2.rectangle(frame,(sx,sy),(sx,sy),color_red,-1)
+
+    origin_sx-=gbdata.map_width
+    # draw possible pole
+    if len(gbmap.possible_pole) > 0:
+        cv2.rectangle(frame,(origin_sx,origin_sy),(origin_sx+gbdata.map_width,origin_sy+gbdata.map_height),color_red,1)
+        for possible in gbmap.possible_pole:
+            sx1=origin_sx+possible[0]
+            sy1=origin_sy+possible[1]
+            sx2=origin_sx+possible[2]
+            sy2=origin_sy+possible[3]
+            cv2.line(frame,(sx1,sy1),(sx2,sy2),color_green,line_width)
+
+    origin_sx-=gbdata.map_width
+    # draw waypoint pole
+    if len(gbmap.waypoint_pole) > 0:
+        cv2.rectangle(frame,(origin_sx,origin_sy),(origin_sx+gbdata.map_width,origin_sy+gbdata.map_height),color_red,1)
+        for waypole in gbmap.waypoint_pole:
+            sx1=origin_sx+waypole[0]
+            sy1=origin_sy+waypole[1]
+            sx2=origin_sx+waypole[2]
+            sy2=origin_sy+waypole[3]
+            cv2.line(frame,(sx1,sy1),(sx2,sy2),color_green,line_width)
 
 def draw_heading(frame):
     w=gbdata.stdscreen_size[0]
@@ -869,7 +904,7 @@ def find_detect(target_list,d_mx,d_my,distance,count,score):
                 # det is [name,score,cx,cy,bx,by]
                 sorted_scores.append(det[1])
             print("sorted_scores",sorted_scores)
-            sorted_scores.sort(reversed=True)
+            sorted_scores.sort(reverse=True)
             print("sorted_scores",sorted_scores)
             score_limit=sorted_scores[count]
             count_list=[]

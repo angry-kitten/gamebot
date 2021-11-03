@@ -23,6 +23,8 @@ digested=None
 detim=None
 # above are protected by the lock
 
+detection_condition=None
+
 tasks=None
 task_stack_names=[]
 
@@ -130,6 +132,18 @@ inventory_slots_free=0
 inventory_slots_unknown=0
 inventory=None
 inventory_name=None
+
+inventory_has_net=False
+inventory_has_pole=False
+inventory_has_ladder=False
+inventory_has_shovel=False
+inventory_has_wetsuit=False
+inventory_has_fishingpole=False
+inventory_has_wateringcan=False
+inventory_has_slingshot=False
+inventory_has_stoneaxe=False
+inventory_has_cuttingaxe=False
+inventory_has_axe=False
 
 current_tool=None
 

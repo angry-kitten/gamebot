@@ -63,7 +63,9 @@ class TaskSearchPattern(taskobject.Task):
             # Skip this one.
             gbstate.unreachable=False
         else:
+            self.parent.Push(taskcheckforinterrupt.TaskCheckForInterrupt())
             self.callme()
+            self.parent.Push(taskcheckforinterrupt.TaskCheckForInterrupt())
 
         #self.parent.Push(taskcheckforinterrupt.TaskCheckForInterrupt())
 

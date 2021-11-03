@@ -31,12 +31,10 @@ class TaskTakeInventory(taskobject.Task):
             return
 
         if self.step == 0:
-            print("detect was just done")
             self.determine_slots()
             return
 
-        if self.step == 1: # pointer hand should be out of the way
-            print("pointer hand out of the way")
+        if self.step == 1: # the number of slots is known
             self.sort_detections_to_slots()
             self.step=99
             return
@@ -58,23 +56,6 @@ class TaskTakeInventory(taskobject.Task):
 
         # open inventory
         self.parent.Push(taskdetect.TaskDetect())
-        self.parent.Push(taskobject.TaskTimed(3.0)) # wait for the inventory to open
-        self.parent.Push(taskpress.TaskPress('X'))
-        gbstate.draw_inventory_locations=True
-
-    def DebugRecursive(self,indent=0):
-        self.DebugPrint(self.name,indent)
-
-    def NameRecursive(self):
-        myname=self.name
-        gbstate.task_stack_names.append(myname)
-        return myname
-
-    def determine_slots(self):
-        # Find the inventory size.
-        gbstate.draw_inventory_locations=True
-
-        determine_slots_bubble()
 
         # Get the pointer hand out of the way by moving it to the clothing
         # "slot".
@@ -93,7 +74,25 @@ class TaskTakeInventory(taskobject.Task):
             #self.parent.Push(taskobject.TaskTimed(0.3)) # wait for animation
             self.parent.Push(taskpress.TaskPress('hat_BOTTOM'))
 
-        self.step=1 # pointer hand should be out of the way
+        self.parent.Push(taskobject.TaskTimed(3.0)) # wait for the inventory to open
+        self.parent.Push(taskpress.TaskPress('X'))
+        gbstate.draw_inventory_locations=True
+
+    def DebugRecursive(self,indent=0):
+        self.DebugPrint(self.name,indent)
+
+    def NameRecursive(self):
+        myname=self.name
+        gbstate.task_stack_names.append(myname)
+        return myname
+
+    def determine_slots(self):
+        # Find the inventory size.
+        gbstate.draw_inventory_locations=True
+
+        determine_slots_bubble()
+
+        self.step=1 # the number of slots is known
 
     def sort_detections_to_slots(self):
         with gbstate.detection_lock:
@@ -142,22 +141,49 @@ class TaskTakeInventory(taskobject.Task):
         print("inventory_slots_unknown",gbstate.inventory_slots_unknown)
         print("inventory_slots_free",gbstate.inventory_slots_free)
 
+        gbstate.inventory_has_net=False
+        gbstate.inventory_has_pole=False
+        gbstate.inventory_has_ladder=False
+        gbstate.inventory_has_shovel=False
+        gbstate.inventory_has_wetsuit=False
+        gbstate.inventory_has_fishingpole=False
+        gbstate.inventory_has_wateringcan=False
+        gbstate.inventory_has_slingshot=False
+        gbstate.inventory_has_stoneaxe=False
+        gbstate.inventory_has_cuttingaxe=False
+        gbstate.inventory_has_axe=False
+        for name in gbstate.inventory_name:
+            if name is not None:
+                if name in gbdata.net_tools:
+                    gbstate.inventory_has_net=True
+                elif name in gbdata.pole_tools:
+                    gbstate.inventory_has_pole=True
+                elif name in gbdata.ladder_tools:
+                    gbstate.inventory_has_ladder=True
+                elif name in gbdata.shovel_tools:
+                    gbstate.inventory_has_shovel=True
+                elif name in gbdata.wetsuit_tools:
+                    gbstate.inventory_has_wetsuit=True
+                elif name in gbdata.fishingpole_tools:
+                    gbstate.inventory_has_fishingpole=True
+                elif name in gbdata.wateringcan_tools:
+                    gbstate.inventory_has_wateringcan=True
+                elif name in gbdata.slingshot_tools:
+                    gbstate.inventory_has_slingshot=True
+                else:
+                    # Some of what is left can be in multiple lists.
+                    if name in gbdata.stone_axe_tools:
+                        gbstate.inventory_has_stoneaxe=True
+                    if name in gbdata.cutting_axe_tools:
+                        gbstate.inventory_has_cuttingaxe=True
+                    if name in gbdata.axe_tools:
+                        gbstate.inventory_has_axe=True
+
 def determine_slots_bubble():
     # Find the inventory size.
     if gbstate.inventory_size < 10:
         gbstate.inventory_size=20
         gbstate.inventory_locations=gbdata.inventory_locations_20
-
-    ## It turns out the BellBagStar location is nearly the same for 30 and 40 :(.
-    ## if gbscreen.has_label('BellBagStar',0.50,gbdata.inventory_bag_20_x,gbdata.inventory_bag_20_y,5):
-    ##     gbstate.inventory_size=20
-    ##     gbstate.inventory_locations=gbdata.inventory_locations_20
-    ## elif gbscreen.has_label('BellBagStar',0.50,gbdata.inventory_bag_30_x,gbdata.inventory_bag_30_y,5):
-    ##     gbstate.inventory_size=30
-    ##     gbstate.inventory_locations=gbdata.inventory_locations_30
-    ## elif gbscreen.has_label('BellBagStar',0.50,gbdata.inventory_bag_40_x,gbdata.inventory_bag_40_y,5):
-    ##     gbstate.inventory_size=40
-    ##     gbstate.inventory_locations=gbdata.inventory_locations_40
 
     w=gbdata.stdscreen_size[0]
     sx=int(round(w/2))

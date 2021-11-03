@@ -8,6 +8,7 @@ import taskobject
 import gbdata
 import gbstate
 import gbscreenread
+import gamebot
 
 class TaskDetect(taskobject.Task):
     """TaskDetect Object"""
@@ -27,6 +28,7 @@ class TaskDetect(taskobject.Task):
             return
         with gbstate.detection_lock:
             if gbstate.detections is None:
+                gamebot.object_detection_wakeup()
                 return
 
         gbscreenread.screen_read()
@@ -45,6 +47,7 @@ class TaskDetect(taskobject.Task):
         gbstate.pause_message='Detect'
         with gbstate.detection_lock:
             gbstate.detections=None
+        gamebot.object_detection_wakeup()
 
     def DebugRecursive(self,indent=0):
         self.DebugPrint("TaskDetect",indent)

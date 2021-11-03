@@ -21,6 +21,7 @@ import gbdisplay
 import tasktrackgoto
 import tasksimplegoto
 import gbmap
+import taskpole
 
 class TaskPathPlanGoTo(taskobject.Task):
     """TaskPathPlanGoTo Object"""
@@ -91,11 +92,19 @@ class TaskPathPlanGoTo(taskobject.Task):
         # works well because we have to push the task in reverse order anyway.
         # Add 0.5 to the waypoints to go to the center of the map squares.
         for wp in gbmap.waypoints:
-            mx=wp[0]+0.5
-            my=wp[1]+0.5
-            self.parent.Push(tasksimplegoto.TaskSimpleGoTo(mx,my,low_precision=True))
+            mx=wp[0]
+            my=wp[1]
+            movetype=gbstate.mainmap[mx][my].move_type
+            print("movetype",movetype)
+            cmx=wp[0]+0.5
+            cmy=wp[1]+0.5
+            if gbmap.MoveStep == movetype:
+                self.parent.Push(tasksimplegoto.TaskSimpleGoTo(cmx,cmy,low_precision=True))
+            elif gbmap.MovePole == movetype:
+                self.parent.Push(taskpole.TaskPole(cmx,cmy))
 
-        gbmap.waypoints=[]
+        # Don't clear out the waypoints so that gbdisplay can draw them.
+        #gbmap.waypoints=[]
 
         return
 

@@ -122,6 +122,7 @@ phonemap_dashes_step=85
 phonemap_square_spacing=phonemap_dashes_step/16
 phonemap_origin_x=phonemap_dashes_L2R_0-phonemap_dashes_step
 phonemap_origin_y=phonemap_dashes_T2B_0-phonemap_dashes_step
+phonemap_origin_y+=5
 
 phonemap_left=phonemap_dashes_L2R_0-(phonemap_dashes_step*2)
 phonemap_right=phonemap_dashes_L2R_5+(phonemap_dashes_step*2)
@@ -138,25 +139,202 @@ minimap_height=map_height
 phonemap_width=map_width
 phonemap_height=map_height
 
-minimap_color_water1=[156,221,186] # rgb
-minimap_color_water2=[121,207,180] # rgb
-minimap_color_rock=[113,116,136] # rgb
-minimap_color_grass0=[71,125,68] # rgb
-minimap_color_grass1=[70,171,67] # rgb
-minimap_color_grass2=[99,212,78] # rgb
-minimap_color_sand=[245,234,165] # rgb
-minimap_color_dock=[157,131,97] # rgb
-minimap_color_dirt=[174,159,125] # rgb
+minimap_color_water=[
+[156,221,186],
+[156,221,186],
+[121,207,180],
+[128,206,177],
+[145,214,182],
+[149,220,189],
+[131,213,185],
+[135,208,177],
+[148,223,196],
+[214,239,210],
+[179,214,168],
+[170,230,196],
+[163,225,190],
+[138,213,183],
+[252,252,227],
+[228,244,218],
+[234,245,220],
+[254,255,234],
+[222,240,213],
+[153,224,180],
+]
+minimap_color_rock=[
+[113,116,136]
+]
+minimap_color_grass0=[
+[71,125,68],
+[63,125,66],
+[99,142,91],
+[102,149,97],
+[108,154,100],
+[92,144,88],
+[79,132,75],
+[128,163,114],
+[89,136,84],
+[79,126,74],
+[121,159,110],
+[85,130,76],
+[133,168,120],
+[67,127,79],
+[84,140,91],
+[120,140,76],
+[109,151,89],
+]
+minimap_color_grass1=[
+[70,171,67],
+[76,175,71],
+[107,191,96],
+[83,179,78],
+[104,185,92],
+[97,189,90],
+[98,181,89],
+[90,184,84],
+[91,177,82],
+[129,200,114],
+[84,173,74],
+]
+minimap_color_grass2=[
+[99,212,78],
+[105,213,79],
+[125,222,101],
+[118,216,92],
+[112,217,88],
+[119,222,96],
+[141,233,115],
+[108,205,100],
+]
+minimap_color_sand=[
+[245,234,165],
+[254,247,178],
+[249,240,173],
+]
+minimap_color_dock=[
+[157,131,97],
+]
+minimap_color_dirt=[
+[174,159,125],
+]
 
-phonemap_color_water1=[129,225,197] # rgb
-phonemap_color_water2=[121,207,180] # rgb
-phonemap_color_rock=[113,116,136] # rgb
-phonemap_color_grass0=[71,131,66] # rgb
-phonemap_color_grass1=[70,171,67] # rgb
-phonemap_color_grass2=[99,212,78] # rgb
-phonemap_color_sand=[236,231,162] # rgb
-phonemap_color_dock=[162,140,102] # rgb
-phonemap_color_dirt=[174,159,125] # rgb
+phonemap_color_water=[
+[129,225,197],
+[121,207,180],
+[120,220,197],
+[124,218,186],
+[140,225,191],
+[109,215,188],
+[95,212,171],
+[96,216,180],
+[142,233,205],
+[160,238,205],
+[88,157,111],
+[126,197,179],
+[136,229,179],
+[163,218,172],
+[100,187,153],
+[139,219,172],
+[122,188,161],
+[151,158,126],
+[156,227,196],
+[105,195,162],
+[106,209,136],
+[117,214,165],
+[133,216,181],
+[119,223,140],
+[131,210,169],
+[115,213,143],
+[116,194,177],
+[151,193,185],
+[150,229,154],
+]
+phonemap_color_rock=[
+[113,116,136],
+[132,135,145],
+[148,207,193],
+[141,197,189],
+[121,185,172],
+[121,126,139],
+[98,132,132],
+[123,174,168],
+[139,186,177],
+[133,167,169],
+[112,131,123],
+[110,129,139],
+[104,117,124],
+[124,150,148],
+[122,141,150],
+]
+phonemap_color_grass0=[
+[71,131,66],
+[84,136,71],
+[137,179,119],
+[62,125,63],
+[94,142,75],
+[108,149,94],
+[98,151,88],
+[109,158,69],
+[109,158,96],
+[96,141,85],
+[73,140,67],
+[80,149,73],
+[72,149,109],
+[118,155,99],
+[115,190,78],
+[94,191,99],
+[80,144,86],
+[79,178,92],
+[67,140,93],
+[166,183,123],
+]
+phonemap_color_grass1=[
+[70,171,67],
+[79,182,70],
+[91,182,69],
+[102,185,79],
+[93,183,78],
+[84,196,67],
+[79,167,74],
+[100,201,82],
+[99,165,86],
+[88,159,76],
+]
+phonemap_color_grass2=[
+[99,212,78],
+[118,219,85],
+[109,218,79],
+[91,196,79],
+[96,193,69],
+[93,203,70],
+[110,209,77],
+[115,222,127],
+[125,224,131],
+]
+phonemap_color_sand=[
+[236,231,162],
+[238,234,172],
+[204,205,143],
+[188,191,128],
+[161,170,110],
+[226,223,160],
+[115,145,74],
+[215,216,182],
+[216,229,163],
+[226,235,168],
+[195,215,149],
+]
+phonemap_color_dock=[
+[162,140,102],
+[154,144,111],
+[155,131,93],
+[168,147,111],
+[215,209,149],
+[201,195,135],
+]
+phonemap_color_dirt=[
+[174,159,125],
+]
 
 #index_for_fit=-10
 # meta slope
@@ -210,27 +388,27 @@ inventory_pointer_offset_y=39
 # Screen locations for the 30 item inventory.
 inventory_locations_30 = [
     (341,157),
-    (405,142),
-    (473,130),
-    (538,121),
+    (408,141),
+    (473,128),
+    (539,122),
     (606,118),
     (673,118),
     (739,122),
     (806,128),
     (871,142),
     (938,157),
-    (341,227), # 10
+    (341,228), # 10
     (407,212),
-    (474,202),
+    (473,199),
     (540,193),
-    (605,192),
+    (606,189),
     (674,189),
     (739,192),
     (806,200),
     (872,213),
     (939,230),
     (342,300), # 20
-    (408,283),
+    (407,283),
     (474,271),
     (540,264),
     (607,259),
@@ -320,7 +498,8 @@ gatherable_items=[
     "Apple",
     "Coconut",
     "WeedsBag",
-    "WaspNest"
+    "WaspNest",
+    "GoldRose"
 ]
 
 treeable_items=[
@@ -342,8 +521,16 @@ digable_items=[
 
 net_tools=['InvNet','InvFlimsyNet','InvGoldenNet']
 shovel_tools=['InvShovel','InvFlimsyShovel','InvGoldenShovel']
+pole_tools=['InvPole']
+ladder_tools=['InvLadder']
+wetsuit_tools=['InvWetSuit']
+fishingpole_tools=['InvFishingPole']
+wateringcan_tools=['InvWateringCan']
+slingshot_tools=['InvSlingshot']
 
+# These will cut trees down.
 cutting_axe_tools=['InvAxe','InvGoldenAxe']
+# These will not cut trees down.
 stone_axe_tools=['InvStoneAxe']
 axe_tools=stone_axe_tools.copy()
 axe_tools.extend(cutting_axe_tools)

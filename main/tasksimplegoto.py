@@ -68,6 +68,13 @@ class TaskSimpleGoTo(taskobject.Task):
                 print(self.name,"done")
                 self.taskdone=True
                 return
+            if gbscreen.match_within(self.previous_mx,mx,self.within) and gbscreen.match_within(self.previous_my,my,self.within):
+                print("stuck 2")
+                gbstate.goto_target_mx=-1
+                gbstate.goto_target_my=-1
+                print(self.name,"done")
+                self.taskdone=True
+                return
 
         if self.counter >= self.limit:
             print("over count")
