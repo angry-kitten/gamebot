@@ -69,7 +69,7 @@ def process_detections(d):
         print("detections does not exist")
         return
     n=d['num_detections']
-    print("n=",n)
+    #print("n=",n)
     boxes=d['detection_boxes']
     scores=d['detection_scores']
     classes=d['detection_classes']
@@ -111,8 +111,8 @@ def process_detections(d):
         #print("found=",found)
         digested.append(found)
     #print(digested)
-    for det in digested:
-        print(det)
+    #for det in digested:
+    #    print(det)
     return digested
 
 def do_one_object_detect(dframe):
@@ -317,15 +317,20 @@ def object_detection_thread():
         #print("odt")
         print("odt 1")
         dframe=None
+        do_sleep_retry=False
         do_detect=False
         localdetections=None
         localdigested=None
         print("odt 2")
         with gbstate.detection_lock:
             if gbstate.detection_frame is not None:
+                print("detection_frame is not None")
                 if gbstate.detections is None:
+                    print("detections is None")
                     dframe=gbstate.detection_frame
                     do_detect=True
+            else:
+                do_sleep_retry=True
         print("odt 3")
         if do_detect:
             print("start a detection")
@@ -335,12 +340,15 @@ def object_detection_thread():
                     gbstate.detections=localdetections
                     gbstate.digested=localdigested
                     gbstate.detim=localim
-        #else:
-        #    #print("no detection")
-        #    time.sleep(1)
+
         print("odt 4")
 
-        object_detection_wait()
+        if do_sleep_retry:
+            print("sleep retry")
+            time.sleep(1)
+        else:
+            print("wait")
+            object_detection_wait()
         print("odt 5")
     return
 

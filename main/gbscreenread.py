@@ -25,14 +25,14 @@ def screen_read():
     gbstate.screen_chars=[]
     first_pass=[]
     for det in localdigested:
-        print(det) # det is [name,score,cx,cy,bx,by,x1,x2,y1,y2]
+        #print(det) # det is [name,score,cx,cy,bx,by,x1,x2,y1,y2]
         # Set a minimum score of 10%
         if det[1] >= 0.1:
             name=det[0]
             prefix=name[0:4] # The first 4 letters of name
             if prefix == 'Char':
                 body=name[4:] # Everything after the first 4 characters
-                print(name,prefix,body)
+                #print(name,prefix,body)
                 l=len(body)
                 body2=body
                 if l == 1:

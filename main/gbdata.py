@@ -39,14 +39,19 @@ pin_orange2=[230,92,45] # rgb
 # The pin area below the central circle is at least 6x6. If we sample
 # every 6 we should be able to find it without checking all pixels in
 # the minimap area.
+common_tune_mx=0
+common_tune_my=0
+
 minimap_pin_search_x=6
 minimap_pin_search_y=6
 minimap_pin_width=19
 minimap_pin_height=26
 #minimap_pin_center_to_tip=18
 minimap_pin_center_to_tip=19
-minimap_pin_tune_mx=-0.25
-minimap_pin_tune_my=0.0
+#minimap_pin_tune_mx=-0.25
+#minimap_pin_tune_my=0.0
+minimap_pin_tune_mx=0.5+common_tune_mx
+minimap_pin_tune_my=-1.0+common_tune_my
 
 # phonemap pin info
 phonemap_pin_search_x=6
@@ -56,8 +61,10 @@ phonemap_pin_height=41
 #phonemap_pin_center_to_tip=23
 #phonemap_pin_center_to_tip=23.25
 phonemap_pin_center_to_tip=23.50
-phonemap_pin_tune_mx=0.25
-phonemap_pin_tune_my=0.25
+#phonemap_pin_tune_mx=0.25
+#phonemap_pin_tune_my=0.25
+phonemap_pin_tune_mx=0.25+common_tune_mx
+phonemap_pin_tune_my=0.25+common_tune_my
 
 phonemap_gray_search_x=6
 phonemap_gray_search_y=6

@@ -86,7 +86,7 @@ class TaskTree(taskobject.Task):
             self.parent.Push(tasktrackturn.TaskTrackTurn(0))
 
             # walk up against the tree
-            self.parent.Push(taskheadinggoto.TaskHeadingGoTo(0,1))
+            self.parent.Push(taskheadinggoto.TaskHeadingGoTo(0,0.5))
 
             # Go to the tree facing north.
             self.parent.Push(taskpathplangoto.TaskPathPlanGoTo(self.target_mx,self.target_my))

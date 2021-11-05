@@ -278,7 +278,8 @@ def planning_build_distance_grid(from_mx,from_my):
         print("standing on water")
         # That's awkword. We're standing on water. Maybe it's a
         # triangle edge on the water.
-        n.phonemap=MapTypeUnknown
+        #n.phonemap=MapTypeUnknown
+        n.phonemap=MapTypeGrass0
         n.obstruction_status=ObStandingOnWater
     n.planning_distance=1
     print("has pole",gbstate.inventory_has_pole)

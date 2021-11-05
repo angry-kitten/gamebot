@@ -24,6 +24,7 @@ import taskdetermineposition
 import taskholdtool
 import gbtrack
 import tasktrackturn
+import taskheadinggoto
 
 class TaskPole(taskobject.Task):
     """TaskPole Object"""
@@ -77,6 +78,10 @@ class TaskPole(taskobject.Task):
             self.parent.Push(taskobject.TaskTimed(5.0))
 
             self.parent.Push(taskpress.TaskPress('A'))
+
+            self.parent.Push(taskobject.TaskTimed(1.0))
+
+            self.parent.Push(taskheadinggoto.TaskHeadingGoTo(heading,0.5))
 
             self.parent.Push(taskobject.TaskTimed(1.0))
 

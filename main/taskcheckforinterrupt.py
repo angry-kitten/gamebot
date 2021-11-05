@@ -70,21 +70,27 @@ class TaskCheckForInterrupt(taskobject.Task):
                 self.step=1
                 return
 
-            if gbscreen.is_resident_nearby():
-                self.parent.Push(taskchat.TaskChat())
-                return
+            if self.step == 1:
+                self.step=2
+                if gbscreen.is_resident_nearby():
+                    self.parent.Push(taskchat.TaskChat())
+                    return
 
-            if gbstate.inventory_slots_full == gbstate.inventory_size:
-                self.parent.Push(taskstore.TaskStore())
-                self.parent.Push(tasksell.TaskSell())
-                self.parent.Push(taskmuseum.TaskMuseum())
-                return
+            if self.step == 2:
+                self.step=3
+                if gbstate.inventory_slots_full == gbstate.inventory_size:
+                    self.parent.Push(taskstore.TaskStore())
+                    self.parent.Push(tasksell.TaskSell())
+                    self.parent.Push(taskmuseum.TaskMuseum())
+                    return
 
-            if gbstate.inventory_slots_full > 0 and gbstate.inventory_slots_free == 0:
-                self.parent.Push(taskstore.TaskStore())
-                self.parent.Push(tasksell.TaskSell())
-                self.parent.Push(taskmuseum.TaskMuseum())
-                return
+            if self.step == 3:
+                self.step=4
+                if gbstate.inventory_slots_full > 0 and gbstate.inventory_slots_free == 0:
+                    self.parent.Push(taskstore.TaskStore())
+                    self.parent.Push(tasksell.TaskSell())
+                    self.parent.Push(taskmuseum.TaskMuseum())
+                    return
 
             print(self.name,"done")
             self.taskdone=True

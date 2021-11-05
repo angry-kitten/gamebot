@@ -28,7 +28,7 @@ class TaskDetect(taskobject.Task):
             return
         with gbstate.detection_lock:
             if gbstate.detections is None:
-                gamebot.object_detection_wakeup()
+                #gamebot.object_detection_wakeup()
                 return
 
         gbscreenread.screen_read()

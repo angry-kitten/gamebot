@@ -91,7 +91,9 @@ class TaskPathPlanGoTo(taskobject.Task):
         # The waypoints are ordered from the destination to the start. This
         # works well because we have to push the task in reverse order anyway.
         # Add 0.5 to the waypoints to go to the center of the map squares.
-        for wp in gbmap.waypoints:
+        n=len(gbmap.waypoints)
+        for j in range(n):
+            wp=gbmap.waypoints[j]
             mx=wp[0]
             my=wp[1]
             movetype=gbstate.mainmap[mx][my].move_type
@@ -102,6 +104,14 @@ class TaskPathPlanGoTo(taskobject.Task):
                 self.parent.Push(tasksimplegoto.TaskSimpleGoTo(cmx,cmy,low_precision=True))
             elif gbmap.MovePole == movetype:
                 self.parent.Push(taskpole.TaskPole(cmx,cmy))
+
+                # Make sure we have an accurate starting position.
+                j2=j+1
+                if j2 < n:
+                    wp2=gbmap.waypoints[j2]
+                    pmx=wp2[0]+0.5
+                    pmy=wp2[1]+0.5
+                    self.parent.Push(tasksimplegoto.TaskSimpleGoTo(pmx,pmy))
 
         # Don't clear out the waypoints so that gbdisplay can draw them.
         #gbmap.waypoints=[]
