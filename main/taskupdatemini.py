@@ -66,8 +66,6 @@ class TaskUpdateMini(taskobject.Task):
                 return
 
         print("additional wait complete")
-        self.gather_minimap()
-        #self.debug_minimap()
         self.position_from_minimap()
         print(self.name,"done")
         self.taskdone=True
@@ -87,92 +85,6 @@ class TaskUpdateMini(taskobject.Task):
     def NameRecursive(self):
         gbstate.task_stack_names.append(self.name)
         return self.name
-
-    def process_location(self,data_x,data_y,pixel_x,pixel_y):
-        (b,g,r)=gbscreen.get_pixel(pixel_x,pixel_y)
-        if gbscreen.color_match_rgb_array_list(r,g,b,gbdata.minimap_color_water,5):
-            gbstate.mainmap[data_x][data_y].minimap=gbmap.MapTypeWater
-            return
-        if gbscreen.color_match_rgb_array_list(r,g,b,gbdata.minimap_color_rock,5):
-            gbstate.mainmap[data_x][data_y].minimap=gbmap.MapTypeRock
-            return
-        if gbscreen.color_match_rgb_array_list(r,g,b,gbdata.minimap_color_grass0,5):
-            gbstate.mainmap[data_x][data_y].minimap=gbmap.MapTypeGrass0
-            return
-        if gbscreen.color_match_rgb_array_list(r,g,b,gbdata.minimap_color_grass1,5):
-            gbstate.mainmap[data_x][data_y].minimap=gbmap.MapTypeGrass1
-            return
-        if gbscreen.color_match_rgb_array_list(r,g,b,gbdata.minimap_color_grass2,5):
-            gbstate.mainmap[data_x][data_y].minimap=gbmap.MapTypeGrass2
-            return
-        if gbscreen.color_match_rgb_array_list(r,g,b,gbdata.minimap_color_sand,5):
-            gbstate.mainmap[data_x][data_y].minimap=gbmap.MapTypeSand
-            return
-        if gbscreen.color_match_rgb_array_list(r,g,b,gbdata.minimap_color_dock,5):
-            gbstate.mainmap[data_x][data_y].minimap=gbmap.MapTypeDock
-            return
-        if gbscreen.color_match_rgb_array_list(r,g,b,gbdata.minimap_color_dirt,5):
-            gbstate.mainmap[data_x][data_y].minimap=gbmap.MapTypeDirt
-            return
-        print("mini unknown color",r,g,b,data_x,data_y)
-        return
-
-    def check_surrounded(self,mx,my):
-        if mx < 1:
-            return
-        if mx >= (gbdata.map_width-1):
-            return
-        if my < 1:
-            return
-        if my >= (gbdata.map_height-1):
-            return
-        v1=gbstate.mainmap[mx-1][my-1].minimap
-        if v1 == 0:
-            return
-        if v1 != gbstate.mainmap[mx][my-1].minimap:
-            return
-        if v1 != gbstate.mainmap[mx+1][my-1].minimap:
-            return
-        if v1 != gbstate.mainmap[mx-1][my].minimap:
-            return
-        if v1 != gbstate.mainmap[mx+1][my].minimap:
-            return
-        if v1 != gbstate.mainmap[mx-1][my+1].minimap:
-            return
-        if v1 != gbstate.mainmap[mx][my+1].minimap:
-            return
-        if v1 != gbstate.mainmap[mx+1][my+1].minimap:
-            return
-        print("mini surrounded",mx,my,v1)
-        return
-
-    def gather_minimap(self):
-        if gbstate.mainmap is None:
-            gbmap.init_map()
-
-        pixel_start_x=gbdata.minimap_origin_x
-        pixel_start_y=gbdata.minimap_origin_y
-        for data_x in range(gbdata.minimap_width):
-            pixel_x=(data_x*gbdata.minimap_square_spacing)+pixel_start_x
-            for data_y in range(gbdata.minimap_height):
-                pixel_y=(data_y*gbdata.minimap_square_spacing)+pixel_start_y
-                self.process_location(data_x,data_y,pixel_x,pixel_y)
-
-        for mx in range(gbdata.map_width):
-            for my in range(gbdata.map_height):
-                if gbstate.mainmap[mx][my].minimap == gbmap.MapTypeUnknown:
-                    self.check_surrounded(mx,my)
-        return
-
-    def debug_minimap(self):
-        if gbstate.mainmap is None:
-            print("no mainmap")
-            return
-        for y in range(gbdata.map_height):
-            line=''
-            for x in range(gbdata.map_width):
-                line+=gbmap.maptype_rev[gbstate.mainmap[x][y].minimap][1]
-            print(line)
 
     def is_pin_orange(self,pixel_x,pixel_y):
         pixel_x=int(round(pixel_x))

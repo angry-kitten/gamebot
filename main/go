@@ -1,3 +1,4 @@
 #!/usr/bin/env bash
 set -x
-./gamebot.py | tee e0
+./gamebot.py 2>&1 | tee e0
+cp e0 e1

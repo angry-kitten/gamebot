@@ -56,6 +56,13 @@ def color_match_rgb_array_list(pr,pg,pb,l,within):
             return b
     return False
 
+def color_match_rgb_array_list2(pr,pg,pb,l):
+    for a in l:
+        b=color_match_rgb(pr,pg,pb,a[0],a[1],a[2],a[3])
+        if b:
+            return b
+    return False
+
 def color_match(x,y,tr,tg,tb,within):
     x=int(round(x))
     y=int(round(y))

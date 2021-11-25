@@ -55,7 +55,7 @@ class TaskUpdatePhoneMap(taskobject.Task):
                 self.parent.Push(taskpress.TaskPress('B',1.0))
                 return
             print("yes on phone map screen")
-            self.gather_phonemap()
+            gbmap.gather_phonemap2()
             self.position_from_phonemap()
             self.locate_buildings()
             self.step=2
@@ -159,82 +159,6 @@ class TaskUpdatePhoneMap(taskobject.Task):
 
         print("set step 1")
         self.step=1
-
-    def process_location(self,data_x,data_y,pixel_x,pixel_y):
-        (b,g,r)=gbscreen.get_pixel(pixel_x,pixel_y)
-        if gbscreen.color_match_rgb_array_list(r,g,b,gbdata.phonemap_color_water,8):
-            gbstate.mainmap[data_x][data_y].phonemap=gbmap.MapTypeWater
-            return
-        if gbscreen.color_match_rgb_array_list(r,g,b,gbdata.phonemap_color_rock,8):
-            gbstate.mainmap[data_x][data_y].phonemap=gbmap.MapTypeRock
-            return
-        if gbscreen.color_match_rgb_array_list(r,g,b,gbdata.phonemap_color_grass0,8):
-            gbstate.mainmap[data_x][data_y].phonemap=gbmap.MapTypeGrass0
-            return
-        if gbscreen.color_match_rgb_array_list(r,g,b,gbdata.phonemap_color_grass1,8):
-            gbstate.mainmap[data_x][data_y].phonemap=gbmap.MapTypeGrass1
-            return
-        if gbscreen.color_match_rgb_array_list(r,g,b,gbdata.phonemap_color_grass2,8):
-            gbstate.mainmap[data_x][data_y].phonemap=gbmap.MapTypeGrass2
-            return
-        if gbscreen.color_match_rgb_array_list(r,g,b,gbdata.phonemap_color_sand,8):
-            gbstate.mainmap[data_x][data_y].phonemap=gbmap.MapTypeSand
-            return
-        if gbscreen.color_match_rgb_array_list(r,g,b,gbdata.phonemap_color_dock,8):
-            gbstate.mainmap[data_x][data_y].phonemap=gbmap.MapTypeDock
-            return
-        if gbscreen.color_match_rgb_array_list(r,g,b,gbdata.phonemap_color_dirt,8):
-            gbstate.mainmap[data_x][data_y].phonemap=gbmap.MapTypeDirt
-            return
-        print("unknown color",r,g,b,data_x,data_y)
-
-    def check_surrounded(self,mx,my):
-        if mx < 1:
-            return
-        if mx >= (gbdata.map_width-1):
-            return
-        if my < 1:
-            return
-        if my >= (gbdata.map_height-1):
-            return
-        v1=gbstate.mainmap[mx-1][my-1].phonemap
-        if v1 == 0:
-            return
-        if v1 != gbstate.mainmap[mx][my-1].phonemap:
-            return
-        if v1 != gbstate.mainmap[mx+1][my-1].phonemap:
-            return
-        if v1 != gbstate.mainmap[mx-1][my].phonemap:
-            return
-        if v1 != gbstate.mainmap[mx+1][my].phonemap:
-            return
-        if v1 != gbstate.mainmap[mx-1][my+1].phonemap:
-            return
-        if v1 != gbstate.mainmap[mx][my+1].phonemap:
-            return
-        if v1 != gbstate.mainmap[mx+1][my+1].phonemap:
-            return
-        print("surrounded",mx,my,v1)
-        return
-
-    def gather_phonemap(self):
-        if gbstate.mainmap is None:
-            gbmap.init_map()
-
-        square_center_offset=gbdata.phonemap_square_spacing/2
-        pixel_start_x=gbdata.phonemap_origin_x+square_center_offset
-        pixel_start_y=gbdata.phonemap_origin_y+square_center_offset
-        for data_x in range(gbdata.map_width):
-            pixel_x=int(round((data_x*gbdata.phonemap_square_spacing)+pixel_start_x))
-            for data_y in range(gbdata.map_height):
-                pixel_y=int(round((data_y*gbdata.phonemap_square_spacing)+pixel_start_y))
-                self.process_location(data_x,data_y,pixel_x,pixel_y)
-
-        for mx in range(gbdata.map_width):
-            for my in range(gbdata.map_height):
-                if gbstate.mainmap[mx][my].phonemap == gbmap.MapTypeUnknown:
-                    self.check_surrounded(mx,my)
-        return
 
     def debug_phonemap(self):
         if gbstate.mainmap is None:

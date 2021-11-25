@@ -23,14 +23,16 @@ color_blue=(255,0,0) # BGR
 color_yellow=(0,255,255) # BGR
 color_orange=(0,165,255) # BGR
 
-color_water=color_blue
-color_coastal_rock=(32,32,32)
-color_grass0=(0,128,0) # BGR
-color_grass1=(0,192,0) # BGR
-color_grass2=(0,255,0) # BGR
-color_sand=color_yellow
-color_dock=(0,128,128)
-color_dirt=(0,32,32)
+color_water=(195,224,129) # BGR
+color_coastal_rock=(135,121,114) # BGR
+color_grass0=(64,129,67) # BGR
+color_grass1=(67,175,72) # BGR
+color_grass2=(80,220,107) # BGR
+color_sand=(167,232,235) # BGR
+color_dock=(0,128,128) # BGR
+color_dirt=(0,32,32) # BGR
+color_plaza=(125,162,175) # BGR
+color_junk=(255,0,255) # BGR
 
 line_width=1
 line_width_x_narrow=2
@@ -570,7 +572,7 @@ def draw_top_of_task_stack(frame):
 
     # Draw the names of multiple tasks on the top of the stack along
     # the right side of the screen.
-    x=int((w*3)/4)
+    x=int((w*2)/4)
     i=font_vertical_space_50 # This is the spacing between the lines vertically.
     y=i
     l=len(gbstate.task_stack_names)
@@ -604,33 +606,6 @@ def draw_maps(frame):
     origin_sy=int(h/2)                # origin (upper left) screen y
 
     # draw phonemap
-    if gbstate.mainmap is not None:
-        cv2.rectangle(frame,(origin_sx,origin_sy),(origin_sx+gbdata.map_width,origin_sy+gbdata.map_height),color_red,1)
-        for y in range(gbdata.map_height):
-            for x in range(gbdata.map_width):
-                v=gbstate.mainmap[x][y].phonemap
-                color=color_red
-                if v == 1: # water
-                    color=color_water
-                elif v == 2: # rock (coastal)
-                    color=color_coastal_rock
-                elif v == 3: # grass level 0
-                    color=color_grass0
-                elif v == 4: # grass level 1
-                    color=color_grass1
-                elif v == 5: # grass level 2
-                    color=color_grass2
-                elif v == 6: # sand
-                    color=color_sand
-                elif v == 7: # dock
-                    color=color_dock
-                elif v == 8: # dirt
-                    color=color_dirt
-                if color is not None:
-                    sx=origin_sx+x
-                    sy=origin_sy+y
-                    # use a rectangle to draw a pixel
-                    cv2.rectangle(frame,(sx,sy),(sx,sy),color,-1)
 
     origin_sx+=gbdata.map_width
 
@@ -657,33 +632,6 @@ def draw_maps(frame):
     origin_sx+=gbdata.map_width
 
     # draw minimap
-    if gbstate.mainmap is not None:
-        cv2.rectangle(frame,(origin_sx,origin_sy),(origin_sx+gbdata.map_width,origin_sy+gbdata.map_height),color_red,1)
-        for y in range(gbdata.map_height):
-            for x in range(gbdata.map_width):
-                v=gbstate.mainmap[x][y].minimap
-                color=color_red
-                if v == 1: # water
-                    color=color_water
-                elif v == 2: # rock (coastal)
-                    color=color_coastal_rock
-                elif v == 3: # grass level 0
-                    color=color_grass0
-                elif v == 4: # grass level 1
-                    color=color_grass1
-                elif v == 5: # grass level 2
-                    color=color_grass2
-                elif v == 6: # sand
-                    color=color_sand
-                elif v == 7: # dock
-                    color=color_dock
-                elif v == 8: # dirt
-                    color=color_dirt
-                if color is not None:
-                    sx=origin_sx+x
-                    sy=origin_sy+y
-                    # use a rectangle to draw a pixel
-                    cv2.rectangle(frame,(sx,sy),(sx,sy),color,-1)
 
     origin_sy-=gbdata.map_height
     # draw path planning
@@ -741,6 +689,78 @@ def draw_maps(frame):
             sy2=origin_sy+waypole[3]
             cv2.line(frame,(sx1,sy1),(sx2,sy2),color_green,line_width)
 
+    origin_sx=w-(3*gbdata.map_width)
+    origin_sy=0
+    # draw phonemap2
+    if gbstate.mainmap is not None:
+        cv2.rectangle(frame,(origin_sx,origin_sy),(origin_sx+gbdata.map_width,origin_sy+gbdata.map_height),color_red,1)
+        for y in range(gbdata.map_height):
+            for x in range(gbdata.map_width):
+                sx=origin_sx+x*3
+                sy=origin_sy+y*3
+                me=gbstate.mainmap[x][y]
+
+                c2=maptype_to_color(me.phonemap2)
+                if c2 is not None:
+                    # Draw a simple square.
+                    cv2.rectangle(frame,(sx,sy),(sx+2,sy+2),c2,-1)
+                elif me.phonemap2 == gbmap.MapTypeDiagonalNW:
+                    # Draw a black background square.
+                    cv2.rectangle(frame,(sx,sy),(sx+2,sy+2),color_black,-1)
+                    cu=maptype_to_color(me.diagonal0)
+                    cl=maptype_to_color(me.diagonal1)
+                    if cu is not None:
+                        # Draw the upper right pixels
+                        cv2.rectangle(frame,(sx+1,sy),(sx+1,sy),cu,-1)
+                        cv2.rectangle(frame,(sx+2,sy),(sx+2,sy),cu,-1)
+                        cv2.rectangle(frame,(sx+2,sy+1),(sx+2,sy+1),cu,-1)
+                    if cl is not None:
+                        # Draw the lower left pixels
+                        cv2.rectangle(frame,(sx,sy+1),(sx,sy+1),cl,-1)
+                        cv2.rectangle(frame,(sx,sy+2),(sx,sy+2),cl,-1)
+                        cv2.rectangle(frame,(sx+1,sy+2),(sx+1,sy+2),cl,-1)
+                elif me.phonemap2 == gbmap.MapTypeDiagonalSW:
+                    # Draw a black background square.
+                    cv2.rectangle(frame,(sx,sy),(sx+2,sy+2),color_black,-1)
+                    cu=maptype_to_color(me.diagonal0)
+                    cl=maptype_to_color(me.diagonal1)
+                    if cu is not None:
+                        # Draw the upper left pixels
+                        cv2.rectangle(frame,(sx,sy),(sx,sy),cu,-1)
+                        cv2.rectangle(frame,(sx+1,sy),(sx+1,sy),cu,-1)
+                        cv2.rectangle(frame,(sx,sy+1),(sx,sy+1),cu,-1)
+                    if cl is not None:
+                        # Draw the lower right pixels
+                        cv2.rectangle(frame,(sx+2,sy+1),(sx+2,sy+1),cl,-1)
+                        cv2.rectangle(frame,(sx+1,sy+2),(sx+1,sy+2),cl,-1)
+                        cv2.rectangle(frame,(sx+2,sy+2),(sx+2,sy+2),cl,-1)
+                else:
+                    # Draw a simple square.
+                    cv2.rectangle(frame,(sx,sy),(sx+2,sy+2),color_red,-1)
+
+def maptype_to_color(maptype):
+    if maptype == gbmap.MapTypeWater: # water
+        return color_water
+    elif maptype == gbmap.MapTypeRock: # rock (coastal)
+        return color_coastal_rock
+    elif maptype == gbmap.MapTypeGrass0: # grass level 0
+        return color_grass0
+    elif maptype == gbmap.MapTypeGrass1: # grass level 1
+        return color_grass1
+    elif maptype == gbmap.MapTypeGrass2: # grass level 2
+        return color_grass2
+    elif maptype == gbmap.MapTypeSand: # sand
+        return color_sand
+    elif maptype == gbmap.MapTypeDock: # dock
+        return color_dock
+    elif maptype == gbmap.MapTypeDirt: # dirt
+        return color_dirt
+    elif maptype == gbmap.MapTypePlaza:
+        return color_plaza
+    elif maptype == gbmap.MapTypeJunk:
+        return color_junk
+    return None
+
 def draw_heading(frame):
     w=gbdata.stdscreen_size[0]
     h=gbdata.stdscreen_size[1]
@@ -792,7 +812,7 @@ def draw_on(frame):
     phonemap_position(frame)
     player_position(frame)
 
-    draw_grid(frame)
+    #draw_grid(frame)
     draw_feet_box(frame)
     #draw_x_path(frame)
     draw_targets(frame)
@@ -810,18 +830,22 @@ def draw_on(frame):
     #cv2.rectangle(frame,(x2,y2),(x4,y4),color_white,line_width)
     cv2.circle(frame,(x3,y3),y2,color_white,line_width)
     #cv2.putText(frame,'Gamebot',(x3,y3),font,font_scale,color_white,line_width,line_type)
-    draw_maps(frame)
+
+    draw_top_of_task_stack(frame)
+
     draw_heading(frame)
 
-    draw_distance_time(frame)
+    #draw_distance_time(frame)
 
     draw_pause_message(frame)
 
-    draw_top_of_task_stack(frame)
 
     gbscreenread.draw_screen_read(frame)
 
     draw_buildings(frame)
+
+    draw_map2(frame)
+    draw_maps(frame)
 
 def find_detect(target_list,d_mx,d_my,distance,count,score):
     print("find_detect")
@@ -926,4 +950,60 @@ def draw_buildings(frame):
     radius=int(round(gbdata.phonemap_circle_diameter/2))
     for c in gbstate.gray_circle_list:
         cv2.circle(frame,(c[0],c[1]),radius,color_red,line_width)
+    return
+
+def draw_map2(frame):
+    #if gbstate.y_hist is None:
+    #    return
+    origin_sx=gbdata.phonemap_left
+    origin_sy=gbdata.phonemap_top
+
+    #for data_y in range(gbdata.phonemap_sheight):
+    #    v=gbstate.y_hist[data_y]
+    #    sx=int(round(v*100))
+    #    sy=origin_sy+data_y
+    #    #cv2.rectangle(frame,(sx,sy),(sx,sy),color_red,-1)
+    #    cv2.line(frame,(50,sy),(sx,sy),color_red,1)
+
+    #for data_x in range(gbdata.phonemap_swidth):
+    #    v=gbstate.x_hist[data_x]
+    #    sx=origin_sx+data_x
+    #    sy=int(round(v*100))
+    #    #cv2.rectangle(frame,(sx,sy),(sx,sy),color_red,-1)
+    #    cv2.line(frame,(sx,50),(sx,sy),color_red,1)
+
+    sy1=int(round(gbdata.phonemap_origin_y))
+    sy2=int(round(gbdata.phonemap_origin_y+gbdata.map_height*gbdata.phonemap_square_spacing))
+    for mx in range(gbdata.map_width+1):
+        sx=gbdata.phonemap_origin_x+(mx*gbdata.phonemap_square_spacing)
+        sx=int(round(sx))
+        cv2.line(frame,(sx,sy1),(sx,sy2),color_green,1)
+
+    sx1=int(round(gbdata.phonemap_origin_x))
+    sx2=int(round(gbdata.phonemap_origin_x+gbdata.map_width*gbdata.phonemap_square_spacing))
+    for my in range(gbdata.map_height+1):
+        sy=gbdata.phonemap_origin_y+(my*gbdata.phonemap_square_spacing)
+        sy=int(round(sy))
+        cv2.line(frame,(sx1,sy),(sx2,sy),color_green,1)
+
+    if gbdata.phonemap_dashes_L2R is not None:
+        for sx in gbdata.phonemap_dashes_L2R:
+            cv2.line(frame,(sx,110),(sx,gbdata.phonemap_bottom),color_blue,1)
+    if gbdata.phonemap_dashes_T2B is not None:
+        for sy in gbdata.phonemap_dashes_T2B:
+            cv2.line(frame,(110,sy),(gbdata.phonemap_right,sy),color_blue,1)
+
+    #for e in gbstate.map2stats:
+    #    avg=e[0]
+    #    avgr=e[1]
+    #    avgg=e[2]
+    #    avgb=e[3]
+    #    sx=e[4]
+    #    sy=e[5]
+    #    cv2.rectangle(frame,(sx,sy),(sx,sy),color_red,-1)
+
+    for diaginfo in gbstate.map2diagonals:
+        print("diaginfo",diaginfo)
+        cv2.line(frame,(diaginfo[0],diaginfo[1]),(diaginfo[2],diaginfo[3]),color_yellow,1)
+
     return

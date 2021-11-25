@@ -32,6 +32,13 @@ label_id_offset=1
 
 mainmap=None
 unreachable=False
+#x_hist=None
+#y_hist=None
+#phonemap_measured_dashes_L2R=None
+#phonemap_measured_dashes_T2B=None
+map2stats=[]
+map2maybediagonals=[]
+map2diagonals=[]
 
 # The map position calculated from the minimap.
 position_minimap_x=-1
