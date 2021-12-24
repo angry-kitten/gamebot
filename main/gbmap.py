@@ -7,10 +7,13 @@ import time
 import gbdata
 import gbstate
 import gbscreen
+import gbdisplay
 
 waypoints=[]
 possible_pole=[]
 waypoint_pole=[]
+
+icons=[]
 
 step_cost=1
 pole_cost=20
@@ -102,7 +105,24 @@ def is_obstructed(mx,my):
 
     p=n.phonemap2
     #print("ob p",p)
-    if p == MapTypeWater:
+    ep=node_equivalent_type(n)
+
+    if ep == MapTypeGrass0:
+        return False
+    if ep == MapTypeGrass1:
+        return False
+    if ep == MapTypeGrass2:
+        return False
+
+    if ep == MapTypeUnknown:
+        return True
+    if ep == MapTypeWater:
+        return True
+    if ep == MapTypeDock:
+        return True
+    if ep == MapTypeDiagonalNW:
+        return True
+    if ep == MapTypeDiagonalSW:
         return True
 
     v=n.objstruction_status
@@ -143,12 +163,18 @@ def is_grass(id):
 
 def planning_pass_check_pole(mx1,my1,mx2,my2):
     # We know that mx2 my2 is water.
-    print("planning_check_pole",mx1,my1,mx2,my2)
+    #print("planning_check_pole",mx1,my1,mx2,my2)
     n1=gbstate.mainmap[mx1][my1]
     n2=gbstate.mainmap[mx2][my2]
-    print("n1 is",n1.phonemap2)
-    print("n2 is",n2.phonemap2)
-    if not is_grass(n1.phonemap2):
+    atype=n1.phonemap2
+    btype=n2.phonemap2
+    #print("n1 is",atype)
+    #print("n2 is",btype)
+    aetype=node_equivalent_type(n1)
+    betype=node_equivalent_type(n2)
+    #print("n1 is",aetype)
+    #print("n2 is",betype)
+    if not is_grass(aetype):
         print("start not grass")
         return False
     dx=mx2-mx1
@@ -164,16 +190,19 @@ def planning_pass_check_pole(mx1,my1,mx2,my2):
         my=my2+(dy*j)
         if is_bad_location(mx,my):
             return False
-        print("mx my",mx,my)
+        #print("mx my",mx,my)
         n=gbstate.mainmap[mx][my]
-        print("n is",n.phonemap2)
-        if n.phonemap2 != MapTypeWater:
-            print("maybe can pole")
-            if not is_grass(n.phonemap2):
-                print("end not grass")
+        btype=n.phonemap2
+        #print("n is",btype)
+        betype=node_equivalent_type(n)
+        #print("n is",betype)
+        if betype != MapTypeWater:
+            #print("maybe can pole")
+            if not is_grass(betype):
+                #print("end not grass")
                 return False
-            if n1.phonemap2 != n.phonemap2:
-                print("mismatched grass")
+            if aetype != betype:
+                #print("mismatched grass")
                 return False
             # Recurse to all the other checks. Just because it's not water
             # doesn't mean it can pole there if there is a different
@@ -182,18 +211,18 @@ def planning_pass_check_pole(mx1,my1,mx2,my2):
             global pole_cost
             can=planning_pass_pair(mx1,my1,mx,my,pole_cost)
             if can:
-                print("can")
-                print("able to poll from",mx1,my1,"to",mx,my)
+                #print("can")
+                #print("able to poll from",mx1,my1,"to",mx,my)
                 possible1=[mx1,my1,mx,my]
                 possible2=[mx,my,mx1,my1]
                 global possible_pole
                 if possible1 not in possible_pole:
                     if possible2 not in possible_pole:
                         possible_pole.append(possible1)
-                    else:
-                        print("already possible2")
-                else:
-                    print("already possible1")
+                    #else:
+                    #    print("already possible2")
+                #else:
+                #    print("already possible1")
             return can
     return False
 
@@ -204,8 +233,10 @@ def planning_pass_pair(mx1,my1,mx2,my2,cost):
     n1=gbstate.mainmap[mx1][my1]
     n2=gbstate.mainmap[mx2][my2]
     if is_obstructed(mx1,my1):
-        #print("ob",mx1,my1)
-        return False
+        print("obstructed at source",mx1,my1,n1.phonemap2,n1.diagonal0,n1.diagonal1)
+        #return False
+    # yyy
+    gbstate.inventory_has_pole=True
     if gbstate.inventory_has_pole:
         if n2.phonemap2 == MapTypeWater:
             # It might be able to pole over what otherwise would be an obstruction.
@@ -214,22 +245,26 @@ def planning_pass_pair(mx1,my1,mx2,my2,cost):
     if is_obstructed(mx2,my2):
         #print("ob",mx2,my2)
         return False
+    # yyy the ladder code is not implemented
+    gbstate.inventory_has_ladder=False
     if not gbstate.inventory_has_ladder:
         # Can't change levels without a ladder.
         # Everything is at level 0 unless it is grass1 or grass2.
-        if n1.phonemap2 == MapTypeGrass1:
+        eatype=node_equivalent_type(n1)
+        ebtype=node_equivalent_type(n2)
+        if eatype == MapTypeGrass1:
             # Start is level 1
-            if n2.phonemap2 != MapTypeGrass1:
+            if ebtype != MapTypeGrass1:
                 # Destination is level 0 or 2.
                 return False
-        elif n1.phonemap2 == MapTypeGrass2:
+        elif eatype == MapTypeGrass2:
             # Start is level 2
-            if n2.phonemap2 != MapTypeGrass2:
+            if ebtype != MapTypeGrass2:
                 # Destination is level 0 or 1.
                 return False
         else:
             # Start is level 0
-            if n2.phonemap2 == MapTypeGrass1 or n2.phonemap2 == MapTypeGrass2:
+            if ebtype == MapTypeGrass1 or ebtype == MapTypeGrass2:
                 # Destination is level 1 or 2.
                 return False
 
@@ -287,8 +322,7 @@ def planning_build_distance_grid(from_mx,from_my):
     n=gbstate.mainmap[mx][my]
     if n.phonemap2 == MapTypeWater:
         print("standing on water")
-        # That's awkword. We're standing on water. Maybe it's a
-        # triangle edge on the water.
+        # That's awkword. We're standing on water.
         #n.phonemap2=MapTypeUnknown
         n.phonemap2=MapTypeGrass0
         n.obstruction_status=ObStandingOnWater
@@ -334,6 +368,7 @@ def planning_build_waypoints_from_to(from_mx,from_my,to_mx,to_my):
         walk_my=nmy
     return
 
+    # Try moving with a step or a pole.
 def planning_next_waypoint(wmx,wmy):
     print("planning_next_waypoint",wmx,wmy)
     # try down/south
@@ -381,10 +416,11 @@ def planning_next_waypoint(wmx,wmy):
 
     return (-1,-1)
 
+    # Try moving with a step.
 def planning_try_going(wmx,wmy,dx,dy):
-    print("planning_try_going",wmx,wmy,dx,dy)
+    #print("planning_try_going",wmx,wmy,dx,dy)
     v1=gbstate.mainmap[wmx][wmy].planning_distance
-    print("v1",v1)
+    #print("v1",v1)
     mx=wmx
     my=wmy
     rmx=-1
@@ -393,9 +429,9 @@ def planning_try_going(wmx,wmy,dx,dy):
         mx+=dx
         my+=dy
         v1-=1
-        print("v1",v1,mx,my)
+        #print("v1",v1,mx,my)
         v2=gbstate.mainmap[mx][my].planning_distance
-        print("v2",v2,mx,my)
+        #print("v2",v2,mx,my)
         if v2 != v1:
             break
         rmx=mx
@@ -403,9 +439,54 @@ def planning_try_going(wmx,wmy,dx,dy):
         if v1 == 1: # at start position
             print("at start")
             break
-    print("result",rmx,rmy)
+    #print("result",rmx,rmy)
     return (rmx,rmy)
 
+    # Return equvalent types for things at the same level.
+def node_equivalent_type(n):
+    atype=n.phonemap2
+    if MapTypeGrass2 == atype:
+        return MapTypeGrass2
+    if MapTypeGrass1 == atype:
+        return MapTypeGrass1
+    if MapTypeGrass0 == atype:
+        return MapTypeGrass0
+    if MapTypeRock == atype:
+        return MapTypeGrass0
+    if MapTypeSand == atype:
+        return MapTypeGrass0
+    if MapTypePlaza == atype:
+        return MapTypeGrass0
+    if MapTypeDiagonalNW == atype or MapTypeDiagonalSW == atype:
+        a=n.diagonal0
+        b=n.diagonal1
+        if MapTypeGrass2 == a:
+            return atype
+        if MapTypeGrass1 == a:
+            return atype
+        if MapTypeGrass0 == a:
+            if MapTypeRock == b:
+                return MapTypeGrass0
+            if MapTypeSand == b:
+                return MapTypeGrass0
+            if MapTypePlaza == b:
+                return MapTypeGrass0
+            return atype
+        if MapTypeGrass2 == b:
+            return atype
+        if MapTypeGrass1 == b:
+            return atype
+        if MapTypeGrass0 == b:
+            if MapTypeRock == a:
+                return MapTypeGrass0
+            if MapTypeSand == a:
+                return MapTypeGrass0
+            if MapTypePlaza == a:
+                return MapTypeGrass0
+            return atype
+    return atype
+
+    # Try moving with a pole.
 def planning_try_going_pole(wmx,wmy,dx,dy):
     print("planning_try_going_pole",wmx,wmy,dx,dy)
     v1=gbstate.mainmap[wmx][wmy].planning_distance
@@ -414,6 +495,22 @@ def planning_try_going_pole(wmx,wmy,dx,dy):
     my=wmy
     rmx=-1
     rmy=-1
+
+    na=gbstate.mainmap[wmx][wmy]
+    atype=na.phonemap2
+
+    if MapTypeUnknown == atype:
+        return (rmx,rmy) # nope
+    if MapTypeWater == atype:
+        return (rmx,rmy) # nope
+    if MapTypeDock == atype:
+        return (rmx,rmy) # nope
+    if MapTypeJunk == atype:
+        return (rmx,rmy) # nope
+    if MapTypeDiagonalNW == atype:
+        return (rmx,rmy) # nope
+    if MapTypeDiagonalSW == atype:
+        return (rmx,rmy) # nope
 
     # make sure the first step is water
     mx+=dx
@@ -434,10 +531,18 @@ def planning_try_going_pole(wmx,wmy,dx,dy):
         print("water too wide")
         return (rmx,rmy)
 
+    nb=gbstate.mainmap[mx][my]
+    btype=nb.phonemap2
+
     # make sure the source and destination type match
-    if gbstate.mainmap[wmx][wmy].phonemap2 != gbstate.mainmap[mx][my].phonemap2:
+    if atype != btype:
         print("src dst type mismatch")
-        return (rmx,rmy)
+        # Now try pole equivalent types comparison.
+        eatype=node_equivalent_type(na)
+        ebtype=node_equivalent_type(nb)
+        if eatype != ebtype:
+            print("src dst equivalent type mismatch")
+            return (rmx,rmy)
 
     # now make sure the destination distance is one cost less than the source
     global pole_cost
@@ -457,10 +562,8 @@ def planning_try_going_pole(wmx,wmy,dx,dy):
     waypoint_pole.append(waypole)
     return (rmx,rmy)
 
-def gather_phonemap2():
-    print("gather_phonemap2")
-    if gbstate.mainmap is None:
-        init_map()
+def gather_phonemap_squares():
+    print("gather_phonemap_squares")
 
     ## Clear out the old data.
     #gbstate.x_hist=[0 for x in range(gbdata.phonemap_swidth)]
@@ -586,15 +689,33 @@ def gather_phonemap2():
     # Sort and display the stats.
 
     # Sort by the first element in the entry array, avg.
-    print("stats")
-    sstats=sorted(gbstate.map2stats, key=lambda entry: entry[0])
-    for e in sstats:
-        print(e)
+    #print("stats")
+    #sstats=sorted(gbstate.map2stats, key=lambda entry: entry[0])
+    #for e in sstats:
+    #    print(e)
 
-    print("maybe diagonals")
-    sdiagonals=sorted(gbstate.map2maybediagonals, key=lambda entry: entry[0])
-    for e in sdiagonals:
-        print(e)
+    #print("maybe diagonals")
+    #sdiagonals=sorted(gbstate.map2maybediagonals, key=lambda entry: entry[0])
+    #for e in sdiagonals:
+    #    print(e)
+
+    return
+
+def gather_phonemap2():
+    print("gather_phonemap2")
+    if gbstate.mainmap is None:
+        init_map()
+
+    tnow=time.monotonic()
+    if gbstate.mainmap_latest_update != 0:
+        telapsed=tnow-gbstate.mainmap_latest_update
+        if telapsed < gbdata.phonemap_update_rate:
+            return
+    gbstate.mainmap_latest_update=tnow
+
+    gather_phonemap_squares()
+
+    locate_buildings()
 
     return
 
@@ -649,7 +770,8 @@ def process_phonemap_square(mx,my,isx1,isx2,isy1,isy2):
     if avg <= 80.0:
         mt=color_to_maptype(avgr,avgg,avgb)
         if mt is not None:
-            gbstate.mainmap[mx][my].phonemap2=mt
+            if mt is not MapTypeJunk:
+                gbstate.mainmap[mx][my].phonemap2=mt
             return
 
     #gbstate.map2stats.append(entry)
@@ -833,27 +955,27 @@ def process_phonemap_square(mx,my,isx1,isx2,isy1,isy2):
         score=sw_avg/(avg+0.000001)
 
     maybe_diagonal=[score,nw_avg,sw_avg,avg,nw_u_avgr,nw_u_avgg,nw_u_avgb,nw_l_avgr,nw_l_avgg,nw_l_avgb,sw_u_avgr,sw_u_avgg,sw_u_avgb,sw_l_avgr,sw_l_avgg,sw_l_avgb,isx1,isy1,isx2,isy2]
-    print("diagonal",maybe_diagonal)
+    #print("diagonal",maybe_diagonal)
 
     #gbstate.map2maybediagonals.append(maybe_diagonal)
 
     # yyy
     if score < 0.9:
-        print("diaginfo 2")
+        #print("diaginfo 2")
         if nw_avg <= sw_avg:
             # A diagonal starting at nw
-            print("nw",nw_u_avgr,nw_u_avgg,nw_u_avgb)
+            #print("nw",nw_u_avgr,nw_u_avgg,nw_u_avgb)
             maptype_u=color_to_maptype(nw_u_avgr,nw_u_avgg,nw_u_avgb)
-            print("m_u",maptype_u)
+            #print("m_u",maptype_u)
             if maptype_diagonal_is_allowed(maptype_u):
-                print("allowed 1",nw_l_avgr,nw_l_avgg,nw_l_avgb)
+                #print("allowed 1",nw_l_avgr,nw_l_avgg,nw_l_avgb)
                 maptype_l=color_to_maptype(nw_l_avgr,nw_l_avgg,nw_l_avgb)
-                print("m_l",maptype_l)
+                #print("m_l",maptype_l)
                 if maptype_diagonal_is_allowed(maptype_l):
-                    print("allowed 2")
+                    #print("allowed 2")
                     # The upper and lower triangle colors look reasonable.
                     if maptype_u != maptype_l:
-                        print("different")
+                        #print("different")
                         m2=gbstate.mainmap[mx][my]
                         m2.phonemap2=MapTypeDiagonalNW
                         m2.diagonal0=maptype_u
@@ -863,18 +985,18 @@ def process_phonemap_square(mx,my,isx1,isx2,isy1,isy2):
                         return
         else:
             # A diagonal starting at sw
-            print("sw",sw_u_avgr,sw_u_avgg,sw_u_avgb)
+            #print("sw",sw_u_avgr,sw_u_avgg,sw_u_avgb)
             maptype_u=color_to_maptype(sw_u_avgr,sw_u_avgg,sw_u_avgb)
-            print("m_u",maptype_u)
+            #print("m_u",maptype_u)
             if maptype_diagonal_is_allowed(maptype_u):
-                print("allowed 1",sw_l_avgr,sw_l_avgg,sw_l_avgb)
+                #print("allowed 1",sw_l_avgr,sw_l_avgg,sw_l_avgb)
                 maptype_l=color_to_maptype(sw_l_avgr,sw_l_avgg,sw_l_avgb)
-                print("m_l",maptype_l)
+                #print("m_l",maptype_l)
                 if maptype_diagonal_is_allowed(maptype_l):
-                    print("allowed 2")
+                    #print("allowed 2")
                     # The upper and lower triangle colors look reasonable.
                     if maptype_u != maptype_l:
-                        print("different")
+                        #print("different")
                         m2=gbstate.mainmap[mx][my]
                         m2.phonemap2=MapTypeDiagonalSW
                         m2.diagonal0=maptype_u
@@ -887,7 +1009,7 @@ def process_phonemap_square(mx,my,isx1,isx2,isy1,isy2):
 
     ignore_me=[isx1,isy1]
     if ignore_me in gbdata.tmp_ignore:
-        print("ignore this",ignore_me)
+        #print("ignore this",ignore_me)
         return
 
     gbstate.map2stats.append(entry)
@@ -948,3 +1070,246 @@ def maptype_diagonal_is_allowed(maptype):
     #if maptype is MapTypePlaza:
     #    return False
     return True
+
+def locate_buildings():
+    # find gray circles
+    search_w=gbdata.phonemap_right-gbdata.phonemap_left
+    search_h=gbdata.phonemap_bottom-gbdata.phonemap_top_pin
+    for local_y in range(0,search_h,gbdata.phonemap_gray_search_y):
+        pixel_y=gbdata.phonemap_top+local_y
+        for local_x in range(0,search_w,gbdata.phonemap_gray_search_x):
+            pixel_x=gbdata.phonemap_left+local_x
+            if is_circle_gray(pixel_x,pixel_y):
+                #print("found possible circle at",pixel_x,pixel_y)
+                verify_circle(pixel_x,pixel_y)
+
+    # Gather the icons from inside the circles.
+    gather_icons()
+
+    # Match the icons with known icons.
+    match_icons()
+
+    return
+
+def verify_circle(start_sx,start_sy):
+    #print("verify_circle",start_sx,start_sy)
+
+    if is_already_found(start_sx,start_sy):
+        #print("already found")
+        return
+
+    max_diameter=gbdata.phonemap_circle_diameter+4
+    color=gbdata.phonemap_circle_gray
+    # Step left and right looking for the edges.
+    left_sx=gbscreen.locate_horizontal_extent(color,start_sy,start_sx,start_sx-max_diameter)
+    right_sx=gbscreen.locate_horizontal_extent(color,start_sy,start_sx,start_sx+max_diameter)
+    #print("left_sx",left_sx)
+    #print("right_sx",right_sx)
+
+    w=right_sx-left_sx
+    #print("w",w)
+    if w > (gbdata.phonemap_circle_diameter+4):
+        # overlapping circles
+        return
+
+    center_sx=int(round((left_sx+right_sx)/2))
+    #print("center_sx",center_sx)
+
+    # Step up and down looking for the edges.
+    top_sy=gbscreen.locate_vertical_extent(color,start_sx,start_sy,start_sy-max_diameter)
+    bottom_sy=gbscreen.locate_vertical_extent(color,start_sx,start_sy,start_sy+max_diameter)
+
+    #print("top_sy",top_sy)
+    #print("bottom_sy",bottom_sy)
+
+    h=bottom_sy-top_sy
+    #print("h",h)
+    if not gbscreen.match_within(h,gbdata.phonemap_circle_diameter,3):
+        print("these are not the droids we are looking for")
+        return
+
+    center_sy=int(round((top_sy+bottom_sy)/2))
+    #print("center_sy",center_sy)
+
+    add_gray_circle(center_sx,center_sy)
+
+    return
+
+def add_gray_circle(center_sx,center_sy):
+    # first see if it is already there
+    for c in gbstate.gray_circle_list:
+        if gbscreen.match_within(center_sx,c[0],3) and gbscreen.match_within(center_sy,c[1],3):
+            # already there
+            return
+    gbstate.gray_circle_list.append([center_sx,center_sy])
+    l=len(gbstate.gray_circle_list)
+    #print("l",l)
+    return
+
+def is_already_found(start_sx,start_sy):
+    radius=gbdata.phonemap_circle_diameter/2
+    for c in gbstate.gray_circle_list:
+        d=gbdisplay.calculate_distance(start_sx,start_sy,c[0],c[1])
+        if d <= (radius+4):
+            # already found
+            return True
+    return False
+
+def gather_icons():
+    icons=[]
+    radius=gbdata.phonemap_circle_diameter/2
+    for c in gbstate.gray_circle_list:
+        icon=gather_an_icon(c[0],c[1])
+        whereicon=[c[0],c[1],icon]
+        icons.append(whereicon)
+    return
+
+def gather_an_icon(start_sx,start_sy):
+    diameter=gbdata.phonemap_circle_diameter
+    radius=int(round(diameter/2))
+    sx1=start_sx-radius
+    sy1=start_sy-radius
+    icon=[0 for i in range(diameter*diameter)]
+    for sy2 in range(0,diameter):
+        for sx2 in range(0,diameter):
+            sx=sx1+sx2
+            sy=sy1+sy2
+            i=(sy2*diameter)+sx2
+            # only collect info inside the circle
+            d=gbdisplay.calculate_distance(start_sx,start_sy,sx,sy)
+            if d <= radius:
+                if is_circle_icon(sx,sy):
+                    icon[i]=1
+    #print("icon",icon)
+    #print_icon(icon)
+    return icon
+
+def print_icon(icon):
+    diameter=gbdata.phonemap_circle_diameter
+    print("icon=[")
+
+    for sy in range(0,diameter):
+        for sx in range(0,diameter):
+            i=(sy*diameter)+sx
+            v=icon[i]
+            print(v,",",sep='',end='')
+        print("")
+
+    print("]")
+    return
+
+def match_icons():
+    global icons
+    for whereicon in icons:
+        match_an_icon(whereicon)
+
+    # These aren't needed any more.
+    icons=[]
+    return
+
+def match_an_icon(whereicon):
+    best_co=None
+    best_match=None
+    for ni in gbdata.named_icons:
+        #print(ni[0])
+        co=do_icon_match(whereicon[2],ni[1])
+        if best_co is None:
+            best_co=co
+            best_match=ni
+        else:
+            if best_co < co:
+                best_co=co
+                best_match=ni
+    if best_co is not None:
+        print("found match")
+        print(best_match[0],"is at",whereicon[0],whereicon[1])
+        set_building(best_match[0],whereicon[0],whereicon[1])
+        return
+    return
+
+def do_icon_match(icon1,icon2):
+    best_co=None
+    off_by=1
+    for offset_y in range(-off_by,off_by+1):
+        for offset_x in range(-off_by,off_by+1):
+            co=compare_icons_offsets(icon1,icon2,offset_x,offset_y)
+            if best_co is None:
+                best_co=co
+            else:
+                if best_co < co:
+                    best_co=co
+    return best_co
+
+def compare_icons_offsets(icon1,icon2,ox,oy):
+    i1=icon1.copy()
+    i2=icon2.copy()
+    # offsets ox, oy are how much to adjust icon1
+    diameter=gbdata.phonemap_circle_diameter
+    adjust=(diameter*oy)+ox
+    if adjust < 0:
+        # Chop off the beginning of icon1 and append
+        # zeros to the end.
+        n=-adjust
+        i1=i1[n:]
+        i1.extend([0 for j in range(n)])
+    elif adjust > 0:
+        # Chop off the end of icon1 and append
+        # zeros to the beginning.
+        n=adjust
+        i1tmp=[0 for j in range(n)]
+        i1tmp.extend(i1[0:-n])
+        i1=i1tmp
+
+    l1=len(i1)
+    l2=len(i2)
+    #print("l1 l2",l1,l2)
+    co=compare_icons(i1,i2)
+    #print("co",co)
+    return co
+
+def compare_icons(icon1,icon2):
+    co=numpy.correlate(icon1,icon2)
+    #print("co",co)
+    return co
+
+def set_building(name,sx,sy):
+    # Calculate the map location given the screen location.
+    mx=(sx-gbdata.phonemap_origin_x)/gbdata.phonemap_square_spacing
+    my=(sy-gbdata.phonemap_origin_y)/gbdata.phonemap_square_spacing
+
+    # binfo is [name,centermx,centermy,doormx,doormy]
+    if name == 'campsite':
+        binfo=[name,mx,my,mx,my+3]
+        gbstate.building_info_campsite=binfo
+    elif name == 'museum':
+        binfo=[name,mx,my,mx,my+3]
+        gbstate.building_info_museum=binfo
+    elif name == 'cranny':
+        binfo=[name,mx,my,mx,my+3]
+        gbstate.building_info_cranny=binfo
+    elif name == 'services':
+        binfo=[name,mx,my,mx,my+3]
+        gbstate.building_info_services=binfo
+    elif name == 'tailors':
+        binfo=[name,mx,my,mx,my+3]
+        gbstate.building_info_tailors=binfo
+    elif name == 'airport':
+        binfo=[name,mx,my,mx,my+3]
+        gbstate.building_info_airport=binfo
+    else:
+        print("unknown building name")
+    return
+
+def is_circle_gray(pixel_x,pixel_y):
+    pixel_x=int(round(pixel_x))
+    pixel_y=int(round(pixel_y))
+    if gbscreen.color_match_array(pixel_x,pixel_y,gbdata.phonemap_circle_gray,5):
+        return True
+    return False
+
+def is_circle_icon(pixel_x,pixel_y):
+    pixel_x=int(round(pixel_x))
+    pixel_y=int(round(pixel_y))
+    if gbscreen.color_match_array(pixel_x,pixel_y,gbdata.phonemap_circle_icon,2):
+        return True
+    return False

@@ -100,7 +100,7 @@ class TaskTree(taskobject.Task):
             # Swing the net just in case a wasp nest was triggered.
             self.parent.Push(taskpress.TaskPress('A'))
             # Wait for a possible wasp nest animation.
-            self.parent.Push(taskobject.TaskTimed(3.0))
+            self.parent.Push(taskobject.TaskTimed(2.5))
             # Shake the tree with 'A' and maybe trigger a wasp nest.
             self.parent.Push(taskpress.TaskPress('A'))
             self.step=3 # continue to selecting a stone axe
@@ -124,14 +124,6 @@ class TaskTree(taskobject.Task):
                 self.parent.Push(taskholdtool.TaskHoldTool('None'))
                 return
 
-            # Gather up to seven items. 3 wood, 3 fruit, 1 wasp nest
-            self.parent.Push(taskgather.TaskGather(gbdata.gatherable_items))
-            self.parent.Push(taskgather.TaskGather(gbdata.gatherable_items))
-            self.parent.Push(taskgather.TaskGather(gbdata.gatherable_items))
-            self.parent.Push(taskgather.TaskGather(gbdata.gatherable_items))
-            self.parent.Push(taskgather.TaskGather(gbdata.gatherable_items))
-            self.parent.Push(taskgather.TaskGather(gbdata.gatherable_items))
-            self.parent.Push(taskgather.TaskGather(gbdata.gatherable_items))
             # Put the axe away.
             self.parent.Push(taskholdtool.TaskHoldTool('None'))
             # Swing the axe three times.
@@ -145,18 +137,80 @@ class TaskTree(taskobject.Task):
             # Swing the stone axe
             self.parent.Push(taskpress.TaskPress('A'))
 
-            #self.parent.Push(taskobject.TaskTimed(1.0))
-
             # Face up/north to face the tree.
             self.parent.Push(tasktrackturn.TaskTrackTurn(0))
 
             # walk up against the tree
             self.parent.Push(taskheadinggoto.TaskHeadingGoTo(0,1))
 
-            ## Go to the tree facing north.
-            #self.parent.Push(taskpathplangoto.TaskPathPlanGoTo(self.target_mx,self.target_my))
-            ## Go to one square in front of the tree.
-            #self.parent.Push(taskpathplangoto.TaskPathPlanGoTo(self.target_mx,self.target_my+1))
+            self.step=10
+            return
+
+        if self.step == 10: # walk around the base of the tree and gather
+            print("tasktree step 10")
+            # 6 5 4
+            # 7 T 3
+            # 8 1 2
+
+            # Gather at position 8
+            self.parent.Push(taskobject.TaskTimed(2.0)) # let the animation play out
+            self.parent.Push(taskpress.TaskPress('Y'))
+            # Face down/south and step 1
+            self.parent.Push(taskheadinggoto.TaskHeadingGoTo(180,1))
+
+            # Gather at position 7
+            self.parent.Push(taskobject.TaskTimed(2.0)) # let the animation play out
+            self.parent.Push(taskpress.TaskPress('Y'))
+            # Face down/south and step 1
+            self.parent.Push(taskheadinggoto.TaskHeadingGoTo(180,1))
+
+            # Gather at position 6
+            self.parent.Push(taskobject.TaskTimed(2.0)) # let the animation play out
+            self.parent.Push(taskpress.TaskPress('Y'))
+            # Face left/west and step 1
+            self.parent.Push(taskheadinggoto.TaskHeadingGoTo(270,1))
+
+            # Gather at position 5
+            self.parent.Push(taskobject.TaskTimed(2.0)) # let the animation play out
+            self.parent.Push(taskpress.TaskPress('Y'))
+            # Face left/west and step 1
+            self.parent.Push(taskheadinggoto.TaskHeadingGoTo(270,1))
+
+            # Gather at position 4
+            self.parent.Push(taskobject.TaskTimed(2.0)) # let the animation play out
+            self.parent.Push(taskpress.TaskPress('Y'))
+            # Face up/north and step 1
+            self.parent.Push(taskheadinggoto.TaskHeadingGoTo(0,1))
+
+            # Gather at position 3
+            self.parent.Push(taskobject.TaskTimed(2.0)) # let the animation play out
+            self.parent.Push(taskpress.TaskPress('Y'))
+            # Face up/north and step 1
+            self.parent.Push(taskheadinggoto.TaskHeadingGoTo(0,1))
+
+            # Gather at position 2
+            self.parent.Push(taskobject.TaskTimed(2.0)) # let the animation play out
+            self.parent.Push(taskpress.TaskPress('Y'))
+            # Face right/east and step 1
+            self.parent.Push(taskheadinggoto.TaskHeadingGoTo(90,1))
+
+            # Gather at position 1
+            self.parent.Push(taskobject.TaskTimed(2.0)) # let the animation play out
+            self.parent.Push(taskpress.TaskPress('Y'))
+
+            self.step=20
+            return
+
+        if self.step == 20: # see if we can get more gathered with TaskGather.
+            print("tasktree step 20")
+            # Gather up to seven items. 3 wood, 3 fruit, 1 wasp nest
+            self.parent.Push(taskgather.TaskGather(gbdata.gatherable_items))
+            self.parent.Push(taskgather.TaskGather(gbdata.gatherable_items))
+            self.parent.Push(taskgather.TaskGather(gbdata.gatherable_items))
+            self.parent.Push(taskgather.TaskGather(gbdata.gatherable_items))
+            self.parent.Push(taskgather.TaskGather(gbdata.gatherable_items))
+            self.parent.Push(taskgather.TaskGather(gbdata.gatherable_items))
+            self.parent.Push(taskgather.TaskGather(gbdata.gatherable_items))
 
             self.step=99 # done
             return

@@ -46,7 +46,34 @@ class TaskUpdatePhoneMap(taskobject.Task):
             self.select_map()
             return
 
-        if self.step == 1:
+        if self.step == 10:
+            # Move the pointer hand to the lower right so we know
+            # where it is.
+            self.parent.Push(taskpress.TaskPress('hat_BOTTOM'))
+            self.parent.Push(taskpress.TaskPress('hat_BOTTOM'))
+            self.parent.Push(taskpress.TaskPress('hat_RIGHT'))
+            self.parent.Push(taskpress.TaskPress('hat_RIGHT'))
+
+            # Move to the upper left.
+            self.parent.Push(taskpress.TaskPress('hat_LEFT'))
+            self.parent.Push(taskpress.TaskPress('hat_LEFT'))
+            self.parent.Push(taskpress.TaskPress('hat_LEFT'))
+            self.parent.Push(taskpress.TaskPress('hat_LEFT'))
+            self.parent.Push(taskpress.TaskPress('hat_LEFT'))
+            self.parent.Push(taskpress.TaskPress('hat_TOP'))
+            self.parent.Push(taskpress.TaskPress('hat_TOP'))
+            self.parent.Push(taskpress.TaskPress('hat_TOP'))
+
+            self.current_slot=8
+            self.step=20
+            return
+
+        if self.step == 20:
+            self.move_hand_and_select()
+            self.step=21
+            return
+
+        if self.step == 21:
             if not gbscreen.is_phone_map_screen():
                 print("not on phone map screen")
                 self.step=99
@@ -55,19 +82,18 @@ class TaskUpdatePhoneMap(taskobject.Task):
                 self.parent.Push(taskpress.TaskPress('B',1.0))
                 return
             print("yes on phone map screen")
-            gbmap.gather_phonemap2()
             self.position_from_phonemap()
-            self.locate_buildings()
-            self.step=2
+            gbmap.gather_phonemap2()
+            self.step=22
             return
 
-        if self.step == 2:
+        if self.step == 22:
             # close map
             self.parent.Push(taskpress.TaskPress('B',1.0))
-            self.step=3
+            self.step=30
             return
 
-        if self.step == 3:
+        if self.step == 30:
             # close phone
             self.parent.Push(taskpress.TaskPress('B',1.0))
             self.step=99
@@ -75,6 +101,7 @@ class TaskUpdatePhoneMap(taskobject.Task):
 
         print(self.name,"done")
         self.taskdone=True
+        gbstate.do_draw_buildings=False
         return
 
     def Start(self):
@@ -84,28 +111,13 @@ class TaskUpdatePhoneMap(taskobject.Task):
             return # already started
         self.started=True
         self.step=0 # pop up phone
-
-        # Move the pointer hand to the lower right so we know
-        # where it is.
-        self.parent.Push(taskpress.TaskPress('hat_BOTTOM'))
-        self.parent.Push(taskpress.TaskPress('hat_BOTTOM'))
-        self.parent.Push(taskpress.TaskPress('hat_RIGHT'))
-        self.parent.Push(taskpress.TaskPress('hat_RIGHT'))
-
-        # Move to the upper left.
-        self.parent.Push(taskpress.TaskPress('hat_LEFT'))
-        self.parent.Push(taskpress.TaskPress('hat_LEFT'))
-        self.parent.Push(taskpress.TaskPress('hat_LEFT'))
-        self.parent.Push(taskpress.TaskPress('hat_LEFT'))
-        self.parent.Push(taskpress.TaskPress('hat_LEFT'))
-        self.parent.Push(taskpress.TaskPress('hat_TOP'))
-        self.parent.Push(taskpress.TaskPress('hat_TOP'))
-        self.parent.Push(taskpress.TaskPress('hat_TOP'))
+        gbstate.do_draw_buildings=True
 
         # Wait for the phone screen to pop up.
         self.parent.Push(taskobject.TaskTimed(1.0))
         # Pop up the phone with ZL
         self.parent.Push(taskpress.TaskPress('ZL'))
+        return
 
     def DebugRecursive(self,indent=0):
         self.DebugPrint(self.name,indent)
@@ -114,25 +126,48 @@ class TaskUpdatePhoneMap(taskobject.Task):
         gbstate.task_stack_names.append(self.name)
         return self.name
 
-    def find_icon_by_color(self):
+    def find_map_icon_by_color(self):
         l=len(gbdata.phone_locations)
         for i in range(l):
             (sx,sy)=gbdata.phone_locations[i]
-            sx2=sx+gbdata.phone_color_offset_x
-            sy2=sy
+            sx2=sx+gbdata.phone_map_color_offset_x
+            sy2=sy+gbdata.phone_map_color_offset_y
             if gbscreen.color_match_array(sx2,sy2,gbdata.phone_map_color,5):
+                return i
+        return None
+
+    def find_hand_by_color(self):
+        l=len(gbdata.phone_locations)
+        for i in range(l):
+            (sx,sy)=gbdata.phone_locations[i]
+            sx2=sx+gbdata.phone_hand_offset_x
+            sy2=sy+gbdata.phone_hand_offset_y
+            if gbscreen.color_match_array(sx2,sy2,gbdata.phone_hand_color,2):
                 return i
         return None
 
     def select_map(self):
         # Try finding the icon by color.
-        best_slot=self.find_icon_by_color()
-        if best_slot is None:
-            print("no slot found by color")
-            self.step=3
+        self.map_slot=self.find_map_icon_by_color()
+        if self.map_slot is None:
+            print("no map slot found by color")
+            self.step=30 # close phone
             return
+        print("map slot found",self.map_slot)
 
-        print("slot found",best_slot)
+        # Try to find the pointer hand by color.
+        hand_slot=self.find_hand_by_color()
+        if hand_slot is None:
+            print("no hand slot found by color")
+            self.step=10 # try it the slow way
+            return
+        print("hand slot found",hand_slot)
+
+        self.current_slot=hand_slot
+        self.step=20 # Move the pointer hand, if needed, and select the map.
+        return
+
+    def move_hand_and_select(self):
         # Wait for the phone screen to pop up and feature highlight
         # to finish.
         #self.parent.Push(taskobject.TaskTimed(30.0))
@@ -141,24 +176,40 @@ class TaskUpdatePhoneMap(taskobject.Task):
         # Pop up the map with A
         self.parent.Push(taskpress.TaskPress('A'))
 
-        current_slot=8
-        while current_slot > best_slot:
-            delta=current_slot-best_slot
-            if delta >= 3:
-                # go up one
-                print("go up one")
-                #self.parent.Push(taskpress.TaskPress('hat_TOP',1.0))
-                self.parent.Push(taskpress.TaskPress('hat_TOP'))
-                current_slot-=3
-            else:
-                # go left one
-                print("go left one")
-                #self.parent.Push(taskpress.TaskPress('hat_LEFT',1.0))
-                self.parent.Push(taskpress.TaskPress('hat_LEFT'))
-                current_slot-=1
+        while self.current_slot != self.map_slot:
+            print(self.map_slot,self.current_slot)
 
-        print("set step 1")
-        self.step=1
+            map_slot_row=int(self.map_slot/3)
+            map_slot_column=self.map_slot%3
+            print(map_slot_row,map_slot_column)
+
+            hand_slot_row=int(self.current_slot/3)
+            hand_slot_column=self.current_slot%3
+            print(hand_slot_row,hand_slot_column)
+
+            if hand_slot_row < map_slot_row:
+                # map slot is in a higher row number
+                print("go down one")
+                self.parent.Push(taskpress.TaskPress('hat_BOTTOM'))
+                self.current_slot+=3
+            elif hand_slot_row > map_slot_row:
+                # map slot is in a lower row number
+                print("go up one")
+                self.parent.Push(taskpress.TaskPress('hat_TOP'))
+                self.current_slot-=3
+
+            if hand_slot_column < map_slot_column:
+                # map slot is in a higher column number
+                print("go right one")
+                self.parent.Push(taskpress.TaskPress('hat_RIGHT'))
+                self.current_slot+=1
+            elif hand_slot_column > map_slot_column:
+                # map slot is in a lower column number
+                print("go left one")
+                self.parent.Push(taskpress.TaskPress('hat_LEFT'))
+                self.current_slot-=1
+
+        return
 
     def debug_phonemap(self):
         if gbstate.mainmap is None:
@@ -176,20 +227,6 @@ class TaskUpdatePhoneMap(taskobject.Task):
         if gbscreen.color_match_array(pixel_x,pixel_y,gbdata.pin_orange1,5):
             return True
         if gbscreen.color_match_array(pixel_x,pixel_y,gbdata.pin_orange2,5):
-            return True
-        return False
-
-    def is_circle_gray(self,pixel_x,pixel_y):
-        pixel_x=int(round(pixel_x))
-        pixel_y=int(round(pixel_y))
-        if gbscreen.color_match_array(pixel_x,pixel_y,gbdata.phonemap_circle_gray,5):
-            return True
-        return False
-
-    def is_circle_icon(self,pixel_x,pixel_y):
-        pixel_x=int(round(pixel_x))
-        pixel_y=int(round(pixel_y))
-        if gbscreen.color_match_array(pixel_x,pixel_y,gbdata.phonemap_circle_icon,2):
             return True
         return False
 
@@ -400,232 +437,4 @@ class TaskUpdatePhoneMap(taskobject.Task):
                     print("found phonemap pin at",pixel_x,pixel_y)
                     if self.verify_pin_shape(pixel_x,pixel_y):
                         return
-        return
-
-    def locate_buildings(self):
-        # find gray circles
-        search_w=gbdata.phonemap_right-gbdata.phonemap_left
-        search_h=gbdata.phonemap_bottom-gbdata.phonemap_top_pin
-        for local_y in range(0,search_h,gbdata.phonemap_gray_search_y):
-            pixel_y=gbdata.phonemap_top+local_y
-            for local_x in range(0,search_w,gbdata.phonemap_gray_search_x):
-                pixel_x=gbdata.phonemap_left+local_x
-                if self.is_circle_gray(pixel_x,pixel_y):
-                    print("found possible circle at",pixel_x,pixel_y)
-                    self.verify_circle(pixel_x,pixel_y)
-
-        # Gather the icons from inside the circles.
-        self.gather_icons()
-
-        # Match the icons with known icons.
-        self.match_icons()
-
-        return
-
-    def verify_circle(self,start_sx,start_sy):
-        print("verify_circle",start_sx,start_sy)
-
-        if self.is_already_found(start_sx,start_sy):
-            print("already found")
-            return
-
-        max_diameter=gbdata.phonemap_circle_diameter+4
-        color=gbdata.phonemap_circle_gray
-        # Step left and right looking for the edges.
-        left_sx=gbscreen.locate_horizontal_extent(color,start_sy,start_sx,start_sx-max_diameter)
-        right_sx=gbscreen.locate_horizontal_extent(color,start_sy,start_sx,start_sx+max_diameter)
-        print("left_sx",left_sx)
-        print("right_sx",right_sx)
-
-        w=right_sx-left_sx
-        print("w",w)
-        if w > (gbdata.phonemap_circle_diameter+4):
-            # overlapping circles
-            return
-
-        center_sx=int(round((left_sx+right_sx)/2))
-        print("center_sx",center_sx)
-
-        # Step up and down looking for the edges.
-        top_sy=gbscreen.locate_vertical_extent(color,start_sx,start_sy,start_sy-max_diameter)
-        bottom_sy=gbscreen.locate_vertical_extent(color,start_sx,start_sy,start_sy+max_diameter)
-
-        print("top_sy",top_sy)
-        print("bottom_sy",bottom_sy)
-
-        h=bottom_sy-top_sy
-        print("h",h)
-        if not gbscreen.match_within(h,gbdata.phonemap_circle_diameter,3):
-            print("these are not the droids we are looking for")
-            return
-
-        center_sy=int(round((top_sy+bottom_sy)/2))
-        print("center_sy",center_sy)
-
-        self.add_gray_circle(center_sx,center_sy)
-
-        return
-
-    def add_gray_circle(self,center_sx,center_sy):
-        # first see if it is already there
-        for c in gbstate.gray_circle_list:
-            if gbscreen.match_within(center_sx,c[0],3) and gbscreen.match_within(center_sy,c[1],3):
-                # already there
-                return
-        gbstate.gray_circle_list.append([center_sx,center_sy])
-        l=len(gbstate.gray_circle_list)
-        print("l",l)
-        return
-
-    def is_already_found(self,start_sx,start_sy):
-        radius=gbdata.phonemap_circle_diameter/2
-        for c in gbstate.gray_circle_list:
-            d=gbdisplay.calculate_distance(start_sx,start_sy,c[0],c[1])
-            if d <= (radius+4):
-                # already found
-                return True
-        return False
-
-    def gather_icons(self):
-        self.icons=[]
-        radius=gbdata.phonemap_circle_diameter/2
-        for c in gbstate.gray_circle_list:
-            icon=self.gather_an_icon(c[0],c[1])
-            whereicon=[c[0],c[1],icon]
-            self.icons.append(whereicon)
-        return
-
-    def gather_an_icon(self,start_sx,start_sy):
-        diameter=gbdata.phonemap_circle_diameter
-        radius=int(round(diameter/2))
-        sx1=start_sx-radius
-        sy1=start_sy-radius
-        icon=[0 for i in range(diameter*diameter)]
-        for sy2 in range(0,diameter):
-            for sx2 in range(0,diameter):
-                sx=sx1+sx2
-                sy=sy1+sy2
-                i=(sy2*diameter)+sx2
-                # only collect info inside the circle
-                d=gbdisplay.calculate_distance(start_sx,start_sy,sx,sy)
-                if d <= radius:
-                    if self.is_circle_icon(sx,sy):
-                        icon[i]=1
-        #print("icon",icon)
-        #self.print_icon(icon)
-        return icon
-
-    def print_icon(self,icon):
-        diameter=gbdata.phonemap_circle_diameter
-        print("icon=[")
-
-        for sy in range(0,diameter):
-            for sx in range(0,diameter):
-                i=(sy*diameter)+sx
-                v=icon[i]
-                print(v,",",sep='',end='')
-            print("")
-
-        print("]")
-        return
-
-    def match_icons(self):
-        for whereicon in self.icons:
-            self.match_an_icon(whereicon)
-
-        # These aren't needed any more.
-        self.icons=[]
-        return
-
-    def match_an_icon(self,whereicon):
-        best_co=None
-        best_match=None
-        for ni in gbdata.named_icons:
-            #print(ni[0])
-            co=self.do_icon_match(whereicon[2],ni[1])
-            if best_co is None:
-                best_co=co
-                best_match=ni
-            else:
-                if best_co < co:
-                    best_co=co
-                    best_match=ni
-        if best_co is not None:
-            print("found match")
-            print(best_match[0],"is at",whereicon[0],whereicon[1])
-            self.set_building(best_match[0],whereicon[0],whereicon[1])
-            return
-        return
-
-    def do_icon_match(self,icon1,icon2):
-        best_co=None
-        off_by=1
-        for offset_y in range(-off_by,off_by+1):
-            for offset_x in range(-off_by,off_by+1):
-                co=self.compare_icons_offsets(icon1,icon2,offset_x,offset_y)
-                if best_co is None:
-                    best_co=co
-                else:
-                    if best_co < co:
-                        best_co=co
-        return best_co
-
-    def compare_icons_offsets(self,icon1,icon2,ox,oy):
-        i1=icon1.copy()
-        i2=icon2.copy()
-        # offsets ox, oy are how much to adjust icon1
-        diameter=gbdata.phonemap_circle_diameter
-        adjust=(diameter*oy)+ox
-        if adjust < 0:
-            # Chop off the beginning of icon1 and append
-            # zeros to the end.
-            n=-adjust
-            i1=i1[n:]
-            i1.extend([0 for j in range(n)])
-        elif adjust > 0:
-            # Chop off the end of icon1 and append
-            # zeros to the beginning.
-            n=adjust
-            i1tmp=[0 for j in range(n)]
-            i1tmp.extend(i1[0:-n])
-            i1=i1tmp
-
-        l1=len(i1)
-        l2=len(i2)
-        #print("l1 l2",l1,l2)
-        co=self.compare_icons(i1,i2)
-        #print("co",co)
-        return co
-
-    def compare_icons(self,icon1,icon2):
-        co=numpy.correlate(icon1,icon2)
-        #print("co",co)
-        return co
-
-    def set_building(self,name,sx,sy):
-        # Calculate the map location given the screen location.
-        mx=(sx-gbdata.phonemap_origin_x)/gbdata.phonemap_square_spacing
-        my=(sy-gbdata.phonemap_origin_y)/gbdata.phonemap_square_spacing
-
-        # binfo is [name,centermx,centermy,doormx,doormy]
-        if name == 'campsite':
-            binfo=[name,mx,my,mx,my+3]
-            gbstate.building_info_campsite=binfo
-        elif name == 'museum':
-            binfo=[name,mx,my,mx,my+3]
-            gbstate.building_info_museum=binfo
-        elif name == 'cranny':
-            binfo=[name,mx,my,mx,my+3]
-            gbstate.building_info_cranny=binfo
-        elif name == 'services':
-            binfo=[name,mx,my,mx,my+3]
-            gbstate.building_info_services=binfo
-        elif name == 'tailors':
-            binfo=[name,mx,my,mx,my+3]
-            gbstate.building_info_tailors=binfo
-        elif name == 'airport':
-            binfo=[name,mx,my,mx,my+3]
-            gbstate.building_info_airport=binfo
-        else:
-            print("unknown building name")
         return

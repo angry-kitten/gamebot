@@ -35,6 +35,7 @@ color_plaza=(125,162,175) # BGR
 color_junk=(255,0,255) # BGR
 
 line_width=1
+line_width_path=3
 line_width_x_narrow=2
 line_width_x=3
 line_width_x_wide=6
@@ -605,90 +606,6 @@ def draw_maps(frame):
     origin_sx=w-(3*gbdata.map_width)  # origin (upper left) screen x
     origin_sy=int(h/2)                # origin (upper left) screen y
 
-    # draw phonemap
-
-    origin_sx+=gbdata.map_width
-
-    # draw obstruction map
-    if gbstate.mainmap is not None:
-        cv2.rectangle(frame,(origin_sx,origin_sy),(origin_sx+gbdata.map_width,origin_sy+gbdata.map_height),color_red,1)
-        for y in range(gbdata.map_height):
-            for x in range(gbdata.map_width):
-                mo=gbstate.mainmap[x][y]
-                v=mo.objstruction_status
-                color=None
-                if v == gbmap.ObOpen:
-                    color=color_green # not obstructed
-                elif v == gbmap.Obstructed:
-                    color=color_red # obstructed
-                elif v == gbmap.ObStandingOnWater:
-                    color=color_white
-                if color is not None:
-                    sx=origin_sx+x
-                    sy=origin_sy+y
-                    # use a rectangle to draw a pixel
-                    cv2.rectangle(frame,(sx,sy),(sx,sy),color,-1)
-
-    origin_sx+=gbdata.map_width
-
-    # draw minimap
-
-    origin_sy-=gbdata.map_height
-    # draw path planning
-    if gbstate.mainmap is not None:
-        cv2.rectangle(frame,(origin_sx,origin_sy),(origin_sx+gbdata.map_width,origin_sy+gbdata.map_height),color_red,1)
-        for y in range(gbdata.map_height):
-            for x in range(gbdata.map_width):
-                v=gbstate.mainmap[x][y].planning_distance
-                v=v%256
-                if v > 0:
-                    color=(v,v,v) # BGR
-                    sx=origin_sx+x
-                    sy=origin_sy+y
-                    # use a rectangle to draw a pixel
-                    cv2.rectangle(frame,(sx,sy),(sx,sy),color,-1)
-
-        # Draw the waypoint lines first then the points.
-        psx=-1
-        psy=-1
-        n=0
-        for wp in gbmap.waypoints:
-            sx=origin_sx+wp[0]
-            sy=origin_sy+wp[1]
-            if psx >= 0:
-                g=127+(n*32)%128
-                c=[0,g,0]
-                cv2.line(frame,(psx,psy),(sx,sy),c,line_width)
-            psx=sx
-            psy=sy
-        for wp in gbmap.waypoints:
-            sx=origin_sx+wp[0]
-            sy=origin_sy+wp[1]
-            # use a rectangle to draw a pixel
-            cv2.rectangle(frame,(sx,sy),(sx,sy),color_red,-1)
-
-    origin_sx-=gbdata.map_width
-    # draw possible pole
-    if len(gbmap.possible_pole) > 0:
-        cv2.rectangle(frame,(origin_sx,origin_sy),(origin_sx+gbdata.map_width,origin_sy+gbdata.map_height),color_red,1)
-        for possible in gbmap.possible_pole:
-            sx1=origin_sx+possible[0]
-            sy1=origin_sy+possible[1]
-            sx2=origin_sx+possible[2]
-            sy2=origin_sy+possible[3]
-            cv2.line(frame,(sx1,sy1),(sx2,sy2),color_green,line_width)
-
-    origin_sx-=gbdata.map_width
-    # draw waypoint pole
-    if len(gbmap.waypoint_pole) > 0:
-        cv2.rectangle(frame,(origin_sx,origin_sy),(origin_sx+gbdata.map_width,origin_sy+gbdata.map_height),color_red,1)
-        for waypole in gbmap.waypoint_pole:
-            sx1=origin_sx+waypole[0]
-            sy1=origin_sy+waypole[1]
-            sx2=origin_sx+waypole[2]
-            sy2=origin_sy+waypole[3]
-            cv2.line(frame,(sx1,sy1),(sx2,sy2),color_green,line_width)
-
     origin_sx=w-(3*gbdata.map_width)
     origin_sy=0
     # draw phonemap2
@@ -737,6 +654,125 @@ def draw_maps(frame):
                 else:
                     # Draw a simple square.
                     cv2.rectangle(frame,(sx,sy),(sx+2,sy+2),color_red,-1)
+
+        # Draw the planned path on the mainmap display.
+        # Draw the waypoint lines first then the points.
+        psx=-1
+        psy=-1
+        n=0
+        for wp in gbmap.waypoints:
+            sx=origin_sx+wp[0]*3+1
+            sy=origin_sy+wp[1]*3+1
+            if psx >= 0:
+                v=127+(n*32)%128
+                c=[v,0,0] # BGR
+                cv2.line(frame,(psx,psy),(sx,sy),c,line_width_path)
+            psx=sx
+            psy=sy
+        for wp in gbmap.waypoints:
+            sx=origin_sx+wp[0]*3
+            sy=origin_sy+wp[1]*3
+            # use a rectangle to draw a pixel
+            cv2.rectangle(frame,(sx,sy),(sx+2,sy+2),color_red,-1)
+
+    # draw obstruction map 1
+    if gbstate.mainmap is not None:
+        for y in range(gbdata.map_height):
+            for x in range(gbdata.map_width):
+                sx=origin_sx+x*3
+                sy=origin_sy+y*3
+                mo=gbstate.mainmap[x][y]
+                v=mo.objstruction_status
+                color=None
+                if v == gbmap.Obstructed:
+                    color=color_yellow # obstructed
+                elif v == gbmap.ObStandingOnWater:
+                    color=color_white
+                if color is not None:
+                    cv2.line(frame,(sx,sy),(sx+2,sy+2),color,line_width)
+                    cv2.line(frame,(sx+2,sy),(sx,sy+2),color,line_width)
+
+    origin_sy+=(3*gbdata.map_height)
+
+    # draw obstruction map 2
+    if gbstate.mainmap is not None:
+        cv2.rectangle(frame,(origin_sx,origin_sy),(origin_sx+gbdata.map_width,origin_sy+gbdata.map_height),color_red,1)
+        for y in range(gbdata.map_height):
+            for x in range(gbdata.map_width):
+                mo=gbstate.mainmap[x][y]
+                v=mo.objstruction_status
+                color=None
+                if v == gbmap.ObOpen:
+                    color=color_green # not obstructed
+                elif v == gbmap.Obstructed:
+                    color=color_red # obstructed
+                elif v == gbmap.ObStandingOnWater:
+                    color=color_white
+                if color is not None:
+                    sx=origin_sx+x
+                    sy=origin_sy+y
+                    # use a rectangle to draw a pixel
+                    cv2.rectangle(frame,(sx,sy),(sx,sy),color,-1)
+
+    origin_sx+=gbdata.map_width
+
+    # draw path planning
+    if gbstate.mainmap is not None:
+        cv2.rectangle(frame,(origin_sx,origin_sy),(origin_sx+gbdata.map_width,origin_sy+gbdata.map_height),color_red,1)
+        for y in range(gbdata.map_height):
+            for x in range(gbdata.map_width):
+                v=gbstate.mainmap[x][y].planning_distance
+                v=v%256
+                if v > 0:
+                    color=(v,v,v) # BGR
+                    sx=origin_sx+x
+                    sy=origin_sy+y
+                    # use a rectangle to draw a pixel
+                    cv2.rectangle(frame,(sx,sy),(sx,sy),color,-1)
+
+        # Draw the waypoint lines first then the points.
+        psx=-1
+        psy=-1
+        n=0
+        for wp in gbmap.waypoints:
+            sx=origin_sx+wp[0]
+            sy=origin_sy+wp[1]
+            if psx >= 0:
+                g=127+(n*32)%128
+                c=[0,g,0]
+                cv2.line(frame,(psx,psy),(sx,sy),c,line_width)
+            psx=sx
+            psy=sy
+        for wp in gbmap.waypoints:
+            sx=origin_sx+wp[0]
+            sy=origin_sy+wp[1]
+            # use a rectangle to draw a pixel
+            cv2.rectangle(frame,(sx,sy),(sx,sy),color_red,-1)
+
+    origin_sx+=gbdata.map_width
+    # draw possible pole
+    if len(gbmap.possible_pole) > 0:
+        cv2.rectangle(frame,(origin_sx,origin_sy),(origin_sx+gbdata.map_width,origin_sy+gbdata.map_height),color_red,1)
+        for possible in gbmap.possible_pole:
+            sx1=origin_sx+possible[0]
+            sy1=origin_sy+possible[1]
+            sx2=origin_sx+possible[2]
+            sy2=origin_sy+possible[3]
+            cv2.line(frame,(sx1,sy1),(sx2,sy2),color_green,line_width)
+
+    origin_sx=w-(3*gbdata.map_width)
+    origin_sy+=gbdata.map_height
+    # draw waypoint pole
+    if len(gbmap.waypoint_pole) > 0:
+        cv2.rectangle(frame,(origin_sx,origin_sy),(origin_sx+gbdata.map_width,origin_sy+gbdata.map_height),color_red,1)
+        for waypole in gbmap.waypoint_pole:
+            sx1=origin_sx+waypole[0]
+            sy1=origin_sy+waypole[1]
+            sx2=origin_sx+waypole[2]
+            sy2=origin_sy+waypole[3]
+            cv2.line(frame,(sx1,sy1),(sx2,sy2),color_green,line_width)
+
+    return
 
 def maptype_to_color(maptype):
     if maptype == gbmap.MapTypeWater: # water
@@ -947,6 +983,8 @@ def find_detect(target_list,d_mx,d_my,distance,count,score):
     return found_list
 
 def draw_buildings(frame):
+    if not gbstate.do_draw_buildings:
+        return
     radius=int(round(gbdata.phonemap_circle_diameter/2))
     for c in gbstate.gray_circle_list:
         cv2.circle(frame,(c[0],c[1]),radius,color_red,line_width)
@@ -972,26 +1010,26 @@ def draw_map2(frame):
     #    #cv2.rectangle(frame,(sx,sy),(sx,sy),color_red,-1)
     #    cv2.line(frame,(sx,50),(sx,sy),color_red,1)
 
-    sy1=int(round(gbdata.phonemap_origin_y))
-    sy2=int(round(gbdata.phonemap_origin_y+gbdata.map_height*gbdata.phonemap_square_spacing))
-    for mx in range(gbdata.map_width+1):
-        sx=gbdata.phonemap_origin_x+(mx*gbdata.phonemap_square_spacing)
-        sx=int(round(sx))
-        cv2.line(frame,(sx,sy1),(sx,sy2),color_green,1)
+    #sy1=int(round(gbdata.phonemap_origin_y))
+    #sy2=int(round(gbdata.phonemap_origin_y+gbdata.map_height*gbdata.phonemap_square_spacing))
+    #for mx in range(gbdata.map_width+1):
+    #    sx=gbdata.phonemap_origin_x+(mx*gbdata.phonemap_square_spacing)
+    #    sx=int(round(sx))
+    #    cv2.line(frame,(sx,sy1),(sx,sy2),color_green,1)
 
-    sx1=int(round(gbdata.phonemap_origin_x))
-    sx2=int(round(gbdata.phonemap_origin_x+gbdata.map_width*gbdata.phonemap_square_spacing))
-    for my in range(gbdata.map_height+1):
-        sy=gbdata.phonemap_origin_y+(my*gbdata.phonemap_square_spacing)
-        sy=int(round(sy))
-        cv2.line(frame,(sx1,sy),(sx2,sy),color_green,1)
+    #sx1=int(round(gbdata.phonemap_origin_x))
+    #sx2=int(round(gbdata.phonemap_origin_x+gbdata.map_width*gbdata.phonemap_square_spacing))
+    #for my in range(gbdata.map_height+1):
+    #    sy=gbdata.phonemap_origin_y+(my*gbdata.phonemap_square_spacing)
+    #    sy=int(round(sy))
+    #    cv2.line(frame,(sx1,sy),(sx2,sy),color_green,1)
 
-    if gbdata.phonemap_dashes_L2R is not None:
-        for sx in gbdata.phonemap_dashes_L2R:
-            cv2.line(frame,(sx,110),(sx,gbdata.phonemap_bottom),color_blue,1)
-    if gbdata.phonemap_dashes_T2B is not None:
-        for sy in gbdata.phonemap_dashes_T2B:
-            cv2.line(frame,(110,sy),(gbdata.phonemap_right,sy),color_blue,1)
+    #if gbdata.phonemap_dashes_L2R is not None:
+    #    for sx in gbdata.phonemap_dashes_L2R:
+    #        cv2.line(frame,(sx,110),(sx,gbdata.phonemap_bottom),color_blue,1)
+    #if gbdata.phonemap_dashes_T2B is not None:
+    #    for sy in gbdata.phonemap_dashes_T2B:
+    #        cv2.line(frame,(110,sy),(gbdata.phonemap_right,sy),color_blue,1)
 
     #for e in gbstate.map2stats:
     #    avg=e[0]
@@ -1002,8 +1040,8 @@ def draw_map2(frame):
     #    sy=e[5]
     #    cv2.rectangle(frame,(sx,sy),(sx,sy),color_red,-1)
 
-    for diaginfo in gbstate.map2diagonals:
-        print("diaginfo",diaginfo)
-        cv2.line(frame,(diaginfo[0],diaginfo[1]),(diaginfo[2],diaginfo[3]),color_yellow,1)
+    #for diaginfo in gbstate.map2diagonals:
+    #    print("diaginfo",diaginfo)
+    #    cv2.line(frame,(diaginfo[0],diaginfo[1]),(diaginfo[2],diaginfo[3]),color_yellow,1)
 
     return

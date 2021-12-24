@@ -36,6 +36,7 @@ class TaskTrackGoTo(taskobject.Task):
         print("go to mx",mx,"my",my)
         self.low_precision=low_precision
         self.within=1.0
+        self.within_obstructed=0.2
         self.start_mx=-1
         self.start_my=-1
         self.start_heading=-1
@@ -172,9 +173,9 @@ class TaskTrackGoTo(taskobject.Task):
             if self.distance >= 0.70:
                 # Don't evaluate short moves because they could trigger the
                 # obstruction code by accident.
-                if gbstate.move_before_mx == gbstate.move_after_mx and gbstate.move_before_my == gbstate.move_after_my:
+                if gbscreen.match_within(gbstate.move_before_mx,gbstate.move_after_mx,self.within_obstructed) and gbscreen.match_within(gbstate.move_before_my,gbstate.move_after_my,self.within_obstructed):
                     # We ran into an obstruction.
-                    print("zero movement")
+                    print("small movement")
                     if (self.target_heading >= 0 and self.target_heading < 45) or (self.target_heading >= 315 and self.target_heading <= 360):
                         print("obstructed up/north")
                         mx=int(round(gbstate.move_after_mx))

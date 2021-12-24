@@ -31,6 +31,7 @@ task_stack_names=[]
 label_id_offset=1
 
 mainmap=None
+mainmap_latest_update=0
 unreachable=False
 #x_hist=None
 #y_hist=None
@@ -187,6 +188,7 @@ pause_message=None
 screen_chars=[]
 
 gray_circle_list=[]
+do_draw_buildings=False
 
 # binfo is [name,centermx,centermy,doormx,doormy]
 building_info_campsite=None

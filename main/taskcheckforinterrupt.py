@@ -4,6 +4,7 @@
 # triangle that needs to be acknowledged.
 #
 
+import random
 import taskobject
 import gbdata
 import gbstate
@@ -66,7 +67,10 @@ class TaskCheckForInterrupt(taskobject.Task):
             print("main screen")
 
             if self.step == 0:
-                self.parent.Push(tasktakeinventory.TaskTakeInventory())
+                # Don't take inventory every time.
+                mebbe=random.randint(0,5)
+                if 1 == mebbe:
+                    self.parent.Push(tasktakeinventory.TaskTakeInventory())
                 self.step=1
                 return
 

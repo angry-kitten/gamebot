@@ -116,6 +116,12 @@ class TaskHoldTool(taskobject.Task):
         if self.toolname == 'StoneAxe':
             self.find_tool_by_inventory_name(gbdata.stone_axe_tools)
             return
+        if self.toolname == 'AnyAxe':
+            self.find_tool_by_inventory_name(gbdata.axe_tools)
+            return
+        if self.toolname == 'AnyAxeShovel':
+            self.find_tool_by_inventory_name(gbdata.axe_shovel_tools)
+            return
         if self.toolname == 'Net':
             self.find_tool_by_inventory_name(gbdata.net_tools)
             return
@@ -312,11 +318,13 @@ class TaskHoldTool(taskobject.Task):
                 print("no menu pointer hand 4")
                 if not gbscreen.has_label('PointerHand',0.30,gbdata.inventory_hand_30_2_x,gbdata.inventory_hand_30_2_y,10):
                     print("no menu pointer hand 5")
-                    # Assume there is a menu but the hand wasn't detected.
-                    self.parent.Push(taskobject.TaskTimed(1.0)) # wait for menu to pop down
-                    self.parent.Push(taskpress.TaskPress('B'))
-                    self.step=4 # close inventory
-                    return
+                    if not gbscreen.has_label('PointerHand',0.30,gbdata.inventory_hand_30_3_x,gbdata.inventory_hand_30_3_y,10):
+                        print("no menu pointer hand 6")
+                        # Assume there is a menu but the hand wasn't detected.
+                        self.parent.Push(taskobject.TaskTimed(1.0)) # wait for menu to pop down
+                        self.parent.Push(taskpress.TaskPress('B'))
+                        self.step=4 # close inventory
+                        return
         # select the first item in the menu. Hopefully this is "Hold". 
         self.parent.Push(taskobject.TaskTimed(1.0)) # wait for menu to pop down
         self.parent.Push(taskpress.TaskPress('A'))

@@ -33,6 +33,7 @@ stdscreen_size=[1280,720] # wxh upper left origin
 conttriangle_loc=[641,663] # x and y based on 1280x720 upper left origin
 conttriangle_color=[246,186,8] # RGB 0-255
 
+phonemap_update_rate=60*5 # Update every 5 minutes.
 # minimap pin color. It flashes between these two.
 pin_orange1=[233,130,46] # rgb
 pin_orange2=[230,92,45] # rgb
@@ -75,7 +76,8 @@ phonemap_circle_diameter=38
 # Some of the busy text screens can have about 200 characters to detect.
 # ocr isn't working, tune this down to 100
 #object_count=200
-object_count=100
+#object_count=100
+object_count=50
 
 # The map starts in the upper left with mx=0,my=0. The center of
 # the upper left square is mx=0.5,my=0.5.
@@ -673,6 +675,7 @@ phonemap2_color_plaza=[
 [146,152,109,4], # 20.3
 [128,119,95,4], # 33.7
 [133,124,101,4], # 38.9
+[167,163,124,4], # d
 ] # plaza
 
 #index_for_fit=-10
@@ -815,6 +818,8 @@ inventory_hand_30_x=786
 inventory_hand_30_y=324
 inventory_hand_30_2_x=768
 inventory_hand_30_2_y=327
+inventory_hand_30_3_x=796
+inventory_hand_30_3_y=326
 
 gatherable_items=[
     "Weeds",
@@ -854,8 +859,12 @@ treeable_items=[
 ]
 
 digable_items=[
-    "Hole",
+    "Crack",
     "Shiny"
+]
+
+rockable_items=[
+    "Rock"
 ]
 
 net_tools=['InvNet','InvFlimsyNet','InvGoldenNet']
@@ -873,6 +882,8 @@ cutting_axe_tools=['InvAxe','InvGoldenAxe']
 stone_axe_tools=['InvStoneAxe']
 axe_tools=stone_axe_tools.copy()
 axe_tools.extend(cutting_axe_tools)
+axe_shovel_tools=axe_tools.copy()
+axe_shovel_tools.extend(shovel_tools)
 
 
 phone_box_top_sy=212
@@ -893,8 +904,13 @@ phone_locations = [
 ]
 # x offset for selecting a pixel for finding an
 # icon by color.
-phone_color_offset_x=-37
+phone_map_color_offset_x=30
+phone_map_color_offset_y=-25
 phone_map_color=[136,224,187] # rgb
+phone_hand_offset_x=55
+phone_hand_offset_y=55
+phone_background_color=[245,243,228] # rgb 2
+phone_hand_color=[254,254,254] # rgb 2
 
 # this is the background color of the phone map screen
 phone_map_background=[130,224,195] # rgb 8

@@ -118,6 +118,8 @@ def process_detections(d):
 
 def do_one_object_detect(dframe):
 
+    print("do_one_object_detect start",time.monotonic())
+
     # convert the image format to what is needed for object detection
     image_np=numpy.array(dframe)
     input_tensor=tf.convert_to_tensor(numpy.expand_dims(image_np,0),dtype=tf.float32)
@@ -144,13 +146,15 @@ def do_one_object_detect(dframe):
         gbstate.category_index,
         use_normalized_coordinates=True,
         max_boxes_to_draw=gbdata.object_count,
-        min_score_thresh=.1,
+        min_score_thresh=.3,
         agnostic_mode=False)
 
     #cv2.imshow("show detections",cv2.resize(image_np_with_detections,(800,600)))
     #cv2.imshow("show detections",image_np_with_detections)
 
     digested=process_detections(detections)
+
+    print("do_one_object_detect end",time.monotonic())
 
     return (detections,digested,image_np_with_detections)
 
@@ -317,7 +321,7 @@ def object_detection_thread():
     localdigested=None
     while True:
         #print("odt")
-        print("odt 1")
+        print("odt 1",time.monotonic())
         dframe=None
         do_sleep_retry=False
         do_detect=False
@@ -412,8 +416,10 @@ def main_loop(vid):
         with gbstate.detection_lock:
             if gbstate.detim is not None:
                 showme=gbstate.detim
+                gbstate.detim=None
         if showme is not None:
             cv2.imshow("show detections",showme)
+            print("show detections",time.monotonic())
 
         # Exit on any key press.
         key=cv2.waitKey(2)

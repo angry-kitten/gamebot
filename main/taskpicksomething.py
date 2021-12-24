@@ -22,6 +22,7 @@ import taskgather
 import taskdetermineposition
 import tasktree
 import taskdig
+import taskrock
 
 class TaskPickSomething(taskobject.Task):
     """TaskPickSomething Object"""
@@ -98,6 +99,8 @@ class TaskPickSomething(taskobject.Task):
             target_list.extend(gbdata.treeable_items)
         if gbstate.inventory_has_shovel:
             target_list.extend(gbdata.digable_items)
+        if gbstate.inventory_has_axe or gbstate.inventory_has_shovel:
+            target_list.extend(gbdata.rockable_items)
 
         found_list=gbdisplay.find_detect(target_list,gbstate.player_mx,gbstate.player_my,self.close,10,0.30)
 
@@ -142,6 +145,11 @@ class TaskPickSomething(taskobject.Task):
         if gbdata.digable_items.count(best_thing[0]) > 0:
             print("digable")
             self.parent.Push(taskdig.TaskDig(gbdata.digable_items))
+            return
+
+        if gbdata.rockable_items.count(best_thing[0]) > 0:
+            print("rockable")
+            self.parent.Push(taskrock.TaskRock(gbdata.rockable_items))
             return
 
         print("nothing")

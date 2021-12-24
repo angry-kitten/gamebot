@@ -24,12 +24,12 @@ import taskpickup
 import taskdetermineposition
 import taskholdtool
 
-class TaskDig(taskobject.Task):
-    """TaskDig Object"""
+class TaskRock(taskobject.Task):
+    """TaskRock Object"""
 
     def __init__(self,target_list):
         super().__init__()
-        self.name="TaskDig"
+        self.name="TaskRock"
         print("new",self.name,"object")
         self.target_list=target_list
         self.target_mx=-1
@@ -47,7 +47,7 @@ class TaskDig(taskobject.Task):
             return
         if gbstate.frame is None:
             return
-        # Find a crack
+        # Find a rock
 
         if self.step == 0:
             if self.target_mx < 0:
@@ -63,16 +63,16 @@ class TaskDig(taskobject.Task):
                 self.step=1
                 return
 
-        if self.step == 1: # in front of the crack, ready to dig
+        if self.step == 1: # in front of the rock, ready to hit it with axe
             print("current_tool",gbstate.current_tool)
-            if gbstate.current_tool != "Shovel":
-                print("not holding a shovel")
+            if gbstate.current_tool != "AnyAxeShovel":
+                print("not holding an axe or shovel")
                 self.step=99 # done
                 return
             # close the presentation text with 'B'
             self.parent.Push(taskpress.TaskPress('B'))
-            self.parent.Push(taskobject.TaskTimed(2.0)) # wait for the dig animation
-            # Dig with 'A'
+            self.parent.Push(taskobject.TaskTimed(2.0)) # wait for the rock animation
+            # Hit the rock with 'A'
             self.parent.Push(taskpress.TaskPress('A'))
             self.step=99 # done
             return
@@ -142,8 +142,8 @@ class TaskDig(taskobject.Task):
         self.target_my=my
 
         # push tasks in reverse order
-        # Hold a shovel. This will also cause the player character to face
+        # Hold an axe. This will also cause the player character to face
         # down/south.
-        self.parent.Push(taskholdtool.TaskHoldTool('Shovel'))
-        # Go to the position above/north of the crack
+        self.parent.Push(taskholdtool.TaskHoldTool('AnyAxeShovel'))
+        # Go to the position above/north of the rock
         self.parent.Push(taskpathplangoto.TaskPathPlanGoTo(mx,my-1))
