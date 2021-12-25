@@ -245,6 +245,11 @@ def process_key(key):
         return -1
     if ord('b') == key:
         debug_show_state()
+        gbstate.debug_state_on=not gbstate.debug_state_on
+        if gbstate.debug_state_on:
+            print("debug state on",flush=True)
+        else:
+            print("debug state off",flush=True)
         return 0
     if ord('p') == key:
         # get current position
@@ -374,7 +379,9 @@ def main_loop(vid):
         if gbstate.frame is None:
             print("g_frame does not exist")
 
-        gbstate.tasks.Poll()
+        # Don't continue tasks if debug mode is on.
+        if not gbstate.debug_state_on:
+            gbstate.tasks.Poll()
         #gbstate.tasks.DebugRecursive()
         #n=debug_get_name()
         #print("n=",n)
@@ -421,13 +428,13 @@ def main_loop(vid):
             cv2.imshow("show detections",showme)
             print("show detections",time.monotonic())
 
-        # Exit on any key press.
         key=cv2.waitKey(2)
         if key > 0:
             result=process_key(key)
             print("result=",result)
             if result < 0:
                 break
+    return
 
 def setup_run_cleanup():
     random.seed()

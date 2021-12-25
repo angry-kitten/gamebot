@@ -486,6 +486,7 @@ def draw_x_path(frame):
             draw_x_at(frame,x2,y2,color_red)
 
 def draw_targets(frame):
+    # Draw over the minimap
     if gbstate.position_minimap_x >= 0:
         draw_marker_at_map(frame,cv2.MARKER_CROSS,gbstate.position_minimap_x,gbstate.position_minimap_y,color_blue)
         sx=gbdata.minimap_origin_x+gbstate.position_minimap_x*gbdata.minimap_square_spacing
@@ -526,6 +527,46 @@ def draw_targets(frame):
         draw_marker_at_map(frame,cv2.MARKER_STAR,gbstate.plan_goto_target_mx,gbstate.plan_goto_target_my,color_yellow)
         x=gbdata.minimap_origin_x+gbstate.plan_goto_target_mx*gbdata.minimap_square_spacing
         y=gbdata.minimap_origin_y+gbstate.plan_goto_target_my*gbdata.minimap_square_spacing
+        draw_marker_at(frame,cv2.MARKER_STAR,x,y,color_yellow)
+
+    # Draw over the phonemap
+    w=gbdata.stdscreen_size[0]
+    h=gbdata.stdscreen_size[1]
+    origin_sx=w-(3*gbdata.map_width)
+    origin_sy=0
+    if gbstate.position_minimap_x >= 0:
+        sx=origin_sx+1+gbstate.position_minimap_x*3
+        sy=origin_sy+1+gbstate.position_minimap_y*3
+        draw_marker_at(frame,cv2.MARKER_CROSS,sx,sy,color_blue)
+
+    if gbstate.position_phonemap_x >= 0:
+        sx=origin_sx+1+gbstate.position_phonemap_x*3
+        sy=origin_sy+1+gbstate.position_phonemap_y*3
+        draw_marker_at(frame,cv2.MARKER_TILTED_CROSS,sx,sy,color_blue)
+
+    if gbstate.player_mx >= 0:
+        sx=origin_sx+1+gbstate.player_mx*3
+        sy=origin_sy+1+gbstate.player_my*3
+        draw_marker_at(frame,cv2.MARKER_DIAMOND,sx,sy,color_green)
+
+    if gbstate.goto_target_mx >= 0:
+        x=origin_sx+1+gbstate.goto_target_mx*3
+        y=origin_sy+1+gbstate.goto_target_my*3
+        draw_x_at(frame,x,y,color_red,line_width=line_width_x_wide)
+
+    if gbstate.object_target_mx >= 0:
+        x=origin_sx+1+gbstate.object_target_mx*3
+        y=origin_sy+1+gbstate.object_target_my*3
+        draw_x_at(frame,x,y,color_green,line_width=line_width_x_wide)
+
+    if gbstate.track_goto_target_mx >= 0:
+        x=origin_sx+1+gbstate.track_goto_target_mx*3
+        y=origin_sy+1+gbstate.track_goto_target_my*3
+        draw_x_at(frame,x,y,color_orange,line_width=line_width_x_narrow)
+
+    if gbstate.plan_goto_target_mx >= 0:
+        x=origin_sx+1+gbstate.plan_goto_target_mx*3
+        y=origin_sy+1+gbstate.plan_goto_target_my*3
         draw_marker_at(frame,cv2.MARKER_STAR,x,y,color_yellow)
 
     return
@@ -851,7 +892,6 @@ def draw_on(frame):
     #draw_grid(frame)
     draw_feet_box(frame)
     #draw_x_path(frame)
-    draw_targets(frame)
     draw_inventory(frame)
     draw_current_tool(frame)
     w=gbdata.stdscreen_size[0]
@@ -882,6 +922,9 @@ def draw_on(frame):
 
     draw_map2(frame)
     draw_maps(frame)
+    draw_targets(frame)
+
+    return
 
 def find_detect(target_list,d_mx,d_my,distance,count,score):
     print("find_detect")

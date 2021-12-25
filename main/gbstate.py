@@ -6,6 +6,8 @@
 import time
 import gbdata
 
+debug_state_on=False
+
 keydown_time_ms=250 # milliseconds
 debug_every=10 # seconds
 detect_every=5 # seconds, do an object detection with this period
@@ -133,6 +135,7 @@ plan_goto_target_my=-1
 
 # Draw inventory locations on the screen if True
 draw_inventory_locations=False
+inventory_needed=False
 inventory_size=20
 inventory_locations=gbdata.inventory_locations_20
 inventory_slots_full=0

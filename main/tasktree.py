@@ -86,7 +86,7 @@ class TaskTree(taskobject.Task):
             self.parent.Push(tasktrackturn.TaskTrackTurn(0))
 
             # walk up against the tree
-            self.parent.Push(taskheadinggoto.TaskHeadingGoTo(0,0.5))
+            self.parent.Push(taskheadinggoto.TaskHeadingGoTo(0,0.4))
 
             # Go to the tree facing north.
             self.parent.Push(taskpathplangoto.TaskPathPlanGoTo(self.target_mx,self.target_my))
@@ -152,6 +152,8 @@ class TaskTree(taskobject.Task):
             # 7 T 3
             # 8 1 2
 
+            gbstate.inventory_needed=True
+
             # Gather at position 8
             self.parent.Push(taskobject.TaskTimed(2.0)) # let the animation play out
             self.parent.Push(taskpress.TaskPress('Y'))
@@ -197,6 +199,17 @@ class TaskTree(taskobject.Task):
             # Gather at position 1
             self.parent.Push(taskobject.TaskTimed(2.0)) # let the animation play out
             self.parent.Push(taskpress.TaskPress('Y'))
+
+            # Face up/north to face the tree.
+            self.parent.Push(tasktrackturn.TaskTrackTurn(0))
+
+            # walk up against the tree
+            self.parent.Push(taskheadinggoto.TaskHeadingGoTo(0,0.4))
+
+            # Go to the tree facing north.
+            self.parent.Push(taskpathplangoto.TaskPathPlanGoTo(self.target_mx,self.target_my))
+            # Go to one square in front of the tree.
+            self.parent.Push(taskpathplangoto.TaskPathPlanGoTo(self.target_mx,self.target_my+1))
 
             self.step=20
             return

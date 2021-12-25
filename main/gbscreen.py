@@ -480,3 +480,32 @@ def locate_vertical_extent(color,sx,sy1,sy2):
         if color_match_array(sx,sy,color,5):
             extent_sy=sy
     return extent_sy
+
+def is_nook_miles_screen():
+    with gbstate.detection_lock:
+        if gbstate.digested is None:
+            return False
+    if not has_label('PointerHand',0.30,-1,-1,-1):
+        return False
+    if not has_label('ButtonPlus',0.30,723,68,5):
+        return False
+    if not has_label('ButtonB',0.30,999,692,5):
+        return False
+    if not has_label('ButtonA',0.30,1130,691,5):
+        return False
+    #match_count=0
+    #print("match_count",match_count)
+    #if match_count >= 5:
+    #    return True
+    #return False
+    return True
+
+def is_inside_building_screen():
+    with gbstate.detection_lock:
+        if gbstate.digested is None:
+            return False
+    if is_minimap():
+        return False
+    if not has_label('ButtonZL',0.30,94,56,5):
+        return False
+    return True

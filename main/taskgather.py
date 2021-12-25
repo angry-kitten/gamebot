@@ -70,6 +70,7 @@ class TaskGather(taskobject.Task):
         if self.started:
             return # already started
         self.started=True
+        gbstate.inventory_needed=True
         # push tasks in reverse order
         self.parent.Push(taskdetect.TaskDetect())
         self.parent.Push(taskdetermineposition.TaskDeterminePosition())

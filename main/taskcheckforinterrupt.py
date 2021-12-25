@@ -5,21 +5,21 @@
 #
 
 import random
-import taskobject
-import gbdata
-import gbstate
 import cv2
+import gbdata, gbstate, gbscreen
+import taskobject
 import taskpress
 import tasksay
 import taskdetect
 import taskgotomain
 import taskupdatemini
-import gbscreen
 import taskchat
 import taskmuseum
 import tasksell
 import taskstore
 import tasktakeinventory
+import taskredeemnookmiles
+import taskheadinggoto
 
 class TaskCheckForInterrupt(taskobject.Task):
     """TaskCheckForInterrupt Object"""
@@ -63,14 +63,26 @@ class TaskCheckForInterrupt(taskobject.Task):
             self.parent.Push(taskpress.TaskPress('A',5.0))
             return
 
+        if gbscreen.is_inside_building_screen():
+            print("maybe inside building")
+            # Wait for the exit animation.
+            self.parent.Push(taskobject.TaskTimed(10.0))
+            # Walk out of the building, mapless.
+            self.parent.Push(taskheadinggoto.TaskHeadingGoTo(180,8))
+            return
+
         if gbscreen.is_main_screen():
             print("main screen")
 
             if self.step == 0:
                 # Don't take inventory every time.
-                mebbe=random.randint(0,5)
-                if 1 == mebbe:
+                if gbstate.inventory_needed:
                     self.parent.Push(tasktakeinventory.TaskTakeInventory())
+                    gbstate.inventory_needed=False
+                else:
+                    mebbe=random.randint(0,5)
+                    if 1 == mebbe:
+                        self.parent.Push(tasktakeinventory.TaskTakeInventory())
                 self.step=1
                 return
 
@@ -95,6 +107,13 @@ class TaskCheckForInterrupt(taskobject.Task):
                     self.parent.Push(tasksell.TaskSell())
                     self.parent.Push(taskmuseum.TaskMuseum())
                     return
+
+            if self.step == 4:
+                self.step=5
+                if gbscreen.has_label('PhoneActive',0.30,-1,-1,-1):
+                    self.parent.Push(taskredeemnookmiles.TaskRedeemNookMiles())
+                elif gbscreen.has_label('PhoneActivePlus',0.30,-1,-1,-1):
+                    self.parent.Push(taskredeemnookmiles.TaskRedeemNookMiles())
 
             print(self.name,"done")
             self.taskdone=True

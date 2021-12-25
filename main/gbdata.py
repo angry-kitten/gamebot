@@ -911,6 +911,9 @@ phone_hand_offset_x=55
 phone_hand_offset_y=55
 phone_background_color=[245,243,228] # rgb 2
 phone_hand_color=[254,254,254] # rgb 2
+phone_nook_miles_color_offset_x=-36
+phone_nook_miles_color_offset_y=0
+phone_nook_miles_color=[140,151,236] # rgb 2
 
 # this is the background color of the phone map screen
 phone_map_background=[130,224,195] # rgb 8
