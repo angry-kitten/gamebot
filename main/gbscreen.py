@@ -189,7 +189,7 @@ def is_start_continue_screen():
         count+=1
     if has_label('ButtonY',0.30,65,645,5):
         count+=1
-    if not has_label('SymbolBattery',0.20,1199,64,15):
+    if not has_label('SymbolBattery',0.16,1199,64,15):
         return False
     if not has_label('SymbolWiFi',0.20,1140,65,15):
         if not has_label('SymbolWiFi',0.20,1095,66,15):
@@ -266,9 +266,9 @@ def is_selection_screen_no_ACNH():
     with gbstate.detection_lock:
         if gbstate.digested is None:
             return False
-    if not has_label('SOnlineLogo',0.30,316,546,5):
+    if not has_label('SOnlineLogo',0.10,316,546,5):
         return False
-    if not has_label('SymbolBattery',0.30,1199,65,15):
+    if not has_label('SymbolBattery',0.15,1199,65,15):
         return False
     if not has_label('SymbolWiFi',0.20,1140,65,15):
         if not has_label('SymbolWiFi',0.20,1095,65,15):
@@ -293,9 +293,9 @@ def is_user_selection_screen():
     if not has_label('ButtonPlus',0.30,780,517,5):
         if not has_label('ButtonPlus',0.30,855,517,5):
             return False
-    if not has_label('ButtonB',0.30,1029,684,5):
+    if not has_label('ButtonB',0.15,1029,684,5):
         return False
-    if not has_label('ButtonA',0.30,1159,684,5):
+    if not has_label('ButtonA',0.20,1159,684,5):
         return False
     return True
 

@@ -4,10 +4,10 @@
 # and fruit.
 #
 
-import taskobject
-import gbdata
-import gbstate
+import random
 import cv2
+import taskobject
+import gbdata, gbstate, gbscreen, gbdisplay
 import taskpress
 import tasksay
 import taskdetect
@@ -16,13 +16,11 @@ import taskupdatemini
 import taskrandomwalk
 import tasksimplegoto
 import taskpathplangoto
-import gbscreen
-import gbdisplay
-import random
 import taskcenterplayer
 import taskpickup
 import taskdetermineposition
 import taskholdtool
+import tasktrackturn
 
 class TaskDig(taskobject.Task):
     """TaskDig Object"""
@@ -36,6 +34,9 @@ class TaskDig(taskobject.Task):
         self.target_my=-1
         self.close=6
         self.step=0
+        (mox,moy)=gbdata.directions_offsets_x_y[random.randint(0,4)]
+        self.mox=mox
+        self.moy=moy
 
     def Poll(self):
         """check if any action can be taken"""
@@ -69,11 +70,32 @@ class TaskDig(taskobject.Task):
                 print("not holding a shovel")
                 self.step=99 # done
                 return
+
+            # Put away the shovel.
+            self.parent.Push(taskholdtool.TaskHoldTool('None'))
+
             # close the presentation text with 'B'
             self.parent.Push(taskpress.TaskPress('B'))
             self.parent.Push(taskobject.TaskTimed(2.0)) # wait for the dig animation
             # Dig with 'A'
             self.parent.Push(taskpress.TaskPress('A'))
+
+            # Face the crack.
+            heading=0
+            if self.mox == 1:
+                # Face left.
+                heading=270
+            elif self.mox == -1:
+                # Face right.
+                heading=90
+            if self.moy == 1:
+                # Face up.
+                heading=0
+            elif self.moy == -1:
+                # Face down.
+                heading=180
+            self.parent.Push(tasktrackturn.TaskTrackTurn(heading))
+
             self.step=99 # done
             return
 
@@ -146,5 +168,8 @@ class TaskDig(taskobject.Task):
         # Hold a shovel. This will also cause the player character to face
         # down/south.
         self.parent.Push(taskholdtool.TaskHoldTool('Shovel'))
-        # Go to the position above/north of the crack
-        self.parent.Push(taskpathplangoto.TaskPathPlanGoTo(mx,my-1))
+        # Go to the position offset by one in one of four directions.
+        mx+=self.mox
+        my+=self.moy
+        self.parent.Push(taskpathplangoto.TaskPathPlanGoTo(mx,my))
+        return

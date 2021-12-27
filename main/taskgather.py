@@ -126,5 +126,6 @@ class TaskGather(taskobject.Task):
         # push tasks in reverse order
         self.parent.Push(taskdetermineposition.TaskDeterminePosition())
         self.parent.Push(taskdetect.TaskDetect())
-        self.parent.Push(taskpickup.TaskPickup())
+        self.parent.Push(taskpickup.TaskPickupSpin())
         self.parent.Push(taskpathplangoto.TaskPathPlanGoTo(mx,my))
+        return

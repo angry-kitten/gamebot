@@ -4,10 +4,10 @@
 # and fruit.
 #
 
-import taskobject
-import gbdata
-import gbstate
+import random
 import cv2
+import gbdata, gbstate, gbscreen, gbdisplay
+import taskobject
 import taskpress
 import tasksay
 import taskdetect
@@ -16,13 +16,11 @@ import taskupdatemini
 import taskrandomwalk
 import tasksimplegoto
 import taskpathplangoto
-import gbscreen
-import gbdisplay
-import random
 import taskcenterplayer
 import taskpickup
 import taskdetermineposition
 import taskholdtool
+import tasktrackturn
 
 class TaskRock(taskobject.Task):
     """TaskRock Object"""
@@ -36,6 +34,9 @@ class TaskRock(taskobject.Task):
         self.target_my=-1
         self.close=6
         self.step=0
+        (mox,moy)=gbdata.directions_offsets_x_y[random.randint(0,4)]
+        self.mox=mox
+        self.moy=moy
 
     def Poll(self):
         """check if any action can be taken"""
@@ -58,7 +59,7 @@ class TaskRock(taskobject.Task):
                     print("no target found")
                     print(self.name,"done")
                     self.taskdone=True
-                # At this point a crack was found by the search and subtasks
+                # At this point a rock was found by the search and subtasks
                 # have been added to the stack.
                 self.step=1
                 return
@@ -69,11 +70,30 @@ class TaskRock(taskobject.Task):
                 print("not holding an axe or shovel")
                 self.step=99 # done
                 return
-            # close the presentation text with 'B'
-            self.parent.Push(taskpress.TaskPress('B'))
+
+            # Put away the tool.
+            self.parent.Push(taskholdtool.TaskHoldTool('None'))
+
             self.parent.Push(taskobject.TaskTimed(2.0)) # wait for the rock animation
             # Hit the rock with 'A'
             self.parent.Push(taskpress.TaskPress('A'))
+
+            # Face the rock.
+            heading=0
+            if self.mox == 1:
+                # Face left.
+                heading=270
+            elif self.mox == -1:
+                # Face right.
+                heading=90
+            if self.moy == 1:
+                # Face up.
+                heading=0
+            elif self.moy == -1:
+                # Face down.
+                heading=180
+            self.parent.Push(tasktrackturn.TaskTrackTurn(heading))
+
             self.step=99 # done
             return
 
@@ -146,5 +166,8 @@ class TaskRock(taskobject.Task):
         # Hold an axe. This will also cause the player character to face
         # down/south.
         self.parent.Push(taskholdtool.TaskHoldTool('AnyAxeShovel'))
-        # Go to the position above/north of the rock
-        self.parent.Push(taskpathplangoto.TaskPathPlanGoTo(mx,my-1))
+        # Go to the position offset by one in one of four directions.
+        mx+=self.mox
+        my+=self.moy
+        self.parent.Push(taskpathplangoto.TaskPathPlanGoTo(mx,my))
+        return

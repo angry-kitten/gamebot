@@ -22,6 +22,7 @@ import taskcenterplayer
 import taskstore
 import tasksell
 import taskmuseum
+import tasktrackturn
 
 class TaskPickup(taskobject.Task):
     """TaskPickup Object"""
@@ -44,9 +45,9 @@ class TaskPickup(taskobject.Task):
 
         # Look for a continue triangle. If it is present then
         # it is likely a pockets full case.
-        if gbscreen.is_continue_triangle_detect():
-            print("continue triangle detect")
-            self.handle_pockets_full()
+        #if gbscreen.is_continue_triangle_detect():
+        #    print("continue triangle detect")
+        #    self.handle_pockets_full()
         elif gbscreen.is_continue_triangle():
             print("continue triangle")
             self.handle_pockets_full()
@@ -62,8 +63,8 @@ class TaskPickup(taskobject.Task):
             return # already started
         self.started=True
         # push tasks in reverse order
-        self.parent.Push(taskdetect.TaskDetect())
-        self.parent.Push(taskobject.TaskTimed(1.0)) # wait for the animation
+        #self.parent.Push(taskdetect.TaskDetect())
+        self.parent.Push(taskobject.TaskTimed(2.0)) # wait for the animation
         self.parent.Push(taskpress.TaskPress('Y')) # pick up the item
 
     def DebugRecursive(self,indent=0):
@@ -87,3 +88,48 @@ class TaskPickup(taskobject.Task):
         self.parent.Push(taskobject.TaskTimed(1.0)) # wait for the animation
         # press B to continue
         self.parent.Push(taskpress.TaskPress('B'))
+
+class TaskPickupSpin(taskobject.Task):
+    """TaskPickupSpin Object"""
+
+    def __init__(self):
+        super().__init__()
+        self.name="TaskPickupSpin"
+        print("new",self.name,"object")
+        return
+
+    def Poll(self):
+        """check if any action can be taken"""
+        print(self.name,"Poll")
+        if not self.started:
+            self.Start()
+            return
+        if self.taskdone:
+            return
+        if gbstate.frame is None:
+            return
+
+        print(self.name,"done")
+        self.taskdone=True
+        return
+
+    def Start(self):
+        """Cause the task to begin doing whatever."""
+        print(self.name,"Start")
+        if self.started:
+            return # already started
+        self.started=True
+        # push tasks in reverse order
+
+        for heading in range(0,360,45):
+            self.parent.Push(TaskPickup())
+            self.parent.Push(tasktrackturn.TaskTrackTurn(heading))
+        return
+
+    def DebugRecursive(self,indent=0):
+        self.DebugPrint(self.name,indent)
+        return
+
+    def NameRecursive(self):
+        gbstate.task_stack_names.append(self.name)
+        return self.name

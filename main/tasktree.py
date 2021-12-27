@@ -27,6 +27,7 @@ import taskholdtool
 import taskgather
 import tasktrackturn
 import taskheadinggoto
+import taskpickup
 
 class TaskTree(taskobject.Task):
     """TaskTree Object"""
@@ -97,6 +98,13 @@ class TaskTree(taskobject.Task):
 
         if self.step == 2: # in front of the tree, ready to shake
             print("tasktree step 2")
+
+            # Close the presentation, if there is one.
+            self.parent.Push(taskpress.TaskPress('B'))
+
+            # Wait for a possible wasp presentation animation.
+            self.parent.Push(taskobject.TaskTimed(3))
+
             # Swing the net just in case a wasp nest was triggered.
             self.parent.Push(taskpress.TaskPress('A'))
             # Wait for a possible wasp nest animation.
@@ -155,56 +163,48 @@ class TaskTree(taskobject.Task):
             gbstate.inventory_needed=True
 
             # Gather at position 8
-            self.parent.Push(taskobject.TaskTimed(2.0)) # let the animation play out
-            self.parent.Push(taskpress.TaskPress('Y'))
+            self.parent.Push(taskpickup.TaskPickupSpin())
             # Face down/south and step 1
-            self.parent.Push(taskheadinggoto.TaskHeadingGoTo(180,1))
+            self.parent.Push(taskheadinggoto.TaskHeadingGoTo(180,1.3))
 
             # Gather at position 7
-            self.parent.Push(taskobject.TaskTimed(2.0)) # let the animation play out
-            self.parent.Push(taskpress.TaskPress('Y'))
+            self.parent.Push(taskpickup.TaskPickupSpin())
             # Face down/south and step 1
-            self.parent.Push(taskheadinggoto.TaskHeadingGoTo(180,1))
+            self.parent.Push(taskheadinggoto.TaskHeadingGoTo(180,1.3))
 
             # Gather at position 6
-            self.parent.Push(taskobject.TaskTimed(2.0)) # let the animation play out
-            self.parent.Push(taskpress.TaskPress('Y'))
+            self.parent.Push(taskpickup.TaskPickupSpin())
             # Face left/west and step 1
-            self.parent.Push(taskheadinggoto.TaskHeadingGoTo(270,1))
+            self.parent.Push(taskheadinggoto.TaskHeadingGoTo(270,1.3))
 
             # Gather at position 5
-            self.parent.Push(taskobject.TaskTimed(2.0)) # let the animation play out
-            self.parent.Push(taskpress.TaskPress('Y'))
+            self.parent.Push(taskpickup.TaskPickupSpin())
             # Face left/west and step 1
-            self.parent.Push(taskheadinggoto.TaskHeadingGoTo(270,1))
+            self.parent.Push(taskheadinggoto.TaskHeadingGoTo(270,1.3))
 
             # Gather at position 4
-            self.parent.Push(taskobject.TaskTimed(2.0)) # let the animation play out
-            self.parent.Push(taskpress.TaskPress('Y'))
+            self.parent.Push(taskpickup.TaskPickupSpin())
             # Face up/north and step 1
-            self.parent.Push(taskheadinggoto.TaskHeadingGoTo(0,1))
+            self.parent.Push(taskheadinggoto.TaskHeadingGoTo(0,1.3))
 
             # Gather at position 3
-            self.parent.Push(taskobject.TaskTimed(2.0)) # let the animation play out
-            self.parent.Push(taskpress.TaskPress('Y'))
+            self.parent.Push(taskpickup.TaskPickupSpin())
             # Face up/north and step 1
-            self.parent.Push(taskheadinggoto.TaskHeadingGoTo(0,1))
+            self.parent.Push(taskheadinggoto.TaskHeadingGoTo(0,1.3))
 
             # Gather at position 2
-            self.parent.Push(taskobject.TaskTimed(2.0)) # let the animation play out
-            self.parent.Push(taskpress.TaskPress('Y'))
+            self.parent.Push(taskpickup.TaskPickupSpin())
             # Face right/east and step 1
-            self.parent.Push(taskheadinggoto.TaskHeadingGoTo(90,1))
+            self.parent.Push(taskheadinggoto.TaskHeadingGoTo(90,1.3))
 
             # Gather at position 1
-            self.parent.Push(taskobject.TaskTimed(2.0)) # let the animation play out
-            self.parent.Push(taskpress.TaskPress('Y'))
+            self.parent.Push(taskpickup.TaskPickupSpin())
 
             # Face up/north to face the tree.
             self.parent.Push(tasktrackturn.TaskTrackTurn(0))
 
-            # walk up against the tree
-            self.parent.Push(taskheadinggoto.TaskHeadingGoTo(0,0.4))
+            ## walk up against the tree
+            #self.parent.Push(taskheadinggoto.TaskHeadingGoTo(0,0.4))
 
             # Go to the tree facing north.
             self.parent.Push(taskpathplangoto.TaskPathPlanGoTo(self.target_mx,self.target_my))

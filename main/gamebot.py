@@ -146,7 +146,7 @@ def do_one_object_detect(dframe):
         gbstate.category_index,
         use_normalized_coordinates=True,
         max_boxes_to_draw=gbdata.object_count,
-        min_score_thresh=.3,
+        min_score_thresh=.10,
         agnostic_mode=False)
 
     #cv2.imshow("show detections",cv2.resize(image_np_with_detections,(800,600)))

@@ -64,7 +64,8 @@ phonemap_pin_height=41
 phonemap_pin_center_to_tip=23.50
 #phonemap_pin_tune_mx=0.25
 #phonemap_pin_tune_my=0.25
-phonemap_pin_tune_mx=0.25+common_tune_mx
+#phonemap_pin_tune_mx=0.25+common_tune_mx
+phonemap_pin_tune_mx=0.30+common_tune_mx
 phonemap_pin_tune_my=0.25+common_tune_my
 
 phonemap_gray_search_x=6
@@ -914,6 +915,21 @@ phone_hand_color=[254,254,254] # rgb 2
 phone_nook_miles_color_offset_x=-36
 phone_nook_miles_color_offset_y=0
 phone_nook_miles_color=[140,151,236] # rgb 2
+nook_miles_plus_blue=[89,98,222] # rgb 2
+nook_miles_plus_blue_locations=[
+    (160,18),
+    (281,18),
+    (400,18),
+    (519,18),
+    (639,18)
+]
+nook_miles_plus_hand_locations=[
+    (257,430),
+    (499,407),
+    (740,398),
+    (985,407),
+    (1223,430)
+]
 
 # this is the background color of the phone map screen
 phone_map_background=[130,224,195] # rgb 8
@@ -1217,4 +1233,11 @@ named_icons=[
 ["services",icon_services_building],
 ["tailors",icon_tailors],
 ["airport",icon_airport]
+]
+
+directions_offsets_x_y=[
+    (-1,0),
+    (1,0),
+    (0,-1),
+    (0,1)
 ]
