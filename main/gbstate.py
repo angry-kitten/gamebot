@@ -200,3 +200,8 @@ building_info_cranny=None
 building_info_services=None
 building_info_tailors=None
 building_info_airport=None
+
+ocr_worker_thread=None
+ocr_detections=None
+ocr_frame=None
+ocr_reader=None

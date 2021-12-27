@@ -4,10 +4,7 @@
 # Gamebot main program.
 #
 
-import sys
-import os
-import time
-import random
+import sys, os, time, random
 import threading
 import cv2
 import imutils
@@ -20,9 +17,10 @@ from object_detection.utils import config_util
 import numpy
 from matplotlib import pyplot
 
-import gbdata
-import gbstate
-import gbdisplay
+import gbdata, gbstate, gbdisplay
+
+import threadmanager
+import gbocr
 
 import taskobject
 import tasksay
@@ -40,7 +38,6 @@ import taskupdatephonemap
 import taskdetermineposition
 import tasktrackgoto
 import tasktakeinventory
-import gbscreenread
 import taskmuseum
 
 
@@ -418,6 +415,8 @@ def main_loop(vid):
         if gbstate.frame is not None:
             with gbstate.detection_lock:
                 gbstate.detection_frame=gbstate.frame
+            with gbstate.ocr_worker_thread.data_lock:
+                gbstate.ocr_frame=gbstate.frame
 
         showme=None
         with gbstate.detection_lock:
@@ -496,6 +495,8 @@ def setup_run_cleanup():
     # start the object detection thread
     odt=threading.Thread(target=object_detection_thread,daemon=True)
     odt.start()
+
+    gbocr.init_ocr()
 
     main_loop(vid)
 

@@ -3,16 +3,14 @@
 # Various functions for drawing status on a frame.
 #
 
-import taskobject
-import gbdata
-import gbstate
+import time
+import math
 import cv2
+import gbdata, gbstate
+import taskobject
 import taskpress
 import taskdetect
-import math
 import gbtrack
-import time
-import gbscreenread
 import gbmap
 
 color_white=(255,255,255) # BGR
@@ -41,6 +39,7 @@ line_width_x=3
 line_width_x_wide=6
 line_type=cv2.LINE_AA
 font_line_width=1
+font_line_width_wide=2
 font_vertical_space=26
 font_vertical_space_75=26
 font_vertical_space_50=int(round(font_vertical_space*0.50))
@@ -915,14 +914,13 @@ def draw_on(frame):
 
     draw_pause_message(frame)
 
-
-    gbscreenread.draw_screen_read(frame)
-
     draw_buildings(frame)
 
     draw_map2(frame)
     draw_maps(frame)
     draw_targets(frame)
+
+    draw_ocr(frame)
 
     return
 
@@ -1087,4 +1085,24 @@ def draw_map2(frame):
     #    print("diaginfo",diaginfo)
     #    cv2.line(frame,(diaginfo[0],diaginfo[1]),(diaginfo[2],diaginfo[3]),color_yellow,1)
 
+    return
+
+# example data:
+# [([[968, 208], [1038, 208], [1038, 216], [968, 216]], '1', 0.008175754888339937), ([[1042, 208], [1064, 208], [1064, 216], [1042, 216]], '3', 0.010153401497510706), ([[1069, 208], [1153, 208], [1153, 216], [1069, 216]], '3', 0.007057148914849043), ([[98, 588], [218, 588], [218, 640], [98, 640]], '3.27', 0.7056293487548828), ([[228, 608], [282, 608], [282, 638], [228, 638]], 'AM', 0.9678678383256856), ([[46, 658], [236, 658], [236, 690], [46, 690]], 'December 27', 0.9993508211254571), ([[256, 656], [321, 656], [321, 686], [256, 686]], 'Mon:', 0.8180626034736633)]
+# array of detections
+# tuple(3) of box, text, score
+# box is an array of four arrays, each with a screen x and y
+#     upper left, upper right, lower right, lower left
+def draw_ocr(frame):
+    with gbstate.ocr_worker_thread.data_lock:
+        dets=gbstate.ocr_detections
+    if dets is None:
+        return
+    for det in dets:
+        (box,text,score)=det
+        ul=box[0]
+        ll=box[3]
+        sx=int(round(ul[0]))
+        sy=int(round(((ul[1]+ll[1])/2)))
+        cv2.putText(frame,text,(sx,sy),font,font_scale_50,color_red,font_line_width_wide,line_type)
     return

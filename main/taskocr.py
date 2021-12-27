@@ -1,47 +1,36 @@
 #
 # Copyright 2021 by angry-kitten
-# Run a test (varies over time)  Test turn delay.
+# Trigger an OCR detection by clearing gbstate.ocr_detections and
+# waiting for it to be generated.
 #
 
-import random
-import math
-
 import taskobject
-import gbdata
-import gbstate
-import cv2
-import taskpress
-import tasksay
-import taskdetect
-import taskgotomain
-import taskupdatemini
-import taskjoy
-import tasktrackgoto
-import gbtrack
-import tasktrackturn
-import taskpause
-import pytesseract
+import gbdata, gbstate
 
-class TaskTest6ocr(taskobject.Task):
-    """TaskTest6ocr Object"""
+class TaskOCR(taskobject.Task):
+    """TaskOCR Object"""
 
     def __init__(self):
         super().__init__()
-        self.name="TaskTest6ocr"
+        self.name="TaskOCR"
         print("new",self.name,"object")
+        return
 
     def Poll(self):
         """check if any action can be taken"""
-        print(self.name,"Poll")
+        #print(self.name,"Poll")
         if not self.started:
             self.Start()
             return
         if self.taskdone:
             return
-        if gbstate.frame is None:
-            return
 
-        print(self.name,"done")
+        with gbstate.ocr_worker_thread.data_lock:
+            if gbstate.ocr_detections is None:
+                return
+
+        gbstate.pause_message=None
+        #print(self.name,"done")
         self.taskdone=True
         return
 
@@ -51,11 +40,10 @@ class TaskTest6ocr(taskobject.Task):
         if self.started:
             return # already started
         self.started=True
-
-        frame=gbstate.frame
-        img_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        print(pytesseract.image_to_string(img_rgb))
-
+        gbstate.pause_message='OCR'
+        with gbstate.ocr_worker_thread.data_lock:
+            gbstate.ocr_detections=None
+        gbstate.ocr_worker_thread.RunOnce()
         return
 
     def DebugRecursive(self,indent=0):

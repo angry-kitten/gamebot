@@ -94,8 +94,12 @@ class TaskUpdatePhoneMap(taskobject.Task):
             return
 
         if self.step == 30:
+            # wait for the animation
+            self.parent.Push(taskobject.TaskTimed(2.0))
+
             # close phone
-            self.parent.Push(taskpress.TaskPress('B',1.0))
+            self.parent.Push(taskpress.TaskPress('B'))
+
             self.step=99
             return
 

@@ -7,8 +7,8 @@
 import taskobject
 import gbdata
 import gbstate
-import gbscreenread
 import gamebot
+import taskocr
 
 class TaskDetect(taskobject.Task):
     """TaskDetect Object"""
@@ -30,8 +30,6 @@ class TaskDetect(taskobject.Task):
             if gbstate.detections is None:
                 #gamebot.object_detection_wakeup()
                 return
-
-        gbscreenread.screen_read()
 
         gbstate.pause_message=None
         gbstate.move_since_detect=False
