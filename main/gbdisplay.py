@@ -920,6 +920,7 @@ def draw_on(frame):
     draw_maps(frame)
     draw_targets(frame)
 
+    draw_object_detect(frame)
     draw_ocr(frame)
 
     return
@@ -1029,6 +1030,9 @@ def draw_buildings(frame):
     radius=int(round(gbdata.phonemap_circle_diameter/2))
     for c in gbstate.gray_circle_list:
         cv2.circle(frame,(c[0],c[1]),radius,color_red,line_width)
+
+    if gbstate.building_info_player_house is not None:
+        cv2.drawMarker(frame,(gbstate.player_house_sx,gbstate.player_house_sy),color_red,cv2.MARKER_SQUARE)
     return
 
 def draw_map2(frame):
@@ -1094,9 +1098,14 @@ def draw_map2(frame):
 # box is an array of four arrays, each with a screen x and y
 #     upper left, upper right, lower right, lower left
 def draw_ocr(frame):
+    tnow=time.monotonic()
     with gbstate.ocr_worker_thread.data_lock:
         dets=gbstate.ocr_detections
+        set_time=gbstate.ocr_detections_set_time
     if dets is None:
+        return
+    dt=tnow-set_time
+    if dt > gbdata.ocr_display_time:
         return
     for det in dets:
         (box,text,score)=det
@@ -1105,4 +1114,39 @@ def draw_ocr(frame):
         sx=int(round(ul[0]))
         sy=int(round(((ul[1]+ll[1])/2)))
         cv2.putText(frame,text,(sx,sy),font,font_scale_50,color_red,font_line_width_wide,line_type)
+    return
+
+def draw_object_detect(frame):
+    tnow=time.monotonic()
+    with gbstate.detection_lock:
+        d=gbstate.detections
+        set_time=gbstate.detections_set_time
+    if d is None:
+        return
+    dt=tnow-set_time
+    if dt > gbdata.detections_display_time:
+        return
+
+    n=d['num_detections']
+    boxes=d['detection_boxes']
+    scores=d['detection_scores']
+    classes=d['detection_classes']
+    anchors=d['detection_anchor_indices']
+
+    for j in range(n):
+        detectclass=classes[j]
+        e=gbstate.category_index[detectclass+gbstate.label_id_offset]
+        name=e['name']
+        box=boxes[j]
+        # box is [y1,x1,y2,x2]
+        # y is down, x is right
+        score=scores[j]
+        if score > 0.2:
+            y1=int(round(box[0]*gbdata.stdscreen_size[1]))
+            x1=int(round(box[1]*gbdata.stdscreen_size[0]))
+            y2=int(round(box[2]*gbdata.stdscreen_size[1]))
+            x2=int(round(box[3]*gbdata.stdscreen_size[0]))
+
+            cv2.rectangle(frame,(x1,y1),(x2,y2),color_yellow,1)
+            cv2.putText(frame,name,(x1,y1),font,font_scale_25,color_blue,font_line_width,line_type)
     return

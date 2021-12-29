@@ -21,6 +21,7 @@ categgory_index=None
 detection_lock=None
 detection_frame=None
 detections=None
+detections_set_time=0
 digested=None
 detim=None
 # above are protected by the lock
@@ -200,8 +201,12 @@ building_info_cranny=None
 building_info_services=None
 building_info_tailors=None
 building_info_airport=None
+building_info_player_house=None
+player_house_sx=0
+player_house_sy=0
 
 ocr_worker_thread=None
 ocr_detections=None
+ocr_detections_set_time=0
 ocr_frame=None
 ocr_reader=None

@@ -46,7 +46,7 @@ class TaskHoldTool(taskobject.Task):
 
         if self.step == 2:
             print("select tool")
-            self.parent.Push(taskocr.TaskOCR())
+            #self.parent.Push(taskocr.TaskOCR())
             self.parent.Push(taskdetect.TaskDetect())
             self.parent.Push(taskobject.TaskTimed(1.0)) # wait for menu to pop up
             self.parent.Push(taskpress.TaskPress('A'))

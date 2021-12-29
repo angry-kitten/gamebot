@@ -16,7 +16,7 @@ class Task:
         self.myid=Task.id
         Task.id=Task.id+1
         #print("b Task.id is",Task.id)
-        print("new",self.name,"object",self.myid)
+        #print("new",self.name,"object",self.myid)
         self.taskdone=False
         self.started=False
         self.parent=None # parent in the task tree, not inheritence
@@ -58,7 +58,7 @@ class TaskStack(Task):
     def __init__(self):
         super().__init__()
         self.name="TaskStack"
-        print("new",self.name,"object",self.myid)
+        #print("new",self.name,"object",self.myid)
         self.thestack=[]
 
     def Poll(self):
@@ -120,7 +120,7 @@ class TaskThreads(Task):
     def __init__(self):
         super().__init__()
         self.name="TaskThreads"
-        print("new",self.name,"object",self.myid)
+        #print("new",self.name,"object",self.myid)
         self.threadlist=[]
 
     def Poll(self):
@@ -192,7 +192,7 @@ class TaskTimed(Task):
     def __init__(self,time_seconds=1.0):
         super().__init__()
         self.name="TaskTimed"
-        print("new",self.name,"object",self.myid)
+        #print("new",self.name,"object",self.myid)
         self.starttime_sec=0 # monotonic time value
         self.endtime_sec=0 # when it should end, monotonic time value
         self.duration_sec=time_seconds

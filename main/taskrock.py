@@ -34,7 +34,7 @@ class TaskRock(taskobject.Task):
         self.target_my=-1
         self.close=6
         self.step=0
-        (mox,moy)=gbdata.directions_offsets_x_y[random.randint(0,4)]
+        (mox,moy)=gbdata.directions_offsets_x_y[random.randint(0,3)]
         self.mox=mox
         self.moy=moy
 

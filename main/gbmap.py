@@ -115,7 +115,7 @@ def is_obstructed(mx,my):
         return False
 
     if ep == MapTypeUnknown:
-        return True
+        return False
     if ep == MapTypeWater:
         return True
     if ep == MapTypeDock:
@@ -706,6 +706,9 @@ def gather_phonemap2():
     if gbstate.mainmap is None:
         init_map()
 
+    if gbstate.building_info_player_house is None:
+        locate_player_house()
+
     tnow=time.monotonic()
     if gbstate.mainmap_latest_update != 0:
         telapsed=tnow-gbstate.mainmap_latest_update
@@ -716,6 +719,8 @@ def gather_phonemap2():
     gather_phonemap_squares()
 
     locate_buildings()
+
+    locate_player_house()
 
     return
 
@@ -1091,6 +1096,101 @@ def locate_buildings():
 
     return
 
+def verify_player_house(sx,sy):
+    print("verify_player_house")
+    # find horizontal center.
+    sx_left=sx
+    for i in range(1,gbdata.player_house_max_width):
+        t1sx=sx-i
+        if not is_player_house_color(t1sx,sy):
+            print("end on left")
+            gbscreen.print_color_at(t1sx,sy)
+            break
+        sx_left=t1sx
+    sx_right=sx
+    for i in range(1,gbdata.player_house_max_width):
+        t1sx=sx+i
+        if not is_player_house_color(t1sx,sy):
+            print("end on right")
+            gbscreen.print_color_at(t1sx,sy)
+            break
+        sx_right=t1sx
+    print("sx left right",sx_left,sx_right)
+    center_sx=int(round((sx_left+sx_right)/2))
+
+    # find vertical center.
+    sy_top=sy
+    for i in range(1,gbdata.player_house_max_height):
+        t1sy=sy-i
+        if not is_player_house_color(center_sx,t1sy):
+            print("end on top")
+            gbscreen.print_color_at(center_sx,t1sy)
+            break
+        sy_top=t1sy
+    sy_bottom=sy
+    for i in range(1,gbdata.player_house_max_height):
+        t1sy=sy+i
+        if not is_player_house_color(center_sx,t1sy):
+            print("end on bottom")
+            gbscreen.print_color_at(center_sx,t1sy)
+            break
+        sy_bottom=t1sy
+    print("sy top bottom",sy_top,sy_bottom)
+    center_sy=int(round((sy_top+sy_bottom)/2))
+
+    # find horizontal center again.
+    window_sy=center_sy+4
+    sx_left=center_sx
+    for i in range(1,gbdata.player_house_max_width):
+        t1sx=center_sx-i
+        if not is_player_house_color(t1sx,window_sy):
+            print("end on left")
+            gbscreen.print_color_at(t1sx,window_sy)
+            break
+        sx_left=t1sx
+    sx_right=center_sx
+    for i in range(1,gbdata.player_house_max_width):
+        t1sx=center_sx+i
+        if not is_player_house_color(t1sx,window_sy):
+            print("end on right")
+            gbscreen.print_color_at(t1sx,window_sy)
+            break
+        sx_right=t1sx
+    print("sx left right",sx_left,sx_right)
+    center_sx=int(round((sx_left+sx_right)/2))
+
+    w=sx_right-sx_left
+    h=sy_bottom-sy_top
+    print("w h",w,h)
+
+    if w < 20:
+        print("too narrow")
+        return False
+    if h < 18:
+        print("too short")
+        return False
+
+    gbstate.player_house_sx=center_sx
+    gbstate.player_house_sy=center_sy
+
+    set_building('player_house',center_sx,center_sy)
+
+    return True
+
+def locate_player_house():
+    print("locate_player_house")
+    # find player house colors
+    search_w=gbdata.phonemap_right-gbdata.phonemap_left
+    search_h=gbdata.phonemap_bottom-gbdata.phonemap_top_pin
+    for local_y in range(0,search_h,gbdata.phonemap_gray_search_y):
+        pixel_y=gbdata.phonemap_top+local_y
+        for local_x in range(0,search_w,gbdata.phonemap_gray_search_x):
+            pixel_x=gbdata.phonemap_left+local_x
+            if is_player_house_color(pixel_x,pixel_y):
+                if verify_player_house(pixel_x,pixel_y):
+                    return
+    return
+
 def verify_circle(start_sx,start_sy):
     #print("verify_circle",start_sx,start_sy)
 
@@ -1274,8 +1374,8 @@ def compare_icons(icon1,icon2):
 
 def set_building(name,sx,sy):
     # Calculate the map location given the screen location.
-    mx=(sx-gbdata.phonemap_origin_x)/gbdata.phonemap_square_spacing
-    my=(sy-gbdata.phonemap_origin_y)/gbdata.phonemap_square_spacing
+    mx=int(round((sx-gbdata.phonemap_origin_x)/gbdata.phonemap_square_spacing))
+    my=int(round((sy-gbdata.phonemap_origin_y)/gbdata.phonemap_square_spacing))
 
     # binfo is [name,centermx,centermy,doormx,doormy]
     if name == 'campsite':
@@ -1296,6 +1396,10 @@ def set_building(name,sx,sy):
     elif name == 'airport':
         binfo=[name,mx,my,mx,my+3]
         gbstate.building_info_airport=binfo
+    elif name == 'player_house':
+        binfo=[name,mx,my,mx,my+2]
+        print("player house",binfo)
+        gbstate.building_info_player_house=binfo
     else:
         print("unknown building name")
     return
@@ -1311,5 +1415,12 @@ def is_circle_icon(pixel_x,pixel_y):
     pixel_x=int(round(pixel_x))
     pixel_y=int(round(pixel_y))
     if gbscreen.color_match_array(pixel_x,pixel_y,gbdata.phonemap_circle_icon,2):
+        return True
+    return False
+
+def is_player_house_color(pixel_x,pixel_y):
+    pixel_x=int(round(pixel_x))
+    pixel_y=int(round(pixel_y))
+    if gbscreen.color_match_array_list(pixel_x,pixel_y,gbdata.player_house_colors,2):
         return True
     return False

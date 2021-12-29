@@ -13,7 +13,7 @@ class TaskPress(taskobject.TaskTimed):
     def __init__(self,pressthis,total_sec=0.120,press_msec=60):
         super().__init__()
         self.name="TaskPress"
-        print("new",self.name,"object")
+        #print("new",self.name,"object")
         self.pressthis=pressthis
         self.step=0
         self.press_msec=press_msec

@@ -75,9 +75,9 @@ class TaskPickup(taskobject.Task):
         return self.name
 
     def handle_pockets_full(self):
-        self.parent.Push(taskstore.TaskStore())
         self.parent.Push(tasksell.TaskSell())
         self.parent.Push(taskmuseum.TaskMuseum())
+        self.parent.Push(taskstore.TaskStore())
 
         self.parent.Push(taskobject.TaskTimed(1.0)) # wait for the animation
         # press A to select 'drop it'

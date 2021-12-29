@@ -48,6 +48,7 @@ class TaskPathPlanGoTo(taskobject.Task):
 
         gbstate.plan_goto_target_mx=-1
         gbstate.plan_goto_target_my=-1
+        gbmap.waypoints=[]
         print(self.name,"done")
         self.taskdone=True
         return
@@ -58,6 +59,7 @@ class TaskPathPlanGoTo(taskobject.Task):
         if self.started:
             return # already started
         self.started=True
+        gbmap.waypoints=[]
         gbstate.plan_goto_target_mx=self.target_mx
         gbstate.plan_goto_target_my=self.target_my
         # plan from the current player position

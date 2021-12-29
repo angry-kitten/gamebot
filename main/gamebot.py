@@ -342,10 +342,12 @@ def object_detection_thread():
             print("start a detection")
             (localdetections,localdigested,localim)=do_one_object_detect(dframe)
             if localdetections is not None:
+                tnow=time.monotonic()
                 with gbstate.detection_lock:
                     gbstate.detections=localdetections
                     gbstate.digested=localdigested
                     gbstate.detim=localim
+                    gbstate.detections_set_time=tnow
 
         print("odt 4")
 

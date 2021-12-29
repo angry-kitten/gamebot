@@ -125,15 +125,22 @@ class TaskTakeInventory(taskobject.Task):
         gbstate.inventory_slots_free=0
         slot=0
         for thing in inventory_det:
-            if thing is not None:
+            if thing is None:
+                #print("unknown")
+                gbstate.inventory_slots_unknown+=1
+            else:
                 name=thing[0]
                 gbstate.inventory_name[slot]=name
+                #print(f"name=[{name}]")
                 if name == 'InvEmpty':
                     gbstate.inventory_slots_free+=1
+                    #print("free")
                 elif name == '':
                     gbstate.inventory_slots_unknown+=1
+                    #print("unknown")
                 else:
                     gbstate.inventory_slots_full+=1
+                    #print("full")
             slot+=1
 
         print("inventory_name",gbstate.inventory_name)

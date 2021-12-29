@@ -74,6 +74,20 @@ def color_match_array(x,y,a,within):
     y=int(round(y))
     return color_match(x,y,a[0],a[1],a[2],within)
 
+def color_match_array_list(x,y,l,within):
+    for a in l:
+        b=color_match_array(x,y,a,within)
+        if b:
+            return b
+    return False
+
+def print_color_at(sx,sy):
+    sx=int(round(sx))
+    sy=int(round(sy))
+    (pb,pg,pr)=get_pixel(sx,sy)
+    print("rgb",pr,pg,pb)
+    return
+
 def is_black_screen():
     # sample the screen instead of looking at all of it
     w=gbdata.stdscreen_size[0]
@@ -320,6 +334,12 @@ def is_inside_box(x1,x2,y1,y2,x,y):
         return False
     return True
 
+def is_near_within(x1,y1,x2,y2,within):
+    d=gbdisplay.calculate_distance(x1,y1,x2,y2)
+    if d <= within:
+        return True
+    return False
+
 def is_inventory_screen():
     with gbstate.detection_lock:
         if gbstate.digested is None:
@@ -507,5 +527,6 @@ def is_inside_building_screen():
     if is_minimap():
         return False
     if not has_label('ButtonZL',0.30,94,56,5):
-        return False
+        if not has_label('ButtonZL',0.30,73,37,5):
+            return False
     return True

@@ -1241,3 +1241,118 @@ directions_offsets_x_y=[
     (0,-1),
     (0,1)
 ]
+
+player_house_colors=[
+    [231,116,43], # body 1
+    [244,114,172], # body 2
+    [213,71,117], # window 1
+    [249,222,79], # window 2
+    [234,126,46],
+    [231,101,159],
+    [228,98,153],
+    [228,101,156],
+    [239,113,171],
+    [239,191,66],
+    [244,121,178],
+    [232,106,162],
+    [228,103,159],
+    [239,116,174],
+    [227,91,139],
+    [225,86,133],
+    [225,87,136],
+    [241,203,68],
+    [237,109,164],
+    [230,97,146],
+    [226,91,136],
+    [241,206,70],
+    [237,113,166],
+    [237,152,55],
+    [243,124,183],
+    [240,211,71],
+    [238,161,57],
+    [232,113,44],
+    [218,134,37],
+    [255,227,87],
+    [255,172,75],
+    [250,232,81],
+    [247,122,175],
+    [212,77,122],
+    [213,77,118],
+    [237,205,66],
+    [253,167,71],
+    [226,94,139],
+    [243,111,171],
+]
+player_house_max_width=35
+player_house_max_height=25
+
+ocr_to_inventory={
+    'Peaches':'InvPeach',
+    'Peach':'InvPeach',
+    'Axe':'InvAxe',
+    'Tree branches':'InvBranches',
+    'Tree branch':'InvBranches',
+    'Vaulting pole':'InvPole',
+    'Flimsy net':'InvNet',
+    'Shovel':'InvShovel',
+    'Wasp nest':'InvWaspNest',
+    'Hardwood':'InvHardWood',
+    'Wood':'InvWood',
+    'Ladder':'InvLadder',
+    'Slingshot':'InvSlingshot',
+    'Softwood':'InvSoftWood',
+    'Sand dollar':'InvSandDollar',
+    'Coral':'InvCoral',
+    'Cowrie':'InvCowrie',
+    'Clump of weeds':'InvWeeds',
+    'Stone axe':'InvStoneAxe',
+    'Fossil':'InvFossil',
+    'Wasp':'InvWasp',
+    'Stone':'InvStone',
+    'Iron':'InvIron',
+    'Gold':'InvGold',
+}
+
+item_keep=[
+    "InvAxe",
+    "InvPole",
+    "InvNet",
+    "InvShovel",
+    "InvStoneAxe",
+]
+
+item_store=[
+    "InvSlingshot",
+    "InvLadder",
+    "InvPeach",
+    "InvBranches",
+    "InvWaspNest",
+    "InvHardWood",
+    "InvSoftWood",
+    "InvWood",
+    "InvSandDollar",
+    "InvCoral",
+    "InvCowrie",
+    "InvWeeds",
+    "InvStone",
+    "InvIron",
+    "InvGold",
+]
+
+item_sell=[
+    "InvBones",
+    "InvWasp",
+]
+
+item_museum=[
+    "InvFossil",
+]
+
+ocr_inv_menu_lane_x1=749
+ocr_inv_menu_lane_y1=309
+ocr_inv_menu_lane_x2=1192
+ocr_inv_menu_lane_y2=649
+ocr_inv_name_offset_y=-71
+ocr_display_time=10 # seconds
+
+detections_display_time=10 # seconds
