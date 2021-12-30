@@ -65,7 +65,8 @@ phonemap_pin_center_to_tip=23.50
 #phonemap_pin_tune_mx=0.25
 #phonemap_pin_tune_my=0.25
 #phonemap_pin_tune_mx=0.25+common_tune_mx
-phonemap_pin_tune_mx=0.30+common_tune_mx
+#phonemap_pin_tune_mx=0.30+common_tune_mx
+phonemap_pin_tune_mx=0.35+common_tune_mx
 phonemap_pin_tune_my=0.25+common_tune_my
 
 phonemap_gray_search_x=6
@@ -1309,6 +1310,7 @@ ocr_to_inventory={
     'Fossil':'InvFossil',
     'Wasp':'InvWasp',
     'Stone':'InvStone',
+    'Stones':'InvStone',
     'Iron':'InvIron',
     'Gold':'InvGold',
 }
@@ -1356,3 +1358,9 @@ ocr_inv_name_offset_y=-71
 ocr_display_time=10 # seconds
 
 detections_display_time=10 # seconds
+move_wait=0.3 # seconds
+
+ocr_museum_menu1_lane_x1=916
+ocr_museum_menu1_lane_y1=168
+ocr_museum_menu1_lane_x2=1248
+ocr_museum_menu1_lane_y2=457

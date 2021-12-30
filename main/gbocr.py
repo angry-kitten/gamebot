@@ -4,9 +4,12 @@
 #
 
 import os, sys, time, random, threading
+import difflib
 import easyocr
 import gbdata, gbstate
 import threadmanager
+import taskobject
+import taskpress
 
 # example data:
 # [([[968, 208], [1038, 208], [1038, 216], [968, 216]], '1', 0.008175754888339937), ([[1042, 208], [1064, 208], [1064, 216], [1042, 216]], '3', 0.010153401497510706), ([[1069, 208], [1153, 208], [1153, 216], [1069, 216]], '3', 0.007057148914849043), ([[98, 588], [218, 588], [218, 640], [98, 640]], '3.27', 0.7056293487548828), ([[228, 608], [282, 608], [282, 638], [228, 638]], 'AM', 0.9678678383256856), ([[46, 658], [236, 658], [236, 690], [46, 690]], 'December 27', 0.9993508211254571), ([[256, 656], [321, 656], [321, 686], [256, 686]], 'Mon:', 0.8180626034736633)]
@@ -73,5 +76,139 @@ def locate_menu_text(menu,text):
             index=j
             if j == (l-1):
                 is_last=True
-            break
+            return (index,is_last)
+    # Try again but with some fuzz
+    best_score=0
+    best_index=None
+    best_is_last=False
+    for j in range(l):
+        entry=menu[j]
+        print("entry",entry)
+        score=score_close_string_match(entry[1],text)
+        if best_index is None:
+            best_index=j
+            best_score=score
+            if j == (l-1):
+                best_is_last=True
+            else:
+                best_is_last=False
+        elif best_score < score:
+            best_index=j
+            best_score=score
+            if j == (l-1):
+                best_is_last=True
+            else:
+                best_is_last=False
+    if best_index is None:
+        return (index,is_last)
+    if best_score < 0.8:
+        return (index,is_last)
+    index=best_index
+    is_last=best_is_last
     return (index,is_last)
+
+def score_close_string_match(s1,s2):
+    print("score_close_string_match",s1,s2)
+    if s1 == s2:
+        return 1.0
+    if s1 in s2:
+        print("s1 in s2")
+        return 0.95
+    if s2 in s1:
+        print("s2 in s1")
+        return 0.95
+    matcher=difflib.SequenceMatcher(s1,s2)
+    v=matcher.ratio()
+    print("ratio",v)
+    return v
+
+def move_hand_to_slot(slot,obj):
+    if slot == gbstate.hand_slot:
+        print("pointing at slot")
+        return
+    slot_row=int(slot/10)
+    slot_column=int(slot%10)
+    hand_row=int(gbstate.hand_slot/10)
+    hand_column=int(gbstate.hand_slot%10)
+    while slot_row < hand_row:
+        # move pointer hand up
+        gbstate.hand_slot-=10
+        obj.parent.Push(taskobject.TaskTimed(gbdata.move_wait)) # wait for animation
+        obj.parent.Push(taskpress.TaskPress('hat_TOP'))
+        hand_row=int(gbstate.hand_slot/10)
+    while slot_row > hand_row:
+        # move pointer hand down
+        gbstate.hand_slot+=10
+        obj.parent.Push(taskobject.TaskTimed(gbdata.move_wait)) # wait for animation
+        obj.parent.Push(taskpress.TaskPress('hat_BOTTOM'))
+        hand_row=int(gbstate.hand_slot/10)
+    if slot_column < hand_column:
+        # move pointer hand left
+        delta=hand_column-slot_column
+        if delta > 5:
+            print("wrap")
+            for j in range((10-delta)):
+                # move pointer hand right
+                if hand_column == 9:
+                    gbstate.hand_slot-=9
+                else:
+                    gbstate.hand_slot+=1
+                obj.parent.Push(taskobject.TaskTimed(gbdata.move_wait)) # wait for animation
+                obj.parent.Push(taskpress.TaskPress('hat_RIGHT'))
+                hand_column=int(gbstate.hand_slot%10)
+        else:
+            print("no wrap")
+            while slot_column < hand_column:
+                # move pointer hand left
+                gbstate.hand_slot-=1
+                obj.parent.Push(taskobject.TaskTimed(gbdata.move_wait)) # wait for animation
+                obj.parent.Push(taskpress.TaskPress('hat_LEFT'))
+                hand_column=int(gbstate.hand_slot%10)
+
+    if slot_column > hand_column:
+        # move pointer hand right
+        delta=slot_column-hand_column
+        if delta > 5:
+            print("wrap")
+            for j in range((10-delta)):
+                # move pointer hand left
+                if hand_column == 0:
+                    gbstate.hand_slot+=9
+                else:
+                    gbstate.hand_slot-=1
+                obj.parent.Push(taskobject.TaskTimed(gbdata.move_wait)) # wait for animation
+                obj.parent.Push(taskpress.TaskPress('hat_LEFT'))
+                hand_column=int(gbstate.hand_slot%10)
+        else:
+            print("no wrap")
+            while slot_column > hand_column:
+                # move pointer hand right
+                gbstate.hand_slot+=1
+                obj.parent.Push(taskobject.TaskTimed(gbdata.move_wait)) # wait for animation
+                obj.parent.Push(taskpress.TaskPress('hat_RIGHT'))
+                hand_column=int(gbstate.hand_slot%10)
+    return
+
+def combine_menu_entries(menu):
+    newmenu=[]
+    if len(menu) < 1:
+        return menu
+    # Sort the menu by sy
+    smenu=sorted(menu,key=lambda entry: entry[0])
+    for e in smenu:
+        l=len(newmenu)
+        if l < 1:
+            newmenu.append(e)
+            continue
+        previous_sy=newmenu[l-1][0]
+        e_sy=e[0]
+        print("previous and e",previous_sy,e_sy,e[1])
+        if e_sy < (previous_sy+4):
+            print("combine")
+            newtext=newmenu[l-1][1]+' '+e[1]
+            print("newtext",newtext)
+            newmenu[l-1][1]=newtext
+            continue
+        newmenu.append(e)
+
+    return newmenu

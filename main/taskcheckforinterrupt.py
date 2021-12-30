@@ -98,12 +98,12 @@ class TaskCheckForInterrupt(taskobject.Task):
                 print("full",gbstate.inventory_slots_full)
                 print("size",gbstate.inventory_size)
                 #if gbstate.inventory_slots_full == gbstate.inventory_size:
-                #if gbstate.inventory_slots_full >= (gbstate.inventory_size-4):
-                if gbstate.inventory_slots_full > 0:
-                    self.parent.Push(tasksell.TaskSell())
-                    self.parent.Push(taskmuseum.TaskMuseum())
+                if gbstate.inventory_slots_full >= (gbstate.inventory_size-4):
+                    #self.parent.Push(tasksell.TaskSell())
+                    #self.parent.Push(taskmuseum.TaskMuseum())
                     self.parent.Push(taskstore.TaskStore())
                     return
+                self.parent.Push(taskmuseum.TaskMuseum())
                 return
 
             if self.step == 3:
@@ -111,8 +111,8 @@ class TaskCheckForInterrupt(taskobject.Task):
                 print("full",gbstate.inventory_slots_full)
                 print("free",gbstate.inventory_slots_free)
                 if gbstate.inventory_slots_full > 0 and gbstate.inventory_slots_free == 0:
-                    self.parent.Push(tasksell.TaskSell())
-                    self.parent.Push(taskmuseum.TaskMuseum())
+                    #self.parent.Push(tasksell.TaskSell())
+                    #self.parent.Push(taskmuseum.TaskMuseum())
                     self.parent.Push(taskstore.TaskStore())
                     return
                 return

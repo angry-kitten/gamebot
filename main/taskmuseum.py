@@ -3,19 +3,20 @@
 # Go the the museum and evaluate fossils and donate items.
 #
 
-import taskobject
-import gbdata
-import gbstate
+import gbdata, gbstate
+import gbscreen
+import gbocr
 import cv2
+import taskobject
 import taskpress
 import tasksay
 import taskdetect
 import taskgotomain
 import taskupdatemini
-import gbscreen
 import taskpathplangoto
 import taskheadinggoto
 import tasktrackturn
+import taskocr
 
 class TaskMuseum(taskobject.Task):
     """TaskMuseum Object"""
@@ -25,6 +26,14 @@ class TaskMuseum(taskobject.Task):
         self.name="TaskMuseum"
         print("new",self.name,"object")
         self.step=0
+        self.within=1
+        self.ratio=0.30
+        self.name_within=30
+        self.ocr_name=None
+        self.ocr_menu=None
+        self.target_slot=0
+        self.donated=False
+        self.select_count=0
 
     def Poll(self):
         """check if any action can be taken"""
@@ -37,8 +46,20 @@ class TaskMuseum(taskobject.Task):
         if gbstate.frame is None:
             return
 
+        print(self.name,"step=",self.step)
+
         if self.step == 0:
-            self.parent.Push(taskobject.TaskTimed(10.0)) # wait for interior of museum
+            # Verify that player character is in front of the museum.
+            mx=gbstate.building_info_museum[3]
+            my=gbstate.building_info_museum[4]
+            if not (gbscreen.match_within(gbstate.player_mx,mx,self.within) and gbscreen.match_within(gbstate.player_my,my,self.within)):
+                self.step=99
+                return
+
+            # Do a detect to get ready for is_inside_building_screen
+            self.parent.Push(taskdetect.TaskDetect())
+
+            self.parent.Push(taskobject.TaskTimed(12.0)) # wait for interior of museum
 
             # When the museum is still a tent, need to press 'A' to go inside.
             # this shouldn't do anything once the museum is a building.
@@ -46,7 +67,7 @@ class TaskMuseum(taskobject.Task):
 
             # Walk to the center of the museum, mapless. This should cause the player
             # character to enter.
-            self.parent.Push(taskheadinggoto.TaskHeadingGoTo(0,2))
+            self.parent.Push(taskheadinggoto.TaskHeadingGoTo(0,3))
             self.step=1
             return
 
@@ -79,48 +100,193 @@ class TaskMuseum(taskobject.Task):
             return
 
         if self.step == 3: # select assess
-            self.parent.Push(taskobject.TaskTimed(5.0))
-            self.parent.Push(taskpress.TaskPress('A'))
-            self.parent.Push(taskpress.TaskPress('hat_BOTTOM'))
+            # Menu should be
+            # Make a donation.
+            # Assess fossils.
+            # Tell me about this!
+            # I'm fine.
+
+            # OCR the menu
+            self.parent.Push(taskocr.TaskOCR())
             self.step=4
             return
 
-        if self.step == 4: # continue until menu
-            if gbscreen.is_continue_triangle():
-                # press continue and wait for animation
-                self.parent.Push(taskobject.TaskTimed(10.0))
-                self.parent.Push(taskpress.TaskPress('B'))
+        if self.step == 4:
+            self.digest_menu1()
+            print("ocr menu",self.ocr_menu)
+            if self.ocr_menu is None:
+                self.step=90 # exit the museum
                 return
+            if len(self.ocr_menu) < 1:
+                self.step=90 # exit the museum
+                return
+
+            if self.donated:
+                # We have already donated and we have come back
+                # around to the menu. Just close it and move on.
+                self.step=80
+                return
+
+            (index,is_last)=gbocr.locate_menu_text(self.ocr_menu,'Assess fossils')
+            if index is None:
+                self.step=80 # close the menu
+                return
+
+            # Move the pointer hand to the
+            # menu entry and select it.
+
+            self.parent.Push(taskobject.TaskTimed(3.0)) # wait for animation
+            self.parent.Push(taskpress.TaskPress('A'))
+
+            if index != 0:
+                print("need to move the pointer hand")
+                if is_last:
+                    print("move up to wrap around to last item in menu")
+                    self.parent.Push(taskobject.TaskTimed(1.0)) # wait for the animation
+                    self.parent.Push(taskpress.TaskPress('hat_TOP'))
+                else:
+                    print("move down by",index)
+                    for j in range(index):
+                        self.parent.Push(taskobject.TaskTimed(1.0)) # wait for the animation
+                        self.parent.Push(taskpress.TaskPress('hat_BOTTOM'))
+
             self.step=5
             return
 
-        if self.step == 5: # select donate
-            self.parent.Push(taskobject.TaskTimed(5.0))
-            self.parent.Push(taskpress.TaskPress('A'))
-            self.parent.Push(taskobject.TaskTimed(5.0))
-            self.step=6
-            return
-
-        if self.step == 6: # continue until done talking
+        if self.step == 5:
+            # continue until inventory pops up
             if gbscreen.is_continue_triangle():
                 # press continue and wait for animation
                 self.parent.Push(taskobject.TaskTimed(5.0))
                 self.parent.Push(taskpress.TaskPress('B'))
                 return
-            self.step=8
+
+            # Do a detect so we can locate the pointer hand.
+            self.parent.Push(taskdetect.TaskDetect())
+            self.step=6
             return
 
-        if self.step == 8:
+        if self.step == 6:
+            # locate the hand
+            # find the pointer hand
+            hand_match=gbscreen.has_label_in_box('PointerHand',self.ratio,gbdata.inventory_sx1,gbdata.inventory_sx2,gbdata.inventory_sy1,gbdata.inventory_sy2)
+            if hand_match is None:
+                print("hand not found")
+                self.step=30 # close inventory
+                return
+
+            # Find the slot number for the hand.
+            x=hand_match[2]
+            y=hand_match[3]
+            # Estimate the inventory position the hand is pointing at.
+            x-=gbdata.inventory_pointer_offset_x
+            y-=gbdata.inventory_pointer_offset_y
+            hand_slot=gbscreen.find_inventory_slot(x,y)
+            print("hand_slot is",hand_slot)
+            if hand_slot is None:
+                print("hand_slot not found")
+                self.step=30 # close inventory
+                return
+            gbstate.hand_slot=hand_slot
+            self.target_slot=0
+            self.select_count=0
+
+            self.step=10
+            return
+
+        if self.step == 10:
+            # Select the fossils
+            print("hand_slot",gbstate.hand_slot)
+            print("target_slot",self.target_slot)
+            print("inventory_size",gbstate.inventory_size)
+            if self.target_slot >= gbstate.inventory_size:
+                # We are done picking fossils
+                self.step=20
+                return
+            gbocr.move_hand_to_slot(self.target_slot,self)
+            print("hand_slot",gbstate.hand_slot)
+            self.step=11
+            return
+
+        if self.step == 11:
+            # Do an OCR to see if there is a fossil here.
+            self.parent.Push(taskocr.TaskOCR())
+            self.step=12
+            return
+
+        if self.step == 12:
+            # Check the results of the OCR
+            self.digest_name()
+            print("ocr name",self.ocr_name)
+            if self.ocr_name is None:
+                # There is no fossil here
+                self.target_slot+=1
+                self.step=10
+                return
+
+            if 'Fossil' != self.ocr_name:
+                # There is no fossil here
+                self.target_slot+=1
+                self.step=10
+                return
+
+            # Select the item
+            self.parent.Push(taskobject.TaskTimed(1.0)) # wait for animation
+            self.parent.Push(taskpress.TaskPress('A'))
+            self.select_count+=1
+
+            # Move on to check the next slot
+            self.target_slot+=1
+            self.step=10
+            return
+
+        if self.step == 20:
+            if self.select_count < 1:
+                # Nothing to confirm
+                self.step=30 # close the inventory
+                return
+
+            # Confirm the selections
+            self.parent.Push(taskobject.TaskTimed(8.0)) # wait for animation
+            self.parent.Push(taskpress.TaskPress('+'))
+
+            # Go back around to the menu after some chat.
+            self.donated=True
+            self.step=2
+            return
+
+        if self.step == 30:
+            # close inventory
+            self.parent.Push(taskobject.TaskTimed(3.0))
+            self.parent.Push(taskpress.TaskPress('B'))
+            self.step=81
+            return
+
+        if self.step == 80:
+            # close the menu
+            self.parent.Push(taskobject.TaskTimed(1.0))
+            self.parent.Push(taskpress.TaskPress('B'))
+            self.parent.Push(taskobject.TaskTimed(1.0))
+            self.parent.Push(taskpress.TaskPress('B'))
+            self.step=81
+            return
+
+        if self.step == 81: # continue until done talking
+            if gbscreen.is_continue_triangle():
+                # press continue and wait for animation
+                self.parent.Push(taskobject.TaskTimed(5.0))
+                self.parent.Push(taskpress.TaskPress('B'))
+                return
+            self.step=90 # exit the museum
+            return
+
+        if self.step == 90:
             # Wait for the exit animation.
             self.parent.Push(taskobject.TaskTimed(10.0))
             # Walk out of the museum, mapless.
             self.parent.Push(taskheadinggoto.TaskHeadingGoTo(180,4))
             self.step=99
             return
-
-        # This is for debugging to get clear of the building detection.
-        self.parent.Push(taskheadinggoto.TaskHeadingGoTo(90,8))
-        self.parent.Push(taskobject.TaskTimed(5.0))
 
         print(self.name,"done")
         self.taskdone=True
@@ -150,3 +316,46 @@ class TaskMuseum(taskobject.Task):
     def NameRecursive(self):
         gbstate.task_stack_names.append(self.name)
         return self.name
+
+    def digest_menu1(self):
+        self.ocr_menu=None
+        with gbstate.ocr_worker_thread.data_lock:
+            dets=gbstate.ocr_detections
+        if dets is None:
+            return
+        menu=[]
+        for det in dets:
+            print("det",det)
+            (box,text,score)=det
+            (csx,csy)=gbocr.ocr_box_to_center(box)
+            if gbscreen.is_inside_box(gbdata.ocr_museum_menu1_lane_x1,gbdata.ocr_museum_menu1_lane_x2,gbdata.ocr_museum_menu1_lane_y1,gbdata.ocr_museum_menu1_lane_y2,csx,csy):
+                print("menu item")
+                entry=[csy,text]
+                menu.append(entry)
+                continue
+        menu=gbocr.combine_menu_entries(menu)
+        if len(menu) < 1:
+            self.ocr_menu=None
+        else:
+            # Sort the menu by sy
+            self.ocr_menu=sorted(menu,key=lambda entry: entry[0])
+        return
+
+    def digest_name(self):
+        self.ocr_name=None
+        with gbstate.ocr_worker_thread.data_lock:
+            dets=gbstate.ocr_detections
+        if dets is None:
+            return
+        (slot_sx,slot_sy)=gbstate.inventory_locations[gbstate.hand_slot]
+        expect_name_sx=slot_sx
+        expect_name_sy=slot_sy+gbdata.ocr_inv_name_offset_y
+        for det in dets:
+            print("det",det)
+            (box,text,score)=det
+            (csx,csy)=gbocr.ocr_box_to_center(box)
+            if gbscreen.is_near_within(expect_name_sx,expect_name_sy,csx,csy,self.name_within):
+                print("item name")
+                self.ocr_name=text
+                continue
+        return

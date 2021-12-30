@@ -31,6 +31,7 @@ color_dock=(0,128,128) # BGR
 color_dirt=(0,32,32) # BGR
 color_plaza=(125,162,175) # BGR
 color_junk=(255,0,255) # BGR
+color_building=(255,0,0) # BGR
 
 line_width=1
 line_width_path=3
@@ -835,6 +836,8 @@ def maptype_to_color(maptype):
         return color_plaza
     elif maptype == gbmap.MapTypeJunk:
         return color_junk
+    elif maptype == gbmap.MapTypeBuilding:
+        return color_building
     return None
 
 def draw_heading(frame):

@@ -210,3 +210,5 @@ ocr_detections=None
 ocr_detections_set_time=0
 ocr_frame=None
 ocr_reader=None
+
+hand_slot=0

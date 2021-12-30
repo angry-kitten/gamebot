@@ -4,6 +4,7 @@
 #
 
 import time
+import numpy
 import gbdata
 import gbstate
 import gbscreen
@@ -42,6 +43,7 @@ MapTypePlaza=9
 MapTypeJunk=10
 MapTypeDiagonalNW=11  # Diagnonal starting from the North West cornier of the square
 MapTypeDiagonalSW=12  # Diagnonal starting from the South West cornier of the square
+MapTypeBuilding=13
 MapTypeBitShift=4
 MapTypeBitMask=0xf
 
@@ -54,7 +56,10 @@ maptypes={
     'Grass2':  [MapTypeGrass2, '2'],
     'Sand':  [MapTypeSand, 'S'],
     'Dock':  [MapTypeDock, 'd'],
-    'Dirt':  [MapTypeDirt, 'D']
+    'Dirt':  [MapTypeDirt, 'D'],
+    'Plaza':  [MapTypePlaza, 'P'],
+    'Junk':  [MapTypeJunk, 'J'],
+    'Building':  [MapTypeBuilding, 'B'],
 }
 
 maptype_rev={}
@@ -124,6 +129,8 @@ def is_obstructed(mx,my):
         return True
     if ep == MapTypeDiagonalSW:
         return True
+    if ep == MapTypeBuilding:
+        return True
 
     v=n.objstruction_status
     #print("ob v",v)
@@ -175,7 +182,7 @@ def planning_pass_check_pole(mx1,my1,mx2,my2):
     #print("n1 is",aetype)
     #print("n2 is",betype)
     if not is_grass(aetype):
-        print("start not grass")
+        #print("start not grass")
         return False
     dx=mx2-mx1
     dy=my2-my1
@@ -1077,6 +1084,7 @@ def maptype_diagonal_is_allowed(maptype):
     return True
 
 def locate_buildings():
+    print("locate_buildings")
     # find gray circles
     search_w=gbdata.phonemap_right-gbdata.phonemap_left
     search_h=gbdata.phonemap_bottom-gbdata.phonemap_top_pin
@@ -1088,11 +1096,20 @@ def locate_buildings():
                 #print("found possible circle at",pixel_x,pixel_y)
                 verify_circle(pixel_x,pixel_y)
 
+    print("circles",gbstate.gray_circle_list)
+
+    print("before gather_icons")
     # Gather the icons from inside the circles.
     gather_icons()
 
+    print("icon len",len(icons))
+
+    print("before match_icons")
     # Match the icons with known icons.
     match_icons()
+    print("after match_icons")
+
+    print("icon len",len(icons))
 
     return
 
@@ -1256,12 +1273,14 @@ def is_already_found(start_sx,start_sy):
     return False
 
 def gather_icons():
+    global icons
     icons=[]
     radius=gbdata.phonemap_circle_diameter/2
     for c in gbstate.gray_circle_list:
         icon=gather_an_icon(c[0],c[1])
         whereicon=[c[0],c[1],icon]
         icons.append(whereicon)
+    print("icon len",len(icons))
     return
 
 def gather_an_icon(start_sx,start_sy):
@@ -1299,7 +1318,9 @@ def print_icon(icon):
     return
 
 def match_icons():
+    print("match_icons")
     global icons
+    print("icon len",len(icons))
     for whereicon in icons:
         match_an_icon(whereicon)
 
@@ -1308,6 +1329,7 @@ def match_icons():
     return
 
 def match_an_icon(whereicon):
+    print("match_an_icon")
     best_co=None
     best_match=None
     for ni in gbdata.named_icons:
@@ -1379,22 +1401,23 @@ def set_building(name,sx,sy):
 
     # binfo is [name,centermx,centermy,doormx,doormy]
     if name == 'campsite':
-        binfo=[name,mx,my,mx,my+3]
+        binfo=[name,mx,my,mx,my+2]
         gbstate.building_info_campsite=binfo
     elif name == 'museum':
-        binfo=[name,mx,my,mx,my+3]
+        binfo=[name,mx,my,mx,my+2]
+        print("museum",binfo)
         gbstate.building_info_museum=binfo
     elif name == 'cranny':
-        binfo=[name,mx,my,mx,my+3]
+        binfo=[name,mx,my,mx,my+2]
         gbstate.building_info_cranny=binfo
     elif name == 'services':
-        binfo=[name,mx,my,mx,my+3]
+        binfo=[name,mx,my,mx,my+2]
         gbstate.building_info_services=binfo
     elif name == 'tailors':
-        binfo=[name,mx,my,mx,my+3]
+        binfo=[name,mx,my,mx,my+2]
         gbstate.building_info_tailors=binfo
     elif name == 'airport':
-        binfo=[name,mx,my,mx,my+3]
+        binfo=[name,mx,my,mx,my+2]
         gbstate.building_info_airport=binfo
     elif name == 'player_house':
         binfo=[name,mx,my,mx,my+2]
@@ -1402,6 +1425,13 @@ def set_building(name,sx,sy):
         gbstate.building_info_player_house=binfo
     else:
         print("unknown building name")
+
+    n=gbstate.mainmap[mx][my]
+    n.phonemap2=MapTypeBuilding
+    n=gbstate.mainmap[mx-1][my]
+    n.phonemap2=MapTypeBuilding
+    n=gbstate.mainmap[mx+1][my]
+    n.phonemap2=MapTypeBuilding
     return
 
 def is_circle_gray(pixel_x,pixel_y):

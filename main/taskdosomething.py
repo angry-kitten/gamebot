@@ -39,7 +39,7 @@ class TaskDoSomething(taskobject.Task):
         if gbstate.frame is None:
             return
 
-        self.parent.Push(taskrandomwalk.TaskRandomWalk())
+        #self.parent.Push(taskrandomwalk.TaskRandomWalk())
         ##self.parent.Push(taskweed.TaskWeed())
         ##self.parent.Push(taskweedsearch.TaskWeedSearch())
         self.parent.Push(taskpicksomethingsearch.TaskPickSomethingSearch())

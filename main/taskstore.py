@@ -27,7 +27,6 @@ class TaskStore(taskobject.Task):
         self.step=0
         self.within=1
         self.ratio=0.30
-        self.move_wait=0.3 # seconds
         self.name_within=30
         self.ocr_name=None
         self.ocr_menu=None
@@ -110,7 +109,7 @@ class TaskStore(taskobject.Task):
                 print("hand_slot not found")
                 self.step=80 # close inventory
                 return
-            self.hand_slot=hand_slot
+            gbstate.hand_slot=hand_slot
             self.store_slot=0
 
             self.step=10
@@ -119,15 +118,15 @@ class TaskStore(taskobject.Task):
 # Example inventory
 # inventory_name ['InvNet', 'InvAxe', 'InvAxe', 'InvPole', 'InvPole', 'InvPole', 'InvNet', 'InvShovel', 'InvShovel', 'InvNet', 'InvFishingPole', 'InvWetSuit', 'InvSlingshot', 'InvWetSuit', 'InvWateringCan', 'InvHardWood', 'InvHardWood', 'InvNet', 'InvNet', 'InvNet', 'InvMedicine', 'InvLadder', 'InvEmpty', '', 'InvNet', 'InvNet', 'InvPole', 'InvNet', 'InvStoneAxe', 'InvShovel']
         if self.step == 10:
-            print("hand_slot",self.hand_slot)
+            print("hand_slot",gbstate.hand_slot)
             print("store_slot",self.store_slot)
             print("inventory_size",gbstate.inventory_size)
             if self.store_slot >= gbstate.inventory_size:
                 # We are done storing.
                 self.step=80
                 return
-            self.move_hand_to_slot(self.store_slot)
-            print("hand_slot",self.hand_slot)
+            gbocr.move_hand_to_slot(self.store_slot,self)
+            print("hand_slot",gbstate.hand_slot)
             self.step=11
             return
 
@@ -144,6 +143,13 @@ class TaskStore(taskobject.Task):
             self.digest_name_and_menu()
             print("ocr name",self.ocr_name)
             print("ocr menu",self.ocr_menu)
+            if self.ocr_name is None and self.ocr_menu is None:
+                # There may not be a menu. Assume there is no menu to
+                # pop down.
+                # Move to the next slot
+                self.store_slot+=1
+                self.step=10
+                return
             if self.ocr_name is None:
                 self.step=19 # close the menu without selecting anything
                 return
@@ -242,81 +248,16 @@ class TaskStore(taskobject.Task):
         gbstate.task_stack_names.append(self.name)
         return self.name
 
-    def move_hand_to_slot(self,slot):
-        if slot == self.hand_slot:
-            print("pointing at slot")
-            return
-        slot_row=int(slot/10)
-        slot_column=int(slot%10)
-        hand_row=int(self.hand_slot/10)
-        hand_column=int(self.hand_slot%10)
-        while slot_row < hand_row:
-            # move pointer hand up
-            self.hand_slot-=10
-            self.parent.Push(taskobject.TaskTimed(self.move_wait)) # wait for animation
-            self.parent.Push(taskpress.TaskPress('hat_TOP'))
-            hand_row=int(self.hand_slot/10)
-        while slot_row > hand_row:
-            # move pointer hand down
-            self.hand_slot+=10
-            self.parent.Push(taskobject.TaskTimed(self.move_wait)) # wait for animation
-            self.parent.Push(taskpress.TaskPress('hat_BOTTOM'))
-            hand_row=int(self.hand_slot/10)
-        if slot_column < hand_column:
-            # move pointer hand left
-            delta=hand_column-slot_column
-            if delta > 5:
-                print("wrap")
-                for j in range((10-delta)):
-                    # move pointer hand right
-                    if hand_column == 9:
-                        self.hand_slot-=9
-                    else:
-                        self.hand_slot+=1
-                    self.parent.Push(taskobject.TaskTimed(self.move_wait)) # wait for animation
-                    self.parent.Push(taskpress.TaskPress('hat_RIGHT'))
-                    hand_column=int(self.hand_slot%10)
-            else:
-                print("no wrap")
-                while slot_column < hand_column:
-                    # move pointer hand left
-                    self.hand_slot-=1
-                    self.parent.Push(taskobject.TaskTimed(self.move_wait)) # wait for animation
-                    self.parent.Push(taskpress.TaskPress('hat_LEFT'))
-                    hand_column=int(self.hand_slot%10)
-
-        if slot_column > hand_column:
-            # move pointer hand right
-            delta=slot_column-hand_column
-            if delta > 5:
-                print("wrap")
-                for j in range((10-delta)):
-                    # move pointer hand left
-                    if hand_column == 0:
-                        self.hand_slot+=9
-                    else:
-                        self.hand_slot-=1
-                    self.parent.Push(taskobject.TaskTimed(self.move_wait)) # wait for animation
-                    self.parent.Push(taskpress.TaskPress('hat_LEFT'))
-                    hand_column=int(self.hand_slot%10)
-            else:
-                print("no wrap")
-                while slot_column > hand_column:
-                    # move pointer hand right
-                    self.hand_slot+=1
-                    self.parent.Push(taskobject.TaskTimed(self.move_wait)) # wait for animation
-                    self.parent.Push(taskpress.TaskPress('hat_RIGHT'))
-                    hand_column=int(self.hand_slot%10)
-        return
-
 # Example OCR data
 # [([[439, 35], [641, 35], [641, 73], [439, 73]], 'Vaulting pole', 0.9577903529709549), ([[797, 339], [959, 339], [959, 380], [797, 380]], 'Place Item', 0.8997346079334698), ([[327, 394], [454, 394], [454, 446], [327, 446]], '23,555', 0.726360381715388), ([[801, 394], [1015, 394], [1015, 433], [801, 433]], 'Put in Storage', 0.9066206404337775), ([[802, 452], [924, 452], [924, 484], [802, 484]], 'Favorite', 0.9996292247387993), ([[989, 681], [1009, 681], [1009, 703], [989, 703]], 'B', 0.9999361048414812), ([[1013, 675], [1096, 675], [1096, 711], [1013, 711]], 'Close', 0.9999234436005648), ([[1148, 678], [1238, 678], [1238, 710], [1148, 710]], 'Select', 0.9999911425992467), ([[377.4871464448379, 184.4665807565786], [552.2369732838534, 160.82192444134853], [556.5128535551621, 223.5334192434214], [382.7630267161465, 247.17807555865147]], '0 P &', 0.6320404477802022)]
     def digest_name_and_menu(self):
+        self.ocr_name=None
+        self.ocr_menu=None
         with gbstate.ocr_worker_thread.data_lock:
             dets=gbstate.ocr_detections
         if dets is None:
             return
-        (slot_sx,slot_sy)=gbstate.inventory_locations[self.hand_slot]
+        (slot_sx,slot_sy)=gbstate.inventory_locations[gbstate.hand_slot]
         expect_name_sx=slot_sx
         expect_name_sy=slot_sy+gbdata.ocr_inv_name_offset_y
         menu=[]
@@ -333,8 +274,11 @@ class TaskStore(taskobject.Task):
                 print("item name")
                 self.ocr_name=text
                 continue
-        # Sort the menu by sy
-        self.ocr_menu=sorted(menu,key=lambda entry: entry[0])
+        if len(menu) < 1:
+            self.ocr_menu=None
+        else:
+            # Sort the menu by sy
+            self.ocr_menu=sorted(menu,key=lambda entry: entry[0])
         return
 
     def is_storeable(self,ocr_name):
