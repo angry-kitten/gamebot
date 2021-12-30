@@ -32,7 +32,7 @@ class TaskMuseum(taskobject.Task):
         self.ocr_name=None
         self.ocr_menu=None
         self.target_slot=0
-        self.donated=False
+        self.assessed=False
         self.select_count=0
 
     def Poll(self):
@@ -93,7 +93,7 @@ class TaskMuseum(taskobject.Task):
         if self.step == 2: # continue until menu
             if gbscreen.is_continue_triangle():
                 # press continue and wait for animation
-                self.parent.Push(taskobject.TaskTimed(5.0))
+                self.parent.Push(taskobject.TaskTimed(8.0))
                 self.parent.Push(taskpress.TaskPress('B'))
                 return
             self.step=3
@@ -121,8 +121,8 @@ class TaskMuseum(taskobject.Task):
                 self.step=90 # exit the museum
                 return
 
-            if self.donated:
-                # We have already donated and we have come back
+            if self.assessed:
+                # We have already assessed and we have come back
                 # around to the menu. Just close it and move on.
                 self.step=80
                 return
@@ -135,7 +135,7 @@ class TaskMuseum(taskobject.Task):
             # Move the pointer hand to the
             # menu entry and select it.
 
-            self.parent.Push(taskobject.TaskTimed(3.0)) # wait for animation
+            self.parent.Push(taskobject.TaskTimed(6.0)) # wait for animation
             self.parent.Push(taskpress.TaskPress('A'))
 
             if index != 0:
@@ -154,25 +154,82 @@ class TaskMuseum(taskobject.Task):
             return
 
         if self.step == 5:
-            # continue until inventory pops up
-            if gbscreen.is_continue_triangle():
-                # press continue and wait for animation
-                self.parent.Push(taskobject.TaskTimed(5.0))
-                self.parent.Push(taskpress.TaskPress('B'))
+            # At this point the chat could be a message saying
+            # there are no fossils to assess. Or the chat could
+            # lead to the inventory poping up.
+            if not gbscreen.is_continue_triangle():
+                print("no continue triangle")
+                # Assume the inventory is up.
+                self.step=8
                 return
 
-            # Do a detect so we can locate the pointer hand.
-            self.parent.Push(taskdetect.TaskDetect())
+            # Do an OCR to read the first message.
+            self.parent.Push(taskocr.TaskOCR())
+
             self.step=6
             return
 
         if self.step == 6:
+            # Check the OCR results for:
+            # Alas, you have no unknown fossils
+            # for me to inspect.
+
+            if gbocr.ocr_results_contain("you have no unknown fossils"):
+                self.assessed=True
+                self.step=2 # Go back to chat that leads back to the menu.
+                return
+
+            if gbocr.ocr_results_contain("Alas"):
+                self.assessed=True
+                self.step=2 # Go back to chat that leads back to the menu.
+                return
+
+            if gbocr.ocr_results_contain("for me to inspect"):
+                self.assessed=True
+                self.step=2 # Go back to chat that leads back to the menu.
+                return
+
+            if gbocr.ocr_results_contain("Alas, you have"):
+                self.assessed=True
+                self.step=2 # Go back to chat that leads back to the menu.
+                return
+
+            if gbocr.ocr_results_contain("no unknown fossils"):
+                self.assessed=True
+                self.step=2 # Go back to chat that leads back to the menu.
+                return
+
+            # Assume this chat will lead to the inventory popping up.
+            self.step=7
+            return
+
+        if self.step == 7:
+            # continue until inventory pops up
+            if gbscreen.is_continue_triangle():
+                # press continue and wait for animation
+                self.parent.Push(taskobject.TaskTimed(8.0))
+                self.parent.Push(taskpress.TaskPress('B'))
+                return
+
+            self.step=8
+            return
+
+        if self.step == 8:
+            # Do a detect so we can locate the pointer hand.
+            self.parent.Push(taskdetect.TaskDetect())
+            self.step=9
+            return
+
+        if self.step == 9:
             # locate the hand
             # find the pointer hand
             hand_match=gbscreen.has_label_in_box('PointerHand',self.ratio,gbdata.inventory_sx1,gbdata.inventory_sx2,gbdata.inventory_sy1,gbdata.inventory_sy2)
             if hand_match is None:
                 print("hand not found")
-                self.step=30 # close inventory
+                # Assume there are no fossils to assess. We probably
+                # have some chat that will go back to the menu.
+                self.assessed=True
+                self.step=2
                 return
 
             # Find the slot number for the hand.
@@ -251,7 +308,7 @@ class TaskMuseum(taskobject.Task):
             self.parent.Push(taskpress.TaskPress('+'))
 
             # Go back around to the menu after some chat.
-            self.donated=True
+            self.assessed=True
             self.step=2
             return
 
@@ -264,7 +321,7 @@ class TaskMuseum(taskobject.Task):
 
         if self.step == 80:
             # close the menu
-            self.parent.Push(taskobject.TaskTimed(1.0))
+            self.parent.Push(taskobject.TaskTimed(8.0)) # wait for the animation
             self.parent.Push(taskpress.TaskPress('B'))
             self.parent.Push(taskobject.TaskTimed(1.0))
             self.parent.Push(taskpress.TaskPress('B'))
@@ -274,7 +331,7 @@ class TaskMuseum(taskobject.Task):
         if self.step == 81: # continue until done talking
             if gbscreen.is_continue_triangle():
                 # press continue and wait for animation
-                self.parent.Push(taskobject.TaskTimed(5.0))
+                self.parent.Push(taskobject.TaskTimed(8.0))
                 self.parent.Push(taskpress.TaskPress('B'))
                 return
             self.step=90 # exit the museum
@@ -284,7 +341,7 @@ class TaskMuseum(taskobject.Task):
             # Wait for the exit animation.
             self.parent.Push(taskobject.TaskTimed(10.0))
             # Walk out of the museum, mapless.
-            self.parent.Push(taskheadinggoto.TaskHeadingGoTo(180,4))
+            self.parent.Push(taskheadinggoto.TaskHeadingGoTo(180,6))
             self.step=99
             return
 

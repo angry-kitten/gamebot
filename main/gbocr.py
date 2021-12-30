@@ -108,7 +108,10 @@ def locate_menu_text(menu,text):
     return (index,is_last)
 
 def score_close_string_match(s1,s2):
-    print("score_close_string_match",s1,s2)
+    print(f"score_close_string_match [{s1}] [{s2}]")
+    matcher=difflib.SequenceMatcher(s1,s2)
+    v=matcher.ratio()
+    print("ratio",v)
     if s1 == s2:
         return 1.0
     if s1 in s2:
@@ -117,9 +120,6 @@ def score_close_string_match(s1,s2):
     if s2 in s1:
         print("s2 in s1")
         return 0.95
-    matcher=difflib.SequenceMatcher(s1,s2)
-    v=matcher.ratio()
-    print("ratio",v)
     return v
 
 def move_hand_to_slot(slot,obj):
@@ -212,3 +212,22 @@ def combine_menu_entries(menu):
         newmenu.append(e)
 
     return newmenu
+
+def ocr_results_contain(s):
+    print("ocr_results_contain",s)
+    with gbstate.ocr_worker_thread.data_lock:
+        dets=gbstate.ocr_detections
+    if dets is None:
+        return False
+    best_mscore=0
+    for det in dets:
+        print("det",det)
+        (box,text,score)=det
+        mscore=score_close_string_match(text,s)
+        print("mscore",mscore)
+        if mscore > best_mscore:
+            best_mscore=mscore
+    print("best_mscore",best_mscore)
+    if best_mscore > 0.8:
+        return True
+    return False
