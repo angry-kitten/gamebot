@@ -1426,12 +1426,12 @@ def set_building(name,sx,sy):
     else:
         print("unknown building name")
 
-    n=gbstate.mainmap[mx][my]
-    n.phonemap2=MapTypeBuilding
-    n=gbstate.mainmap[mx-1][my]
-    n.phonemap2=MapTypeBuilding
-    n=gbstate.mainmap[mx+1][my]
-    n.phonemap2=MapTypeBuilding
+    for dx in range(3):
+        for dy in range(3):
+            mx2=mx+(dx-1)
+            my2=my+(dy-1)
+            n=gbstate.mainmap[mx2][my2]
+            n.phonemap2=MapTypeBuilding
     return
 
 def is_circle_gray(pixel_x,pixel_y):

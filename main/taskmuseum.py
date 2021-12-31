@@ -72,6 +72,10 @@ class TaskMuseum(taskobject.Task):
             return
 
         if self.step == 1: # player character should be inside
+            if not gbscreen.is_inside_building_screen():
+                print("not inside")
+                self.step=99
+                return
 
             # Wait for Blathers to wake
             self.parent.Push(taskobject.TaskTimed(10.0))

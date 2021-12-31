@@ -150,15 +150,30 @@ class TaskStore(taskobject.Task):
                 self.store_slot+=1
                 self.step=10
                 return
-            if self.ocr_name is None:
-                self.step=19 # close the menu without selecting anything
-                return
             if self.ocr_menu is None:
                 self.step=19 # close the menu without selecting anything
                 return
 
+            # The menu was detected but not an item name.
+
+            if self.ocr_name is None:
+                # OCR didn't find a name or it couldn't detect a
+                # long curved name.
+                # Check for something from the basic "take inventory".
+                inv_name=gbstate.inventory_name[self.store_slot]
+                if inv_name is None:
+                    self.step=19 # close the menu without selecting anything
+                    return
+            else:
+                inv_name=gbocr.ocr_name_to_inv_name(self.ocr_name)
+                if inv_name is None:
+                    self.step=19 # close the menu without selecting anything
+                    return
+
+            print("inv_name",inv_name)
+
             # Look at the item and decide if we want to store it.
-            if not self.is_storeable(self.ocr_name):
+            if inv_name not in gbdata.item_store:
                 self.step=19 # close the menu without selecting anything
                 return
 
@@ -280,12 +295,3 @@ class TaskStore(taskobject.Task):
             # Sort the menu by sy
             self.ocr_menu=sorted(menu,key=lambda entry: entry[0])
         return
-
-    def is_storeable(self,ocr_name):
-        print("ocr_name",ocr_name)
-        inv_name=ocr_name_to_inv_name(ocr_name)
-        if inv_name is None:
-            return False
-        if inv_name in gbdata.item_store:
-            return True
-        return False

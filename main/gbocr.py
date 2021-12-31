@@ -240,7 +240,7 @@ def ocr_name_to_inv_name(ocr_name):
         return inv_name
     best_ocr_name=None
     best_mscore=0
-    for k in keys(gbdata.ocr_to_inventory):
+    for k in gbdata.ocr_to_inventory.keys():
         print("k",k)
         mscore=score_close_string_match(k,ocr_name)
         print("mscore",mscore)

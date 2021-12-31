@@ -33,6 +33,7 @@ class TaskCheckForInterrupt(taskobject.Task):
         self.target_mx=gbstate.player_mx
         self.target_my=gbstate.player_my
         self.added_return=False
+        self.added_sell=False
         self.added_store=False
         self.added_museum=False
 
@@ -110,7 +111,9 @@ class TaskCheckForInterrupt(taskobject.Task):
                             self.added_return=True
                             # Go back to the original location.
                             self.parent.Push(taskpathplangoto.TaskPathPlanGoTo(self.target_mx,self.target_my))
-                    #self.parent.Push(tasksell.TaskSell())
+                    if not self.added_sell:
+                        self.added_sell=True
+                        self.parent.Push(tasksell.TaskSell())
                     if not self.added_store:
                         self.added_store=True
                         self.parent.Push(taskstore.TaskStore())
@@ -130,7 +133,9 @@ class TaskCheckForInterrupt(taskobject.Task):
                             self.added_return=True
                             # Go back to the original location.
                             self.parent.Push(taskpathplangoto.TaskPathPlanGoTo(self.target_mx,self.target_my))
-                    #self.parent.Push(tasksell.TaskSell())
+                    if not self.added_sell:
+                        self.added_sell=True
+                        self.parent.Push(tasksell.TaskSell())
                     if not self.added_store:
                         self.added_store=True
                         self.parent.Push(taskstore.TaskStore())

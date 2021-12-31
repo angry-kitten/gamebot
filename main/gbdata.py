@@ -1429,6 +1429,7 @@ item_store=[
     'InvSeaSnail',
     'InvSandDollar',
     'InvCowrie',
+    'InvLeaf',
 ]
 
 item_sell=[
@@ -1436,8 +1437,12 @@ item_sell=[
     "InvWasp",
 ]
 
-item_museum=[
+item_museum_assess=[
     "InvFossil",
+]
+
+item_museum_donate=[
+    "InvBones",
 ]
 
 ocr_inv_menu_lane_x1=749
@@ -1454,3 +1459,8 @@ ocr_museum_menu1_lane_x1=916
 ocr_museum_menu1_lane_y1=168
 ocr_museum_menu1_lane_x2=1248
 ocr_museum_menu1_lane_y2=457
+
+ocr_cranny_menu1_lane_x1=917
+ocr_cranny_menu1_lane_y1=223
+ocr_cranny_menu1_lane_x2=1258
+ocr_cranny_menu1_lane_y2=538
