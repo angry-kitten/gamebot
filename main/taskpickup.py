@@ -30,11 +30,13 @@ class TaskPickup(taskobject.Task):
     def __init__(self):
         super().__init__()
         self.name="TaskPickup"
-        print("new",self.name,"object")
+        #print("new",self.name,"object")
+        self.target_mx=gbstate.player_mx
+        self.target_my=gbstate.player_my
 
     def Poll(self):
         """check if any action can be taken"""
-        print(self.name,"Poll")
+        #print(self.name,"Poll")
         if not self.started:
             self.Start()
             return
@@ -49,19 +51,21 @@ class TaskPickup(taskobject.Task):
         #    print("continue triangle detect")
         #    self.handle_pockets_full()
         elif gbscreen.is_continue_triangle():
-            print("continue triangle")
+            #print("continue triangle")
             self.handle_pockets_full()
 
-        print(self.name,"done")
+        #print(self.name,"done")
         self.taskdone=True
         return
 
     def Start(self):
         """Cause the task to begin doing whatever."""
-        print(self.name,"Start")
+        #print(self.name,"Start")
         if self.started:
             return # already started
         self.started=True
+        self.target_mx=gbstate.player_mx
+        self.target_my=gbstate.player_my
         # push tasks in reverse order
         #self.parent.Push(taskdetect.TaskDetect())
         self.parent.Push(taskobject.TaskTimed(2.0)) # wait for the animation
@@ -75,6 +79,11 @@ class TaskPickup(taskobject.Task):
         return self.name
 
     def handle_pockets_full(self):
+
+        if self.target_mx >= 0:
+            # Go back to the original location.
+            self.parent.Push(taskpathplangoto.TaskPathPlanGoTo(self.target_mx,self.target_my))
+
         self.parent.Push(tasksell.TaskSell())
         self.parent.Push(taskmuseum.TaskMuseum())
         self.parent.Push(taskstore.TaskStore())
@@ -95,12 +104,12 @@ class TaskPickupSpin(taskobject.Task):
     def __init__(self):
         super().__init__()
         self.name="TaskPickupSpin"
-        print("new",self.name,"object")
+        #print("new",self.name,"object")
         return
 
     def Poll(self):
         """check if any action can be taken"""
-        print(self.name,"Poll")
+        #print(self.name,"Poll")
         if not self.started:
             self.Start()
             return
@@ -109,13 +118,13 @@ class TaskPickupSpin(taskobject.Task):
         if gbstate.frame is None:
             return
 
-        print(self.name,"done")
+        #print(self.name,"done")
         self.taskdone=True
         return
 
     def Start(self):
         """Cause the task to begin doing whatever."""
-        print(self.name,"Start")
+        #print(self.name,"Start")
         if self.started:
             return # already started
         self.started=True

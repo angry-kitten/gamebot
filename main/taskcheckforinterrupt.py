@@ -20,6 +20,7 @@ import taskstore
 import tasktakeinventory
 import taskredeemnookmiles
 import taskheadinggoto
+import taskpathplangoto
 
 class TaskCheckForInterrupt(taskobject.Task):
     """TaskCheckForInterrupt Object"""
@@ -29,6 +30,11 @@ class TaskCheckForInterrupt(taskobject.Task):
         self.name="TaskCheckForInterrupt"
         print("new",self.name,"object")
         self.step=0
+        self.target_mx=gbstate.player_mx
+        self.target_my=gbstate.player_my
+        self.added_return=False
+        self.added_store=False
+        self.added_museum=False
 
     def Poll(self):
         """check if any action can be taken"""
@@ -99,11 +105,19 @@ class TaskCheckForInterrupt(taskobject.Task):
                 print("size",gbstate.inventory_size)
                 #if gbstate.inventory_slots_full == gbstate.inventory_size:
                 if gbstate.inventory_slots_full >= (gbstate.inventory_size-4):
+                    if self.target_mx >= 0:
+                        if not self.added_return:
+                            self.added_return=True
+                            # Go back to the original location.
+                            self.parent.Push(taskpathplangoto.TaskPathPlanGoTo(self.target_mx,self.target_my))
                     #self.parent.Push(tasksell.TaskSell())
-                    #self.parent.Push(taskmuseum.TaskMuseum())
-                    self.parent.Push(taskstore.TaskStore())
+                    if not self.added_store:
+                        self.added_store=True
+                        self.parent.Push(taskstore.TaskStore())
+                    if not self.added_museum:
+                        self.added_museum=True
+                        self.parent.Push(taskmuseum.TaskMuseum())
                     return
-                self.parent.Push(taskmuseum.TaskMuseum())
                 return
 
             if self.step == 3:
@@ -111,9 +125,18 @@ class TaskCheckForInterrupt(taskobject.Task):
                 print("full",gbstate.inventory_slots_full)
                 print("free",gbstate.inventory_slots_free)
                 if gbstate.inventory_slots_full > 0 and gbstate.inventory_slots_free == 0:
+                    if self.target_mx >= 0:
+                        if not self.added_return:
+                            self.added_return=True
+                            # Go back to the original location.
+                            self.parent.Push(taskpathplangoto.TaskPathPlanGoTo(self.target_mx,self.target_my))
                     #self.parent.Push(tasksell.TaskSell())
-                    #self.parent.Push(taskmuseum.TaskMuseum())
-                    self.parent.Push(taskstore.TaskStore())
+                    if not self.added_store:
+                        self.added_store=True
+                        self.parent.Push(taskstore.TaskStore())
+                    if not self.added_museum:
+                        self.added_museum=True
+                        self.parent.Push(taskmuseum.TaskMuseum())
                     return
                 return
 
@@ -138,9 +161,13 @@ class TaskCheckForInterrupt(taskobject.Task):
         if self.started:
             return # already started
         self.started=True
+        self.target_mx=gbstate.player_mx
+        self.target_my=gbstate.player_my
         self.step=0
         # push tasks in reverse order
         self.parent.Push(taskdetect.TaskDetect())
+        # Wait for things to settle.
+        self.parent.Push(taskobject.TaskTimed(3.0))
 
     def DebugRecursive(self,indent=0):
         self.DebugPrint(self.name,indent)

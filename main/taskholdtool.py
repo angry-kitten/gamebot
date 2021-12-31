@@ -27,7 +27,7 @@ class TaskHoldTool(taskobject.Task):
 
     def Poll(self):
         """check if any action can be taken"""
-        print(self.name,"Poll")
+        #print(self.name,"Poll")
         if not self.started:
             self.Start()
             return
@@ -62,7 +62,7 @@ class TaskHoldTool(taskobject.Task):
         self.parent.Push(taskobject.TaskTimed(2.0)) # wait for the inventory to close
         self.parent.Push(taskpress.TaskPress('B'))
         gbstate.draw_inventory_locations=False
-        print(self.name,"done")
+        #print(self.name,"done")
         self.taskdone=True
 
     def Start(self):

@@ -24,12 +24,12 @@ class TaskDeterminePosition(taskobject.Task):
     def __init__(self,low_precision=False):
         super().__init__()
         self.name="TaskDeterminePosition"
-        print("new",self.name,"object")
+        #print("new",self.name,"object")
         self.low_precision=low_precision
 
     def Poll(self):
         """check if any action can be taken"""
-        print(self.name,"Poll")
+        #print(self.name,"Poll")
         if not self.started:
             self.Start()
             return
@@ -40,13 +40,13 @@ class TaskDeterminePosition(taskobject.Task):
 
         gbstate.move_since_determine=False
 
-        print(self.name,"done")
+        #print(self.name,"done")
         self.taskdone=True
         return
 
     def Start(self):
         """Cause the task to begin doing whatever."""
-        print(self.name,"Start")
+        #print(self.name,"Start")
         if self.started:
             return # already started
         self.started=True

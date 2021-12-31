@@ -28,7 +28,7 @@ class TaskSimpleGoTo(taskobject.Task):
     def __init__(self,mx,my,low_precision=False):
         super().__init__()
         self.name="TaskSimpleGoTo"
-        print("new",self.name,"object")
+        #print("new",self.name,"object")
         #self.limit=100
         self.limit=25
         self.counter=0
@@ -36,7 +36,7 @@ class TaskSimpleGoTo(taskobject.Task):
         self.target_mx=mx
         self.target_my=my
         self.low_precision=low_precision
-        print("go to mx",mx,"my",my)
+        #print("go to mx",mx,"my",my)
         #self.within=0.1
         self.within=0.2
         self.previous_mx=-1
@@ -46,7 +46,7 @@ class TaskSimpleGoTo(taskobject.Task):
 
     def Poll(self):
         """check if any action can be taken"""
-        print(self.name,"Poll")
+        #print(self.name,"Poll")
         if not self.started:
             self.Start()
             return
@@ -58,21 +58,21 @@ class TaskSimpleGoTo(taskobject.Task):
         mx=gbstate.player_mx
         my=gbstate.player_my
 
-        print("simple going from to",mx,my,self.target_mx,self.target_my)
+        #print("simple going from to",mx,my,self.target_mx,self.target_my)
 
         if self.previous_mx >= 0:
             if self.previous_mx == mx and self.previous_my == my:
                 print("stuck")
                 gbstate.goto_target_mx=-1
                 gbstate.goto_target_my=-1
-                print(self.name,"done")
+                #print(self.name,"done")
                 self.taskdone=True
                 return
             if gbscreen.match_within(self.previous_mx,mx,self.within) and gbscreen.match_within(self.previous_my,my,self.within):
                 print("stuck 2")
                 gbstate.goto_target_mx=-1
                 gbstate.goto_target_my=-1
-                print(self.name,"done")
+                #print(self.name,"done")
                 self.taskdone=True
                 return
 
@@ -80,7 +80,7 @@ class TaskSimpleGoTo(taskobject.Task):
             print("over count")
             gbstate.goto_target_mx=-1
             gbstate.goto_target_my=-1
-            print(self.name,"done")
+            #print(self.name,"done")
             self.taskdone=True
             return
 
@@ -93,9 +93,9 @@ class TaskSimpleGoTo(taskobject.Task):
             # Keep going.
             dx=self.target_mx-mx
             dy=self.target_my-my
-            print("dx dy",dx,dy)
+            #print("dx dy",dx,dy)
             distance=math.sqrt(dx*dx+dy*dy)
-            print("distance",distance)
+            #print("distance",distance)
             #if distance > 0:
             #    distance2=random.random()*distance
             #    print("distance2",distance2)
@@ -112,7 +112,7 @@ class TaskSimpleGoTo(taskobject.Task):
                 dx*=ratio
                 dy*=ratio
                 distance=distance2
-                print("distance",distance)
+                #print("distance",distance)
 
             if distance > 0.01:
                 if distance < 0.5:
@@ -121,7 +121,7 @@ class TaskSimpleGoTo(taskobject.Task):
                     dx*=ratio
                     dy*=ratio
                     distance=distance2
-                    print("distance",distance)
+                    #print("distance",distance)
                 #elif distance < 1:
                 #    distance2=distance*0.80
                 #    ratio=distance2/distance
@@ -145,13 +145,13 @@ class TaskSimpleGoTo(taskobject.Task):
 
         gbstate.goto_target_mx=-1
         gbstate.goto_target_my=-1
-        print(self.name,"done")
+        #print(self.name,"done")
         self.taskdone=True
         return
 
     def Start(self):
         """Cause the task to begin doing whatever."""
-        print(self.name,"Start")
+        #print(self.name,"Start")
         if self.started:
             return # already started
         self.started=True

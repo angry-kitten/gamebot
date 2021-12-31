@@ -321,13 +321,13 @@ def object_detection_thread():
     localdigested=None
     while True:
         #print("odt")
-        print("odt 1",time.monotonic())
+        #print("odt 1",time.monotonic())
         dframe=None
         do_sleep_retry=False
         do_detect=False
         localdetections=None
         localdigested=None
-        print("odt 2")
+        #print("odt 2")
         with gbstate.detection_lock:
             if gbstate.detection_frame is not None:
                 print("detection_frame is not None")
@@ -337,7 +337,7 @@ def object_detection_thread():
                     do_detect=True
             else:
                 do_sleep_retry=True
-        print("odt 3")
+        #print("odt 3")
         if do_detect:
             print("start a detection")
             (localdetections,localdigested,localim)=do_one_object_detect(dframe)
@@ -349,7 +349,7 @@ def object_detection_thread():
                     gbstate.detim=localim
                     gbstate.detections_set_time=tnow
 
-        print("odt 4")
+        #print("odt 4")
 
         if do_sleep_retry:
             print("sleep retry")
@@ -357,7 +357,7 @@ def object_detection_thread():
         else:
             print("wait")
             object_detection_wait()
-        print("odt 5")
+        #print("odt 5")
     return
 
 def main_loop(vid):

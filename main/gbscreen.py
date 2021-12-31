@@ -179,7 +179,7 @@ def has_label_in_box(label,ratio,x1,x2,y1,y2):
             return bestmatch
         localdigested=gbstate.digested
     for det in localdigested:
-        print("hlib",det) # det is [name,score,cx,cy,bx,by]
+        #print("hlib",det) # det is [name,score,cx,cy,bx,by]
         if det[0] == label:
             if det[1] >= ratio:
                 if is_inside_box(x1,x2,y1,y2,det[2],det[3]):

@@ -37,7 +37,7 @@ class TaskPress(taskobject.TaskTimed):
 
     def Start(self):
         """Cause the task to begin doing whatever."""
-        print(self.name,"Start")
+        #print(self.name,"Start")
         super().Start()
         if self.started:
             return # already started

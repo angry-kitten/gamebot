@@ -283,10 +283,7 @@ class TaskStore(taskobject.Task):
 
     def is_storeable(self,ocr_name):
         print("ocr_name",ocr_name)
-        if ocr_name not in gbdata.ocr_to_inventory:
-            return False
-        inv_name=gbdata.ocr_to_inventory[ocr_name]
-        print("inv_name",inv_name)
+        inv_name=ocr_name_to_inv_name(ocr_name)
         if inv_name is None:
             return False
         if inv_name in gbdata.item_store:

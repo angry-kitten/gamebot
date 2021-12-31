@@ -109,7 +109,7 @@ def locate_menu_text(menu,text):
 
 def score_close_string_match(s1,s2):
     print(f"score_close_string_match [{s1}] [{s2}]")
-    matcher=difflib.SequenceMatcher(s1,s2)
+    matcher=difflib.SequenceMatcher(None,s1,s2)
     v=matcher.ratio()
     print("ratio",v)
     if s1 == s2:
@@ -231,3 +231,28 @@ def ocr_results_contain(s):
     if best_mscore > 0.8:
         return True
     return False
+
+def ocr_name_to_inv_name(ocr_name):
+    inv_name=None
+    if ocr_name in gbdata.ocr_to_inventory:
+        inv_name=gbdata.ocr_to_inventory[ocr_name]
+        print("inv_name",inv_name)
+        return inv_name
+    best_ocr_name=None
+    best_mscore=0
+    for k in keys(gbdata.ocr_to_inventory):
+        print("k",k)
+        mscore=score_close_string_match(k,ocr_name)
+        print("mscore",mscore)
+        if best_ocr_name is None:
+            best_ocr_name=k
+            best_mscore=mscore
+        else:
+            if mscore > best_mscore:
+                best_ocr_name=k
+                best_mscore=mscore
+    print("best",best_ocr_name,best_mscore)
+    if best_mscore > 0.7:
+        inv_name=gbdata.ocr_to_inventory[best_ocr_name]
+        print("inv_name",inv_name)
+    return inv_name
