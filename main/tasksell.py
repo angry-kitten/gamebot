@@ -285,6 +285,7 @@ class TaskSell(taskobject.Task):
         if self.step == 20:
             if self.select_count < 1:
                 # Nothing to confirm
+                self.sold=True
                 self.step=30 # close the inventory
                 return
 
@@ -366,7 +367,7 @@ class TaskSell(taskobject.Task):
 
         if self.step == 30:
             # close inventory
-            self.parent.Push(taskobject.TaskTimed(3.0))
+            self.parent.Push(taskobject.TaskTimed(8.0))
             self.parent.Push(taskpress.TaskPress('B'))
             self.step=81
             return

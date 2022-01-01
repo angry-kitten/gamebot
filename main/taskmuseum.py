@@ -304,6 +304,7 @@ class TaskMuseum(taskobject.Task):
         if self.step == 20:
             if self.select_count < 1:
                 # Nothing to confirm
+                self.assessed=True
                 self.step=30 # close the inventory
                 return
 
@@ -320,7 +321,9 @@ class TaskMuseum(taskobject.Task):
             # close inventory
             self.parent.Push(taskobject.TaskTimed(3.0))
             self.parent.Push(taskpress.TaskPress('B'))
-            self.step=81
+            # This should chat a little and then go back to
+            # the first menu.
+            self.step=2
             return
 
         if self.step == 80:

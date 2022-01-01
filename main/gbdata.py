@@ -931,6 +931,8 @@ nook_miles_plus_hand_locations=[
     (985,407),
     (1223,430)
 ]
+noom_miles_screen_color=[195,203,239] # rgb 5
+noom_miles_screen_banner_color=[249,246,224] # rgb 5
 
 # this is the background color of the phone map screen
 phone_map_background=[130,224,195] # rgb 8
@@ -1312,8 +1314,10 @@ ocr_to_inventory={
     'Wasp':'InvWasp',
     'Stone':'InvStone',
     'Stones':'InvStone',
-    'Iron':'InvIron',
-    'Gold':'InvGold',
+    'Iron nuggets':'InvIron',
+    'Iron nugget':'InvIron',
+    'Gold nuggets':'InvGold',
+    'Gold nugget':'InvGold',
 
     'Giant clam':'InvGiantClam',
     'Conch':'InvConch',

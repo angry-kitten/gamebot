@@ -10,6 +10,7 @@ import taskobject
 import taskpress
 import taskdetect
 import taskheadinggoto
+import taskocr
 
 class TaskGoToMain(taskobject.Task):
     """TaskGoToMain Object"""
@@ -133,6 +134,7 @@ class TaskGoToMain(taskobject.Task):
             return
 
         # purturb the game to see if it was screen dimmed or something
+        self.parent.Push(taskocr.TaskOCR())
         self.parent.Push(taskdetect.TaskDetect())
         self.parent.Push(taskpress.TaskPress('right_joy_left',1.0))
         self.parent.Push(taskpress.TaskPress('right_joy_right',1.0))

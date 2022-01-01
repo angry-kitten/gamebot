@@ -506,19 +506,35 @@ def is_nook_miles_screen():
         if gbstate.digested is None:
             return False
     if not has_label('PointerHand',0.30,-1,-1,-1):
+        print("no PointerHand")
         return False
-    if not has_label('ButtonPlus',0.30,723,68,5):
+    match_count=0
+    if has_label('ButtonPlus',0.10,723,68,5):
+        match_count+=1
+    if has_label('ButtonB',0.30,999,692,5):
+        match_count+=1
+    if has_label('ButtonA',0.10,1130,691,5):
+        match_count+=1
+    if match_count < 2:
+        print("match_count 1",match_count)
         return False
-    if not has_label('ButtonB',0.30,999,692,5):
-        return False
-    if not has_label('ButtonA',0.30,1130,691,5):
-        return False
-    #match_count=0
-    #print("match_count",match_count)
-    #if match_count >= 5:
-    #    return True
-    #return False
-    return True
+    match_count=0
+    if color_match_array(31,44,gbdata.noom_miles_screen_banner_color,5):
+        match_count+=1
+    if color_match_array(1039,48,gbdata.noom_miles_screen_banner_color,5):
+        match_count+=1
+    if color_match_array(14,164,gbdata.noom_miles_screen_color,5):
+        match_count+=1
+    if color_match_array(20,679,gbdata.noom_miles_screen_color,5):
+        match_count+=1
+    if color_match_array(1265,155,gbdata.noom_miles_screen_color,5):
+        match_count+=1
+    if color_match_array(1257,665,gbdata.noom_miles_screen_color,5):
+        match_count+=1
+    if match_count >= 5:
+        return True
+    print("match_count 2",match_count)
+    return False
 
 def is_inside_building_screen():
     with gbstate.detection_lock:

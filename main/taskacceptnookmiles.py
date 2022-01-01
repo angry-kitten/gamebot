@@ -17,12 +17,12 @@ import taskdetect
 import taskgotomain
 import taskopenphone
 
-class TaskRedeemNookMiles(taskobject.Task):
-    """TaskRedeemNookMiles Object"""
+class TaskAcceptNookMiles(taskobject.Task):
+    """TaskAcceptNookMiles Object"""
 
     def __init__(self):
         super().__init__()
-        self.name="TaskRedeemNookMiles"
+        self.name="TaskAcceptNookMiles"
         print("new",self.name,"object")
         self.step=0 # pop up phone
         self.icons=[]
@@ -58,7 +58,7 @@ class TaskRedeemNookMiles(taskobject.Task):
             l=len(gbdata.nook_miles_plus_blue_locations)
             self.active_plus=None
             for i in range(l):
-                (sx,sy)=gbdata.nook_miles_plus_blue_location[i]
+                (sx,sy)=gbdata.nook_miles_plus_blue_locations[i]
                 if gbscreen.color_match_array(sx,sy,gbdata.nook_miles_plus_blue,2):
                     self.active_plus=i
                     break
@@ -99,7 +99,7 @@ class TaskRedeemNookMiles(taskobject.Task):
             # Let the animation play out.
             self.parent.Push(taskobject.TaskTimed(3.0))
 
-            # Redeem the active circle.
+            # Accept the active circle.
             self.parent.Push(taskpress.TaskPress('A'))
 
             # Let the animation play out.
@@ -151,7 +151,7 @@ class TaskRedeemNookMiles(taskobject.Task):
             # Let the animation play out.
             self.parent.Push(taskobject.TaskTimed(2.0))
 
-            # Press 'A' to redeem the card.
+            # Press 'A' to accept the card.
             self.parent.Push(taskpress.TaskPress('A',1.0))
 
             # Press 'A' to select the card.

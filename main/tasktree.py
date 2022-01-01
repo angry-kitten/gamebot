@@ -103,7 +103,7 @@ class TaskTree(taskobject.Task):
             self.parent.Push(taskpress.TaskPress('B'))
 
             # Wait for a possible wasp presentation animation.
-            self.parent.Push(taskobject.TaskTimed(4))
+            self.parent.Push(taskobject.TaskTimed(8))
 
             # Swing the net just in case a wasp nest was triggered.
             self.parent.Push(taskpress.TaskPress('A'))

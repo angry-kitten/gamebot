@@ -25,13 +25,13 @@ class TaskUpdatePhoneMap(taskobject.Task):
     def __init__(self):
         super().__init__()
         self.name="TaskUpdatePhoneMap"
-        print("new",self.name,"object")
+        #print("new",self.name,"object")
         self.step=0 # pop up phone
         self.icons=[]
 
     def Poll(self):
         """check if any action can be taken"""
-        print(self.name,"Poll")
+        #print(self.name,"Poll")
         if not self.started:
             self.Start()
             return
@@ -40,7 +40,7 @@ class TaskUpdatePhoneMap(taskobject.Task):
         if gbstate.frame is None:
             return
 
-        print("step is",self.step)
+        #print("step is",self.step)
 
         if self.step == 0:
             self.select_map()
@@ -75,13 +75,13 @@ class TaskUpdatePhoneMap(taskobject.Task):
 
         if self.step == 21:
             if not gbscreen.is_phone_map_screen():
-                print("not on phone map screen")
+                #print("not on phone map screen")
                 self.step=99
                 self.parent.Push(taskpress.TaskPress('B',1.0))
                 self.parent.Push(taskpress.TaskPress('B',1.0))
                 self.parent.Push(taskpress.TaskPress('B',1.0))
                 return
-            print("yes on phone map screen")
+            #print("yes on phone map screen")
             self.position_from_phonemap()
             gbmap.gather_phonemap2()
             self.step=22
@@ -103,14 +103,14 @@ class TaskUpdatePhoneMap(taskobject.Task):
             self.step=99
             return
 
-        print(self.name,"done")
+        #print(self.name,"done")
         self.taskdone=True
         gbstate.do_draw_buildings=False
         return
 
     def Start(self):
         """Cause the task to begin doing whatever."""
-        print(self.name,"Start")
+        #print(self.name,"Start")
         if self.started:
             return # already started
         self.started=True
@@ -154,18 +154,18 @@ class TaskUpdatePhoneMap(taskobject.Task):
         # Try finding the icon by color.
         self.map_slot=self.find_map_icon_by_color()
         if self.map_slot is None:
-            print("no map slot found by color")
+            #print("no map slot found by color")
             self.step=30 # close phone
             return
-        print("map slot found",self.map_slot)
+        #print("map slot found",self.map_slot)
 
         # Try to find the pointer hand by color.
         hand_slot=self.find_hand_by_color()
         if hand_slot is None:
-            print("no hand slot found by color")
+            #print("no hand slot found by color")
             self.step=10 # try it the slow way
             return
-        print("hand slot found",hand_slot)
+        #print("hand slot found",hand_slot)
 
         self.current_slot=hand_slot
         self.step=20 # Move the pointer hand, if needed, and select the map.
@@ -181,35 +181,35 @@ class TaskUpdatePhoneMap(taskobject.Task):
         self.parent.Push(taskpress.TaskPress('A'))
 
         while self.current_slot != self.map_slot:
-            print(self.map_slot,self.current_slot)
+            #print(self.map_slot,self.current_slot)
 
             map_slot_row=int(self.map_slot/3)
             map_slot_column=self.map_slot%3
-            print(map_slot_row,map_slot_column)
+            #print(map_slot_row,map_slot_column)
 
             hand_slot_row=int(self.current_slot/3)
             hand_slot_column=self.current_slot%3
-            print(hand_slot_row,hand_slot_column)
+            #print(hand_slot_row,hand_slot_column)
 
             if hand_slot_row < map_slot_row:
                 # map slot is in a higher row number
-                print("go down one")
+                #print("go down one")
                 self.parent.Push(taskpress.TaskPress('hat_BOTTOM'))
                 self.current_slot+=3
             elif hand_slot_row > map_slot_row:
                 # map slot is in a lower row number
-                print("go up one")
+                #print("go up one")
                 self.parent.Push(taskpress.TaskPress('hat_TOP'))
                 self.current_slot-=3
 
             if hand_slot_column < map_slot_column:
                 # map slot is in a higher column number
-                print("go right one")
+                #print("go right one")
                 self.parent.Push(taskpress.TaskPress('hat_RIGHT'))
                 self.current_slot+=1
             elif hand_slot_column > map_slot_column:
                 # map slot is in a lower column number
-                print("go left one")
+                #print("go left one")
                 self.parent.Push(taskpress.TaskPress('hat_LEFT'))
                 self.current_slot-=1
 
@@ -217,13 +217,13 @@ class TaskUpdatePhoneMap(taskobject.Task):
 
     def debug_phonemap(self):
         if gbstate.mainmap is None:
-            print("no mainmap")
+            #print("no mainmap")
             return
         for y in range(gbdata.map_height):
             line=''
             for x in range(gbdata.map_width):
                 line+=gbmap.maptype_rev[gbstate.mainmap[x][y].phonemap][1]
-            print(line)
+            #print(line)
 
     def is_pin_orange(self,pixel_x,pixel_y):
         pixel_x=int(round(pixel_x))
@@ -427,7 +427,7 @@ class TaskUpdatePhoneMap(taskobject.Task):
         return True
 
     def position_from_phonemap(self):
-        print("position_from_phonemap")
+        #print("position_from_phonemap")
         gbstate.position_phonemap_x=-1
         gbstate.position_phonemap_y=-1
         """Find the orange pin."""
@@ -438,7 +438,7 @@ class TaskUpdatePhoneMap(taskobject.Task):
             for local_x in range(0,search_w,gbdata.phonemap_pin_search_x):
                 pixel_x=gbdata.phonemap_left+local_x
                 if self.is_pin_orange(pixel_x,pixel_y):
-                    print("found phonemap pin at",pixel_x,pixel_y)
+                    #print("found phonemap pin at",pixel_x,pixel_y)
                     if self.verify_pin_shape(pixel_x,pixel_y):
                         return
         return

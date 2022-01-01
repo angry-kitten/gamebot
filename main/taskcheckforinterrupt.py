@@ -18,7 +18,7 @@ import taskmuseum
 import tasksell
 import taskstore
 import tasktakeinventory
-import taskredeemnookmiles
+import taskacceptnookmiles
 import taskheadinggoto
 import taskpathplangoto
 
@@ -148,9 +148,9 @@ class TaskCheckForInterrupt(taskobject.Task):
             if self.step == 4:
                 self.step=5
                 if gbscreen.has_label('PhoneActive',0.30,-1,-1,-1):
-                    self.parent.Push(taskredeemnookmiles.TaskRedeemNookMiles())
+                    self.parent.Push(taskacceptnookmiles.TaskAcceptNookMiles())
                 elif gbscreen.has_label('PhoneActivePlus',0.30,-1,-1,-1):
-                    self.parent.Push(taskredeemnookmiles.TaskRedeemNookMiles())
+                    self.parent.Push(taskacceptnookmiles.TaskAcceptNookMiles())
                 return
 
             print(self.name,"done")

@@ -6,22 +6,22 @@
 import random
 import math
 
-import taskobject
-import gbdata
-import gbstate
 import cv2
+import gbdata, gbstate
+import gbmap
+import gbscreen
+import gbdisplay
+import taskobject
 import taskpress
 import tasksay
 import taskdetect
 import taskgotomain
 import taskupdatemini
 import taskjoy
-import gbscreen
-import gbdisplay
 import tasktrackgoto
 import tasksimplegoto
-import gbmap
 import taskpole
+import taskdetermineposition
 
 class TaskPathPlanGoTo(taskobject.Task):
     """TaskPathPlanGoTo Object"""
@@ -74,6 +74,11 @@ class TaskPathPlanGoTo(taskobject.Task):
             gbstate.unreachable=True
             gbstate.plan_goto_target_mx=-1
             gbstate.plan_goto_target_my=-1
+
+            # In some cases the current position is stale causing
+            # path planning to fail.
+            self.parent.Push(taskdetermineposition.TaskDeterminePosition())
+
             print(self.name,"done")
             self.taskdone=True
             return

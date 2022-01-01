@@ -76,7 +76,7 @@ class TaskDig(taskobject.Task):
 
             # close the presentation text with 'B'
             self.parent.Push(taskpress.TaskPress('B'))
-            self.parent.Push(taskobject.TaskTimed(2.0)) # wait for the dig animation
+            self.parent.Push(taskobject.TaskTimed(8.0)) # wait for the dig animation
             # Dig with 'A'
             self.parent.Push(taskpress.TaskPress('A'))
 

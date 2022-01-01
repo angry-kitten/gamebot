@@ -13,7 +13,7 @@ class TaskJoyLeft(taskobject.TaskTimed):
     def __init__(self,heading,extent,total_sec=1.000,press_msec=500):
         super().__init__()
         self.name="TaskJoyLeft"
-        print("new TaskJoyLeft object")
+        #print("new TaskJoyLeft object")
         self.ps=gbstate.ps
         self.heading=heading
         self.extent=extent
@@ -39,7 +39,7 @@ class TaskJoyLeft(taskobject.TaskTimed):
 
     def Start(self):
         """Cause the task to begin doing whatever."""
-        print("TaskJoyLeft Start")
+        #print("TaskJoyLeft Start")
         super().Start()
         if self.started:
             return # already started
