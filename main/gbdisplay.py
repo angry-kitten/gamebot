@@ -703,7 +703,8 @@ def draw_maps(frame):
         psy=-1
         n=0
         for wp in gbstate.dijkstra_waypoints:
-            (mx,my)=gbdijkstra.index_to_xy(wp)
+            (i1,t)=wp
+            (mx,my)=gbdijkstra.index_to_xy(i1)
             sx=origin_sx+mx*3+1
             sy=origin_sy+my*3+1
             if psx >= 0:
@@ -713,7 +714,8 @@ def draw_maps(frame):
             psx=sx
             psy=sy
         for wp in gbstate.dijkstra_waypoints:
-            (mx,my)=gbdijkstra.index_to_xy(wp)
+            (i1,t)=wp
+            (mx,my)=gbdijkstra.index_to_xy(i1)
             sx=origin_sx+mx*3
             sy=origin_sy+my*3
             # use a rectangle to draw a pixel

@@ -1,6 +1,6 @@
 #
 # Copyright 2021-2022 by angry-kitten
-# Move the player character using a pole.
+# Move the player character using a ladder.
 #
 
 import random
@@ -25,12 +25,12 @@ import gbtrack
 import tasktrackturn
 import taskheadinggoto
 
-class TaskPole(taskobject.Task):
-    """TaskPole Object"""
+class TaskLadder(taskobject.Task):
+    """TaskLadder Object"""
 
     def __init__(self,mx,my):
         super().__init__()
-        self.name="TaskPole"
+        self.name="TaskLadder"
         print("new",self.name,"object")
         self.target_mx=mx
         self.target_my=my
@@ -49,10 +49,10 @@ class TaskPole(taskobject.Task):
             return
 
         if self.step == 0:
-            # Check that the pole is held.
+            # Check that the ladder is held.
             print("current_tool",gbstate.current_tool)
-            if gbstate.current_tool != "Pole":
-                print("not holding a pole")
+            if gbstate.current_tool != "Ladder":
+                print("not holding a ladder")
                 self.step=99 # done
                 # Put any tools away just in case.
                 self.parent.Push(taskholdtool.TaskHoldTool('None'))
@@ -73,7 +73,7 @@ class TaskPole(taskobject.Task):
 
             self.parent.Push(taskholdtool.TaskHoldTool('None'))
 
-            # Wait for pole animation.
+            # Wait for ladder animation.
             self.parent.Push(taskobject.TaskTimed(5.0))
 
             self.parent.Push(taskpress.TaskPress('A'))
@@ -101,14 +101,14 @@ class TaskPole(taskobject.Task):
         self.started=True
         self.step=0
 
-        if not gbstate.inventory_has_pole:
-            print("no pole")
+        if not gbstate.inventory_has_ladder:
+            print("no ladder")
             # This isn't going to work.
             self.step=99
             return
 
-        # Hold a pole. This will cause the player character to face down/south.
-        self.parent.Push(taskholdtool.TaskHoldTool('Pole'))
+        # Hold a ladder. This will cause the player character to face down/south.
+        self.parent.Push(taskholdtool.TaskHoldTool('Ladder'))
         return
 
     def DebugRecursive(self,indent=0):

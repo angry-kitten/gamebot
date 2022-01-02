@@ -23,6 +23,7 @@ import tasktrackgoto
 import tasksimplegoto
 import taskpole
 import taskdetermineposition
+import taskladder
 
 class TaskPathPlanGoTo(taskobject.Task):
     """TaskPathPlanGoTo Object"""
@@ -47,6 +48,7 @@ class TaskPathPlanGoTo(taskobject.Task):
         if gbstate.frame is None:
             return
 
+        gbstate.dijkstra_waypoints=[]
         gbstate.plan_goto_target_mx=-1
         gbstate.plan_goto_target_my=-1
         print(self.name,"done")
@@ -98,28 +100,23 @@ class TaskPathPlanGoTo(taskobject.Task):
             return
         for j in range(1,n):
             # move from i2 to i1
-            i1=gbstate.dijkstra_waypoints[j-1]
-            i2=gbstate.dijkstra_waypoints[j]
+            (i1,t1)=gbstate.dijkstra_waypoints[j-1]
+            (i2,t2)=gbstate.dijkstra_waypoints[j]
             (mx1,my1)=gbdijkstra.index_to_xy(i1)
             (mx2,my2)=gbdijkstra.index_to_xy(i2)
             n1=gbdijkstra.node_from_index(i1)
-            edge=gbdijkstra.find_edge(i1,i2,n1.dijkstra)
-            if edge is None:
-                print("no edge")
-                break
             cmx1=mx1+0.5
             cmy1=my1+0.5
             cmx2=mx2+0.5
             cmy2=my2+0.5
-            t=edge[2]
-            if t == gbdata.dijkstra_walk_type:
+            if t1 == gbdata.dijkstra_walk_type:
                 self.parent.Push(tasksimplegoto.TaskSimpleGoTo(cmx1,cmy1,low_precision=True))
-            elif t == gbdata.dijkstra_pole_type:
+            elif t1 == gbdata.dijkstra_pole_type:
                 self.parent.Push(taskpole.TaskPole(cmx1,cmy1))
                 # Make sure we have an accurate starting position.
                 self.parent.Push(tasksimplegoto.TaskSimpleGoTo(cmx2,cmy2))
-            elif t == gbdata.dijkstra_ladder_type:
-                self.parent.Push(taskpole.TaskPole(cmx1,cmy1)) # yyy
+            elif t1 == gbdata.dijkstra_ladder_type:
+                self.parent.Push(taskladder.TaskLadder(cmx1,cmy1))
                 # Make sure we have an accurate starting position.
                 self.parent.Push(tasksimplegoto.TaskSimpleGoTo(cmx2,cmy2))
             else:

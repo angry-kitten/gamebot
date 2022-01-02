@@ -90,6 +90,7 @@ def path_plan(fmx,fmy,tmx,tmy):
         if mx == tmx and my == tmy:
             print("found target")
             build_waypoint_list(i1)
+            reduce_waypoint_list()
             return
         n1=node_from_index(i1)
 
@@ -136,12 +137,76 @@ def node_with_min_distance(queue):
 def build_waypoint_list(i1):
     gbstate.dijkstra_waypoints=[]
     while True:
-        gbstate.dijkstra_waypoints.append(i1)
         n1=node_from_index(i1)
+        i2=n1.dijkstra_prev
+        edge=find_edge(i1,i2,n1.dijkstra)
+        t=edge[2]
+        wp=(i1,t)
+        gbstate.dijkstra_waypoints.append(wp)
         if n1.dijkstra_distance == 0:
             break;
-        i1=n1.dijkstra_prev
+        i1=i2
     print("dijkstra",gbstate.dijkstra_waypoints)
+    return
+
+def reduce_waypoint_list():
+    # Combine waypoints that are the same type
+    # and direction.
+    # The waypoints are ordered from the destination to the start.
+    new_waypoints=[]
+    l=len(gbstate.dijkstra_waypoints)
+    if l < 3:
+        print("only one or two waypoints")
+        return
+
+    # The end waypoint stays the same.
+    new_waypoints.append(gbstate.dijkstra_waypoints[0])
+
+    for j in range(2,l):
+        # move from i3 to i2 to i1
+        wp1=gbstate.dijkstra_waypoints[j-2]
+        wp2=gbstate.dijkstra_waypoints[j-1]
+        wp3=gbstate.dijkstra_waypoints[j]
+        (i1,t1)=wp1
+        (i2,t2)=wp2
+        (i3,t3)=wp3
+
+        if t1 != t2:
+            # Not the same type of edge/movement.
+            new_waypoints.append(wp2)
+            continue
+        if t1 != gbdata.dijkstra_walk_type:
+            # Don't reduce pole or ladder movements.
+            new_waypoints.append(wp2)
+            continue
+        if t2 != gbdata.dijkstra_walk_type:
+            # Don't reduce pole or ladder movements.
+            new_waypoints.append(wp2)
+            continue
+
+        (mx1,my1)=index_to_xy(i1)
+        (mx2,my2)=index_to_xy(i2)
+        (mx3,my3)=index_to_xy(i3)
+
+        dx1=mx1-mx2
+        dy1=my1-my2
+        dx2=mx2-mx3
+        dy2=my2-my3
+        if dx1 != dx2:
+            # Not the same direction of movement.
+            new_waypoints.append(wp2)
+            continue
+        if dy1 != dy2:
+            # Not the same direction of movement.
+            new_waypoints.append(wp2)
+            continue
+
+        # Reduce the list by not saving i2 to the new list.
+
+    # The start waypoint stays the same.
+    new_waypoints.append(gbstate.dijkstra_waypoints[l-1])
+
+    gbstate.dijkstra_waypoints=new_waypoints
     return
 
 def type_to_distance(t):
@@ -213,6 +278,61 @@ def test_ladder_pair(mx1,my1,mx2,my2):
     l2=gbmap.map_level(mx2,my2)
     if l2 is None:
         return
+
+    # Don't be too close to a corner of a cliff.
+    dx=mx1-mx2
+    dy=my1-my2
+    if dx != 0:
+        # Check that north and south are ordinary cliffs of
+        # the same type.
+        # Check north
+        l3=gbmap.map_level(mx1,my1-1)
+        if l3 is None:
+            return
+        if l3 != l1:
+            return
+        l4=gbmap.map_level(mx2,my1-1)
+        if l4 is None:
+            return
+        if l4 != l2:
+            return
+        # Check south
+        l3=gbmap.map_level(mx1,my1+1)
+        if l3 is None:
+            return
+        if l3 != l1:
+            return
+        l4=gbmap.map_level(mx2,my1+1)
+        if l4 is None:
+            return
+        if l4 != l2:
+            return
+    if dy != 0:
+        # Check that west and east are ordinary cliffs of
+        # the same type.
+        # Check west
+        l3=gbmap.map_level(mx1-1,my1)
+        if l3 is None:
+            return
+        if l3 != l1:
+            return
+        l4=gbmap.map_level(mx1-1,my2)
+        if l4 is None:
+            return
+        if l4 != l2:
+            return
+        # Check east
+        l3=gbmap.map_level(mx1+1,my1)
+        if l3 is None:
+            return
+        if l3 != l1:
+            return
+        l4=gbmap.map_level(mx1+1,my2)
+        if l4 is None:
+            return
+        if l4 != l2:
+            return
+
     n1=xy_to_index(mx1,my1)
     n2=xy_to_index(mx2,my2)
     if 0 == l1:
@@ -306,6 +426,7 @@ def test_pole_pair(mx1,my1,dx,dy):
         n1=xy_to_index(mx1,my1)
         n2=xy_to_index(mx2,my2)
         add_pole_edge(n1,n2)
+        break
 
     return
 
@@ -369,6 +490,8 @@ def build_walk_edges():
 def identify_walk_positions(mx,my):
     test_walk_pair(mx,my,mx+1,my)
     test_walk_pair(mx,my,mx,my+1)
+    test_walk_pair(mx,my,mx+1,my-1)
+    test_walk_pair(mx,my,mx+1,my+1)
     return
 
 def test_walk_pair(mx1,my1,mx2,my2):
@@ -424,6 +547,7 @@ def identify_edges_in_list(node,index,list):
     return
 
 def find_edge(i1,i2,edgelist):
+    #print("find_edge",i1,i2,edgelist)
     for edge in edgelist:
         if i1 == edge[0] and i2 == edge[1]:
             return edge

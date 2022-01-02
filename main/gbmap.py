@@ -109,6 +109,8 @@ def is_valid_location(mx,my):
 def map_level(mx,my):
     n=gbstate.mainmap[mx][my]
     t=n.phonemap2
+    if t == MapTypeUnknown:
+        return 0
     if t == MapTypeRock:
         return 0
     if t == MapTypeGrass0:
@@ -118,6 +120,8 @@ def map_level(mx,my):
     if t == MapTypeGrass2:
         return 2
     if t == MapTypeSand:
+        return 0
+    if t == MapTypeDock:
         return 0
     if t == MapTypeDirt:
         return 0

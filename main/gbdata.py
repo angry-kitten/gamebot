@@ -68,7 +68,8 @@ phonemap_pin_center_to_tip=23.50
 #phonemap_pin_tune_my=0.25
 #phonemap_pin_tune_mx=0.25+common_tune_mx
 #phonemap_pin_tune_mx=0.30+common_tune_mx
-phonemap_pin_tune_mx=0.35+common_tune_mx
+#phonemap_pin_tune_mx=0.35+common_tune_mx
+phonemap_pin_tune_mx=0.40+common_tune_mx
 phonemap_pin_tune_my=0.25+common_tune_my
 
 phonemap_gray_search_x=6
@@ -1416,7 +1417,13 @@ item_keep=[
 
 item_store=[
     "InvSlingshot",
-    "InvLadder",
+    'InvAxe',
+    'InvGoldAxe',
+    'InvWateringCan',
+    'InvGoldWateringCan',
+    'InvFishingPole',
+    'InvWetSuit',
+
     "InvPeach",
     "InvBranches",
     "InvWaspNest",
@@ -1476,5 +1483,5 @@ dijkstra_pole_type=2
 dijkstra_ladder_type=3
 dijkstra_walk_cost=1
 dijkstra_pole_cost=20
-dijkstra_ladder_cost=20
+dijkstra_ladder_cost=50
 dijkstra_use=True
