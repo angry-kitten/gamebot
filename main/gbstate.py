@@ -1,5 +1,5 @@
 #
-# Copyright 2021 by angry-kitten
+# Copyright 2021-2022 by angry-kitten
 # Gamebot state variables.
 #
 
@@ -35,11 +35,13 @@ label_id_offset=1
 
 mainmap=None
 mainmap_latest_update=0
+mainmap_update_count=0
 unreachable=False
-#x_hist=None
-#y_hist=None
-#phonemap_measured_dashes_L2R=None
-#phonemap_measured_dashes_T2B=None
+# (node1,node2,type)
+dijkstra_waypoints=[]
+dijkstra_walk_edges=[]
+dijkstra_ladder_edges=[]
+dijkstra_pole_edges=[]
 map2stats=[]
 map2maybediagonals=[]
 map2diagonals=[]
@@ -146,8 +148,10 @@ inventory=None
 inventory_name=None
 
 inventory_has_net=False
-inventory_has_pole=False
-inventory_has_ladder=False
+#inventory_has_pole=False
+inventory_has_pole=True
+#inventory_has_ladder=False
+inventory_has_ladder=True
 inventory_has_shovel=False
 inventory_has_wetsuit=False
 inventory_has_fishingpole=False

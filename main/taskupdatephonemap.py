@@ -1,5 +1,5 @@
 #
-# Copyright 2021 by angry-kitten
+# Copyright 2021-2022 by angry-kitten
 # Look at the current screen and capture the phone map and
 # determine player location from the pin.
 #
@@ -176,7 +176,8 @@ class TaskUpdatePhoneMap(taskobject.Task):
         # to finish.
         #self.parent.Push(taskobject.TaskTimed(30.0))
         #self.parent.Push(taskobject.TaskTimed(4.0))
-        self.parent.Push(taskobject.TaskTimed(5.0))
+        #self.parent.Push(taskobject.TaskTimed(5.0))
+        self.parent.Push(taskobject.TaskTimed(6.0))
         # Pop up the map with A
         self.parent.Push(taskpress.TaskPress('A'))
 

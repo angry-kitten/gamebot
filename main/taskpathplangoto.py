@@ -1,5 +1,5 @@
 #
-# Copyright 2021 by angry-kitten
+# Copyright 2021-2022 by angry-kitten
 # Move the player character to a location with path planning.
 #
 
@@ -11,6 +11,7 @@ import gbdata, gbstate
 import gbmap
 import gbscreen
 import gbdisplay
+import gbdijkstra
 import taskobject
 import taskpress
 import tasksay
@@ -48,7 +49,6 @@ class TaskPathPlanGoTo(taskobject.Task):
 
         gbstate.plan_goto_target_mx=-1
         gbstate.plan_goto_target_my=-1
-        gbmap.waypoints=[]
         print(self.name,"done")
         self.taskdone=True
         return
@@ -59,17 +59,17 @@ class TaskPathPlanGoTo(taskobject.Task):
         if self.started:
             return # already started
         self.started=True
-        gbmap.waypoints=[]
         gbstate.plan_goto_target_mx=self.target_mx
         gbstate.plan_goto_target_my=self.target_my
         # plan from the current player position
         fmx=int(round(gbstate.player_mx))
         fmy=int(round(gbstate.player_my))
-        gbmap.planning_build_distance_grid(fmx,fmy)
         tmx=int(round(self.target_mx))
         tmy=int(round(self.target_my))
-        n=gbstate.mainmap[tmx][tmy]
-        if n.planning_distance == 0:
+        gbmap.dijkstra_path_plan(fmx,fmy,tmx,tmy)
+
+        # use Dijkstra
+        if len(gbstate.dijkstra_waypoints) < 1:
             print("unreachable")
             gbstate.unreachable=True
             gbstate.plan_goto_target_mx=-1
@@ -82,14 +82,8 @@ class TaskPathPlanGoTo(taskobject.Task):
             print(self.name,"done")
             self.taskdone=True
             return
-        gbmap.planning_build_waypoints_from_to(fmx,fmy,tmx,tmy)
-        l=len(gbmap.waypoints)
-        if l < 1:
-            print("waypointless")
-            self.parent.Push(tasksimplegoto.TaskSimpleGoTo(self.target_mx,self.target_my))
-            return
 
-        print("waypoints",gbmap.waypoints)
+        print("waypoints",gbstate.dijkstra_waypoints)
 
         # Do a simple goto to get from the integer map location to the
         # floating point map location.
@@ -98,31 +92,39 @@ class TaskPathPlanGoTo(taskobject.Task):
         # The waypoints are ordered from the destination to the start. This
         # works well because we have to push the task in reverse order anyway.
         # Add 0.5 to the waypoints to go to the center of the map squares.
-        n=len(gbmap.waypoints)
-        for j in range(n):
-            wp=gbmap.waypoints[j]
-            mx=wp[0]
-            my=wp[1]
-            movetype=gbstate.mainmap[mx][my].move_type
-            print("movetype",movetype)
-            cmx=wp[0]+0.5
-            cmy=wp[1]+0.5
-            if gbmap.MoveStep == movetype:
-                self.parent.Push(tasksimplegoto.TaskSimpleGoTo(cmx,cmy,low_precision=True))
-            elif gbmap.MovePole == movetype:
-                self.parent.Push(taskpole.TaskPole(cmx,cmy))
-
+        n=len(gbstate.dijkstra_waypoints)
+        if n < 2:
+            print("only one waypoint")
+            return
+        for j in range(1,n):
+            # move from i2 to i1
+            i1=gbstate.dijkstra_waypoints[j-1]
+            i2=gbstate.dijkstra_waypoints[j]
+            (mx1,my1)=gbdijkstra.index_to_xy(i1)
+            (mx2,my2)=gbdijkstra.index_to_xy(i2)
+            n1=gbdijkstra.node_from_index(i1)
+            edge=gbdijkstra.find_edge(i1,i2,n1.dijkstra)
+            if edge is None:
+                print("no edge")
+                break
+            cmx1=mx1+0.5
+            cmy1=my1+0.5
+            cmx2=mx2+0.5
+            cmy2=my2+0.5
+            t=edge[2]
+            if t == gbdata.dijkstra_walk_type:
+                self.parent.Push(tasksimplegoto.TaskSimpleGoTo(cmx1,cmy1,low_precision=True))
+            elif t == gbdata.dijkstra_pole_type:
+                self.parent.Push(taskpole.TaskPole(cmx1,cmy1))
                 # Make sure we have an accurate starting position.
-                j2=j+1
-                if j2 < n:
-                    wp2=gbmap.waypoints[j2]
-                    pmx=wp2[0]+0.5
-                    pmy=wp2[1]+0.5
-                    self.parent.Push(tasksimplegoto.TaskSimpleGoTo(pmx,pmy))
-
-        # Don't clear out the waypoints so that gbdisplay can draw them.
-        #gbmap.waypoints=[]
-
+                self.parent.Push(tasksimplegoto.TaskSimpleGoTo(cmx2,cmy2))
+            elif t == gbdata.dijkstra_ladder_type:
+                self.parent.Push(taskpole.TaskPole(cmx1,cmy1)) # yyy
+                # Make sure we have an accurate starting position.
+                self.parent.Push(tasksimplegoto.TaskSimpleGoTo(cmx2,cmy2))
+            else:
+                print("unknown move type",t)
+                break
         return
 
     def DebugRecursive(self,indent=0):

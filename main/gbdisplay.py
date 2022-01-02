@@ -1,5 +1,5 @@
 #
-# Copyright 2021 by angry-kitten
+# Copyright 2021-2022 by angry-kitten
 # Various functions for drawing status on a frame.
 #
 
@@ -12,6 +12,7 @@ import taskpress
 import taskdetect
 import gbtrack
 import gbmap
+import gbdijkstra
 
 color_white=(255,255,255) # BGR
 color_black=(0,0,0) # BGR
@@ -701,18 +702,20 @@ def draw_maps(frame):
         psx=-1
         psy=-1
         n=0
-        for wp in gbmap.waypoints:
-            sx=origin_sx+wp[0]*3+1
-            sy=origin_sy+wp[1]*3+1
+        for wp in gbstate.dijkstra_waypoints:
+            (mx,my)=gbdijkstra.index_to_xy(wp)
+            sx=origin_sx+mx*3+1
+            sy=origin_sy+my*3+1
             if psx >= 0:
                 v=127+(n*32)%128
                 c=[v,0,0] # BGR
                 cv2.line(frame,(psx,psy),(sx,sy),c,line_width_path)
             psx=sx
             psy=sy
-        for wp in gbmap.waypoints:
-            sx=origin_sx+wp[0]*3
-            sy=origin_sy+wp[1]*3
+        for wp in gbstate.dijkstra_waypoints:
+            (mx,my)=gbdijkstra.index_to_xy(wp)
+            sx=origin_sx+mx*3
+            sy=origin_sy+my*3
             # use a rectangle to draw a pixel
             cv2.rectangle(frame,(sx,sy),(sx+2,sy+2),color_red,-1)
 
@@ -762,7 +765,9 @@ def draw_maps(frame):
         cv2.rectangle(frame,(origin_sx,origin_sy),(origin_sx+gbdata.map_width,origin_sy+gbdata.map_height),color_red,1)
         for y in range(gbdata.map_height):
             for x in range(gbdata.map_width):
-                v=gbstate.mainmap[x][y].planning_distance
+                v=gbstate.mainmap[x][y].dijkstra_distance
+                if v < 0:
+                    v=0
                 v=v%256
                 if v > 0:
                     color=(v,v,v) # BGR
@@ -771,47 +776,10 @@ def draw_maps(frame):
                     # use a rectangle to draw a pixel
                     cv2.rectangle(frame,(sx,sy),(sx,sy),color,-1)
 
-        # Draw the waypoint lines first then the points.
-        psx=-1
-        psy=-1
-        n=0
-        for wp in gbmap.waypoints:
-            sx=origin_sx+wp[0]
-            sy=origin_sy+wp[1]
-            if psx >= 0:
-                g=127+(n*32)%128
-                c=[0,g,0]
-                cv2.line(frame,(psx,psy),(sx,sy),c,line_width)
-            psx=sx
-            psy=sy
-        for wp in gbmap.waypoints:
-            sx=origin_sx+wp[0]
-            sy=origin_sy+wp[1]
-            # use a rectangle to draw a pixel
-            cv2.rectangle(frame,(sx,sy),(sx,sy),color_red,-1)
-
     origin_sx+=gbdata.map_width
-    # draw possible pole
-    if len(gbmap.possible_pole) > 0:
-        cv2.rectangle(frame,(origin_sx,origin_sy),(origin_sx+gbdata.map_width,origin_sy+gbdata.map_height),color_red,1)
-        for possible in gbmap.possible_pole:
-            sx1=origin_sx+possible[0]
-            sy1=origin_sy+possible[1]
-            sx2=origin_sx+possible[2]
-            sy2=origin_sy+possible[3]
-            cv2.line(frame,(sx1,sy1),(sx2,sy2),color_green,line_width)
 
     origin_sx=w-(3*gbdata.map_width)
     origin_sy+=gbdata.map_height
-    # draw waypoint pole
-    if len(gbmap.waypoint_pole) > 0:
-        cv2.rectangle(frame,(origin_sx,origin_sy),(origin_sx+gbdata.map_width,origin_sy+gbdata.map_height),color_red,1)
-        for waypole in gbmap.waypoint_pole:
-            sx1=origin_sx+waypole[0]
-            sy1=origin_sy+waypole[1]
-            sx2=origin_sx+waypole[2]
-            sy2=origin_sy+waypole[3]
-            cv2.line(frame,(sx1,sy1),(sx2,sy2),color_green,line_width)
 
     return
 
@@ -919,12 +887,13 @@ def draw_on(frame):
 
     draw_buildings(frame)
 
-    draw_map2(frame)
     draw_maps(frame)
     draw_targets(frame)
 
     draw_object_detect(frame)
     draw_ocr(frame)
+
+    draw_dijkstra(frame)
 
     return
 
@@ -1038,62 +1007,6 @@ def draw_buildings(frame):
         cv2.drawMarker(frame,(gbstate.player_house_sx,gbstate.player_house_sy),color_red,cv2.MARKER_SQUARE)
     return
 
-def draw_map2(frame):
-    #if gbstate.y_hist is None:
-    #    return
-    origin_sx=gbdata.phonemap_left
-    origin_sy=gbdata.phonemap_top
-
-    #for data_y in range(gbdata.phonemap_sheight):
-    #    v=gbstate.y_hist[data_y]
-    #    sx=int(round(v*100))
-    #    sy=origin_sy+data_y
-    #    #cv2.rectangle(frame,(sx,sy),(sx,sy),color_red,-1)
-    #    cv2.line(frame,(50,sy),(sx,sy),color_red,1)
-
-    #for data_x in range(gbdata.phonemap_swidth):
-    #    v=gbstate.x_hist[data_x]
-    #    sx=origin_sx+data_x
-    #    sy=int(round(v*100))
-    #    #cv2.rectangle(frame,(sx,sy),(sx,sy),color_red,-1)
-    #    cv2.line(frame,(sx,50),(sx,sy),color_red,1)
-
-    #sy1=int(round(gbdata.phonemap_origin_y))
-    #sy2=int(round(gbdata.phonemap_origin_y+gbdata.map_height*gbdata.phonemap_square_spacing))
-    #for mx in range(gbdata.map_width+1):
-    #    sx=gbdata.phonemap_origin_x+(mx*gbdata.phonemap_square_spacing)
-    #    sx=int(round(sx))
-    #    cv2.line(frame,(sx,sy1),(sx,sy2),color_green,1)
-
-    #sx1=int(round(gbdata.phonemap_origin_x))
-    #sx2=int(round(gbdata.phonemap_origin_x+gbdata.map_width*gbdata.phonemap_square_spacing))
-    #for my in range(gbdata.map_height+1):
-    #    sy=gbdata.phonemap_origin_y+(my*gbdata.phonemap_square_spacing)
-    #    sy=int(round(sy))
-    #    cv2.line(frame,(sx1,sy),(sx2,sy),color_green,1)
-
-    #if gbdata.phonemap_dashes_L2R is not None:
-    #    for sx in gbdata.phonemap_dashes_L2R:
-    #        cv2.line(frame,(sx,110),(sx,gbdata.phonemap_bottom),color_blue,1)
-    #if gbdata.phonemap_dashes_T2B is not None:
-    #    for sy in gbdata.phonemap_dashes_T2B:
-    #        cv2.line(frame,(110,sy),(gbdata.phonemap_right,sy),color_blue,1)
-
-    #for e in gbstate.map2stats:
-    #    avg=e[0]
-    #    avgr=e[1]
-    #    avgg=e[2]
-    #    avgb=e[3]
-    #    sx=e[4]
-    #    sy=e[5]
-    #    cv2.rectangle(frame,(sx,sy),(sx,sy),color_red,-1)
-
-    #for diaginfo in gbstate.map2diagonals:
-    #    print("diaginfo",diaginfo)
-    #    cv2.line(frame,(diaginfo[0],diaginfo[1]),(diaginfo[2],diaginfo[3]),color_yellow,1)
-
-    return
-
 # example data:
 # [([[968, 208], [1038, 208], [1038, 216], [968, 216]], '1', 0.008175754888339937), ([[1042, 208], [1064, 208], [1064, 216], [1042, 216]], '3', 0.010153401497510706), ([[1069, 208], [1153, 208], [1153, 216], [1069, 216]], '3', 0.007057148914849043), ([[98, 588], [218, 588], [218, 640], [98, 640]], '3.27', 0.7056293487548828), ([[228, 608], [282, 608], [282, 638], [228, 638]], 'AM', 0.9678678383256856), ([[46, 658], [236, 658], [236, 690], [46, 690]], 'December 27', 0.9993508211254571), ([[256, 656], [321, 656], [321, 686], [256, 686]], 'Mon:', 0.8180626034736633)]
 # array of detections
@@ -1152,4 +1065,30 @@ def draw_object_detect(frame):
 
             cv2.rectangle(frame,(x1,y1),(x2,y2),color_yellow,1)
             cv2.putText(frame,name,(x1,y1),font,font_scale_25,color_blue,font_line_width,line_type)
+    return
+
+def draw_dijkstra(frame):
+    #draw_simple_edges(frame,gbstate.dijkstra_walk_edges)
+    draw_simple_edges(frame,gbstate.dijkstra_ladder_edges)
+    draw_simple_edges(frame,gbstate.dijkstra_pole_edges)
+    return
+
+def draw_simple_edges(frame,edges):
+    if edges is None:
+        return
+
+    w=gbdata.stdscreen_size[0]
+    h=gbdata.stdscreen_size[1]
+    origin_sx=w-(3*gbdata.map_width)
+    origin_sy=0
+
+    for edge in edges:
+        (n1,n2,t)=edge
+        (mx1,my1)=gbdijkstra.index_to_xy(n1)
+        (mx2,my2)=gbdijkstra.index_to_xy(n2)
+        sx1=origin_sx+1+mx1*3
+        sy1=origin_sy+1+my1*3
+        sx2=origin_sx+1+mx2*3
+        sy2=origin_sy+1+my2*3
+        cv2.line(frame,(sx1,sy1),(sx2,sy2),color_yellow,1)
     return

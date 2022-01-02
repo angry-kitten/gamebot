@@ -1,5 +1,5 @@
 #
-# Copyright 2021 by angry-kitten
+# Copyright 2021-2022 by angry-kitten
 # A bunch of static data.
 #
 
@@ -33,7 +33,9 @@ stdscreen_size=[1280,720] # wxh upper left origin
 conttriangle_loc=[641,663] # x and y based on 1280x720 upper left origin
 conttriangle_color=[246,186,8] # RGB 0-255
 
-phonemap_update_rate=60*5 # Update every 5 minutes.
+mainmap_update_fast_limit=5 # Update fast 5 times then update slow.
+mainmap_update_fast_rate=60*5 # Update every 5 minutes.
+mainmap_update_slow_rate=60*25 # Update every 25 minutes.
 # minimap pin color. It flashes between these two.
 pin_orange1=[233,130,46] # rgb
 pin_orange2=[230,92,45] # rgb
@@ -1468,3 +1470,11 @@ ocr_cranny_menu1_lane_x1=917
 ocr_cranny_menu1_lane_y1=223
 ocr_cranny_menu1_lane_x2=1258
 ocr_cranny_menu1_lane_y2=538
+
+dijkstra_walk_type=1
+dijkstra_pole_type=2
+dijkstra_ladder_type=3
+dijkstra_walk_cost=1
+dijkstra_pole_cost=20
+dijkstra_ladder_cost=20
+dijkstra_use=True

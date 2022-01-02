@@ -105,7 +105,7 @@ class TaskCheckForInterrupt(taskobject.Task):
                 print("full",gbstate.inventory_slots_full)
                 print("size",gbstate.inventory_size)
                 #if gbstate.inventory_slots_full == gbstate.inventory_size:
-                if gbstate.inventory_slots_full >= (gbstate.inventory_size-4):
+                if gbstate.inventory_slots_full >= (gbstate.inventory_size-2):
                     if self.target_mx >= 0:
                         if not self.added_return:
                             self.added_return=True

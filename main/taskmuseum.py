@@ -33,6 +33,7 @@ class TaskMuseum(taskobject.Task):
         self.ocr_menu=None
         self.target_slot=0
         self.assessed=False
+        self.donated=False
         self.select_count=0
 
     def Poll(self):
@@ -104,12 +105,6 @@ class TaskMuseum(taskobject.Task):
             return
 
         if self.step == 3: # select assess
-            # Menu should be
-            # Make a donation.
-            # Assess fossils.
-            # Tell me about this!
-            # I'm fine.
-
             # OCR the menu
             self.parent.Push(taskocr.TaskOCR())
             self.step=4
@@ -124,37 +119,112 @@ class TaskMuseum(taskobject.Task):
             if len(self.ocr_menu) < 1:
                 self.step=90 # exit the museum
                 return
-
-            if self.assessed:
-                # We have already assessed and we have come back
-                # around to the menu. Just close it and move on.
-                self.step=80
-                return
+# There can be one of several menus at this point
+# #1
+# Make a donation.
+# Assess fossils.
+# Tell me about this!
+# I'm fine.
+# #2
+# I'm donating it!
+# I'Il take it home.
+# #3
+#
+# busy
 
             (index,is_last)=gbocr.locate_menu_text(self.ocr_menu,'Assess fossils')
-            if index is None:
-                self.step=80 # close the menu
+            if index is not None:
+                print("menu #1")
+                if self.assessed:
+                    # We have already assessed and we have come back
+                    # around to the menu. Just close it and move on.
+                    self.step=80
+                    return
+
+                # Move the pointer hand to the
+                # menu entry and select it.
+
+                self.parent.Push(taskobject.TaskTimed(6.0)) # wait for animation
+                self.parent.Push(taskpress.TaskPress('A'))
+
+                if index != 0:
+                    print("need to move the pointer hand")
+                    if is_last:
+                        print("move up to wrap around to last item in menu")
+                        self.parent.Push(taskobject.TaskTimed(1.0)) # wait for the animation
+                        self.parent.Push(taskpress.TaskPress('hat_TOP'))
+                    else:
+                        print("move down by",index)
+                        for j in range(index):
+                            self.parent.Push(taskobject.TaskTimed(1.0)) # wait for the animation
+                            self.parent.Push(taskpress.TaskPress('hat_BOTTOM'))
+
+                self.step=5
                 return
 
-            # Move the pointer hand to the
-            # menu entry and select it.
+            (index,is_last)=gbocr.locate_menu_text(self.ocr_menu,"I'm donating it")
+            if index is not None:
+                print("menu #2")
+                if self.donated:
+                    print("already donated. donate again")
 
-            self.parent.Push(taskobject.TaskTimed(6.0)) # wait for animation
-            self.parent.Push(taskpress.TaskPress('A'))
+                # Move the pointer hand to the
+                # menu entry and select it.
 
-            if index != 0:
-                print("need to move the pointer hand")
-                if is_last:
-                    print("move up to wrap around to last item in menu")
-                    self.parent.Push(taskobject.TaskTimed(1.0)) # wait for the animation
-                    self.parent.Push(taskpress.TaskPress('hat_TOP'))
-                else:
-                    print("move down by",index)
-                    for j in range(index):
+                self.parent.Push(taskobject.TaskTimed(6.0)) # wait for animation
+                self.parent.Push(taskpress.TaskPress('A'))
+
+                if index != 0:
+                    print("need to move the pointer hand")
+                    if is_last:
+                        print("move up to wrap around to last item in menu")
                         self.parent.Push(taskobject.TaskTimed(1.0)) # wait for the animation
-                        self.parent.Push(taskpress.TaskPress('hat_BOTTOM'))
+                        self.parent.Push(taskpress.TaskPress('hat_TOP'))
+                    else:
+                        print("move down by",index)
+                        for j in range(index):
+                            self.parent.Push(taskobject.TaskTimed(1.0)) # wait for the animation
+                            self.parent.Push(taskpress.TaskPress('hat_BOTTOM'))
 
-            self.step=5
+                self.donated=True
+                self.step=2
+                return
+
+            (index,is_last)=gbocr.locate_menu_text(self.ocr_menu,'busy')
+            if index is not None:
+                print("menu #3")
+                # Do we want to hear a description of the fossil? Nope.
+
+                # Move the pointer hand to the
+                # menu entry and select it.
+
+                self.parent.Push(taskobject.TaskTimed(6.0)) # wait for animation
+                self.parent.Push(taskpress.TaskPress('A'))
+
+                if index != 0:
+                    print("need to move the pointer hand")
+                    if is_last:
+                        print("move up to wrap around to last item in menu")
+                        self.parent.Push(taskobject.TaskTimed(1.0)) # wait for the animation
+                        self.parent.Push(taskpress.TaskPress('hat_TOP'))
+                    else:
+                        print("move down by",index)
+                        for j in range(index):
+                            self.parent.Push(taskobject.TaskTimed(1.0)) # wait for the animation
+                            self.parent.Push(taskpress.TaskPress('hat_BOTTOM'))
+
+                self.donated=True
+                self.step=2
+                return
+
+            print("unkown menu, or OCR miss")
+
+            # close the menu, whatever it is
+            self.parent.Push(taskobject.TaskTimed(8.0)) # wait for the animation
+            self.parent.Push(taskpress.TaskPress('B'))
+            self.parent.Push(taskobject.TaskTimed(1.0))
+            self.parent.Push(taskpress.TaskPress('B'))
+            self.step=2
             return
 
         if self.step == 5:

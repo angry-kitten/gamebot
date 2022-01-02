@@ -1,5 +1,5 @@
 #
-# Copyright 2021 by angry-kitten
+# Copyright 2021-2022 by angry-kitten
 # Objects for working with the map.
 #
 
@@ -9,10 +9,7 @@ import gbdata
 import gbstate
 import gbscreen
 import gbdisplay
-
-waypoints=[]
-possible_pole=[]
-waypoint_pole=[]
+import gbdijkstra
 
 icons=[]
 
@@ -71,19 +68,18 @@ class MapSquare:
 
     def __init__(self):
         self.objstruction_status=ObUnknown
-        self.planning_distance=0
-        self.move_type=MoveUnknown
         self.phonemap2=MapTypeUnknown
         self.diagonal0=MapTypeUnknown  # upper left or upper right
         self.diagonal1=MapTypeUnknown  # lower left or lower right
+        self.dijkstra=[]
+        self.dijkstra_distance=-1
+        self.dijkstra_prev=-1
         return
 
 def init_map():
     gbstate.mainmap=[0 for x in range(gbdata.map_width)]
     for data_x in range(gbdata.map_width):
         gbstate.mainmap[data_x]=[MapSquare() for y in range(gbdata.map_height)]
-    gbstate.x_hist=[0 for x in range(gbdata.phonemap_swidth)]
-    gbstate.y_hist=[0 for y in range(gbdata.phonemap_sheight)]
     return
 
 def is_bad_location(mx,my):
@@ -98,6 +94,36 @@ def is_bad_location(mx,my):
     if my >= gbdata.map_height:
         return True
     return False
+
+def is_valid_location(mx,my):
+    if mx < 0:
+        return False
+    if mx >= gbdata.map_width:
+        return False
+    if my < 0:
+        return False
+    if my >= gbdata.map_height:
+        return False
+    return True
+
+def map_level(mx,my):
+    n=gbstate.mainmap[mx][my]
+    t=n.phonemap2
+    if t == MapTypeRock:
+        return 0
+    if t == MapTypeGrass0:
+        return 0
+    if t == MapTypeGrass1:
+        return 1
+    if t == MapTypeGrass2:
+        return 2
+    if t == MapTypeSand:
+        return 0
+    if t == MapTypeDirt:
+        return 0
+    if t == MapTypePlaza:
+        return 0
+    return None
 
 def is_obstructed(mx,my):
     mx=int(round(mx))
@@ -152,13 +178,6 @@ def set_obstruction(mx,my,v):
     n.objstruction_status=v
     return
 
-def planning_clear():
-    for mx in range(gbdata.map_width):
-        for my in range(gbdata.map_height):
-            n=gbstate.mainmap[mx][my]
-            n.planning_distance=0
-            n.move_type=MoveUnknown
-
 def is_grass(id):
     if id == MapTypeGrass0:
         return True
@@ -167,287 +186,6 @@ def is_grass(id):
     if id == MapTypeGrass2:
         return True
     return False
-
-def planning_pass_check_pole(mx1,my1,mx2,my2):
-    # We know that mx2 my2 is water.
-    #print("planning_check_pole",mx1,my1,mx2,my2)
-    n1=gbstate.mainmap[mx1][my1]
-    n2=gbstate.mainmap[mx2][my2]
-    atype=n1.phonemap2
-    btype=n2.phonemap2
-    #print("n1 is",atype)
-    #print("n2 is",btype)
-    aetype=node_equivalent_type(n1)
-    betype=node_equivalent_type(n2)
-    #print("n1 is",aetype)
-    #print("n2 is",betype)
-    if not is_grass(aetype):
-        #print("start not grass")
-        return False
-    dx=mx2-mx1
-    dy=my2-my1
-    if dx < -1 or dx > 1:
-        # Block recursion
-        return False
-    if dy < -1 or dy > 1:
-        # Block recursion
-        return False
-    for j in range(1,5): # We already know j=0 is water
-        mx=mx2+(dx*j)
-        my=my2+(dy*j)
-        if is_bad_location(mx,my):
-            return False
-        #print("mx my",mx,my)
-        n=gbstate.mainmap[mx][my]
-        btype=n.phonemap2
-        #print("n is",btype)
-        betype=node_equivalent_type(n)
-        #print("n is",betype)
-        if betype != MapTypeWater:
-            #print("maybe can pole")
-            if not is_grass(betype):
-                #print("end not grass")
-                return False
-            if aetype != betype:
-                #print("mismatched grass")
-                return False
-            # Recurse to all the other checks. Just because it's not water
-            # doesn't mean it can pole there if there is a different
-            # type of obstruction. It could also be reached easier from another
-            # direction.
-            global pole_cost
-            can=planning_pass_pair(mx1,my1,mx,my,pole_cost)
-            if can:
-                #print("can")
-                #print("able to poll from",mx1,my1,"to",mx,my)
-                possible1=[mx1,my1,mx,my]
-                possible2=[mx,my,mx1,my1]
-                global possible_pole
-                if possible1 not in possible_pole:
-                    if possible2 not in possible_pole:
-                        possible_pole.append(possible1)
-                    #else:
-                    #    print("already possible2")
-                #else:
-                #    print("already possible1")
-            return can
-    return False
-
-def planning_pass_pair(mx1,my1,mx2,my2,cost):
-    # return True if something changed
-    if is_bad_location(mx2,my2):
-        return False
-    n1=gbstate.mainmap[mx1][my1]
-    n2=gbstate.mainmap[mx2][my2]
-    if is_obstructed(mx1,my1):
-        print("obstructed at source",mx1,my1,n1.phonemap2,n1.diagonal0,n1.diagonal1)
-        #return False
-    # yyy
-    gbstate.inventory_has_pole=True
-    if gbstate.inventory_has_pole:
-        if n2.phonemap2 == MapTypeWater:
-            # It might be able to pole over what otherwise would be an obstruction.
-            if planning_pass_check_pole(mx1,my1,mx2,my2):
-                return True
-    if is_obstructed(mx2,my2):
-        #print("ob",mx2,my2)
-        return False
-    # yyy the ladder code is not implemented
-    gbstate.inventory_has_ladder=False
-    if not gbstate.inventory_has_ladder:
-        # Can't change levels without a ladder.
-        # Everything is at level 0 unless it is grass1 or grass2.
-        eatype=node_equivalent_type(n1)
-        ebtype=node_equivalent_type(n2)
-        if eatype == MapTypeGrass1:
-            # Start is level 1
-            if ebtype != MapTypeGrass1:
-                # Destination is level 0 or 2.
-                return False
-        elif eatype == MapTypeGrass2:
-            # Start is level 2
-            if ebtype != MapTypeGrass2:
-                # Destination is level 0 or 1.
-                return False
-        else:
-            # Start is level 0
-            if ebtype == MapTypeGrass1 or ebtype == MapTypeGrass2:
-                # Destination is level 1 or 2.
-                return False
-
-    # Add a new route.
-    if n1.planning_distance == 0:
-        if n2.planning_distance != 0:
-            n1.planning_distance=n2.planning_distance+cost
-            return True
-        return False
-    if n2.planning_distance == 0:
-        if n1.planning_distance != 0:
-            n2.planning_distance=n1.planning_distance+cost
-            return True
-        return False
-
-    # Reduce the planning distance if this is a lower cost route.
-    if n2.planning_distance > (n1.planning_distance+cost):
-        n2.planning_distance=n1.planning_distance+cost
-        return True
-    if n1.planning_distance > (n2.planning_distance+cost):
-        n1.planning_distance=n2.planning_distance+cost
-        return True
-    return False
-
-def planning_pass():
-    # return True if something changed
-    changed=False
-    for mx in range(gbdata.map_width):
-        for my in range(gbdata.map_height):
-            n=gbstate.mainmap[mx][my]
-            if n.planning_distance != 0:
-                #print("planning",mx,my,n.planning_distance)
-                global step_cost
-                if planning_pass_pair(mx,my,mx,my-1,step_cost):
-                    changed=True
-                if planning_pass_pair(mx,my,mx-1,my,step_cost):
-                    changed=True
-                if planning_pass_pair(mx,my,mx+1,my,step_cost):
-                    changed=True
-                if planning_pass_pair(mx,my,mx,my+1,step_cost):
-                    changed=True
-    return changed
-
-def planning_build_distance_grid(from_mx,from_my):
-    print("planning_build_distance_grid",from_mx,from_my)
-    global waypoints
-    waypoints=[]
-    global possible_pole
-    possible_pole=[]
-    global waypoint_pole
-    waypoint_pole=[]
-    planning_clear()
-    mx=int(round(from_mx))
-    my=int(round(from_my))
-    n=gbstate.mainmap[mx][my]
-    if n.phonemap2 == MapTypeWater:
-        print("standing on water")
-        # That's awkword. We're standing on water.
-        #n.phonemap2=MapTypeUnknown
-        n.phonemap2=MapTypeGrass0
-        n.obstruction_status=ObStandingOnWater
-    n.planning_distance=1
-    print("has pole",gbstate.inventory_has_pole)
-    while planning_pass():
-        pass
-    return
-
-def planning_build_waypoints_from_to(from_mx,from_my,to_mx,to_my):
-    print("planning_build_waypoints_from_to",from_mx,from_my,to_mx,to_my)
-    global waypoints
-    waypoints=[]
-    global waypoint_pole
-    waypoint_pole=[]
-
-    fmx=int(round(from_mx))
-    fmy=int(round(from_my))
-    tmx=int(round(to_mx))
-    tmy=int(round(to_my))
-
-    print("fmx fmy",fmx,fmy)
-    print("tmx tmy",tmx,tmy)
-
-    pd=gbstate.mainmap[fmx][fmy].planning_distance
-    if pd != 1:
-        print("bad planning_distance at from",pd)
-        return
-    print("good planning_distance at from",pd)
-
-    # plan back from the to position to the from position
-    walk_mx=tmx
-    walk_my=tmy
-
-    while walk_mx != fmx or walk_my != fmy:
-        waypoints.append([walk_mx,walk_my])
-        print("planning waypoints",waypoints)
-        (nmx,nmy)=planning_next_waypoint(walk_mx,walk_my)
-        if nmx < 0:
-            print("error")
-            break
-        walk_mx=nmx
-        walk_my=nmy
-    return
-
-    # Try moving with a step or a pole.
-def planning_next_waypoint(wmx,wmy):
-    print("planning_next_waypoint",wmx,wmy)
-    # try down/south
-    (nmx,nmy)=planning_try_going(wmx,wmy,0,1)
-    if nmx >=0:
-        gbstate.mainmap[wmx][wmy].move_type=MoveStep
-        return (nmx,nmy)
-    # try up/north
-    (nmx,nmy)=planning_try_going(wmx,wmy,0,-1)
-    if nmx >=0:
-        gbstate.mainmap[wmx][wmy].move_type=MoveStep
-        return (nmx,nmy)
-    # try right/east
-    (nmx,nmy)=planning_try_going(wmx,wmy,1,0)
-    if nmx >=0:
-        gbstate.mainmap[wmx][wmy].move_type=MoveStep
-        return (nmx,nmy)
-    # try left/west
-    (nmx,nmy)=planning_try_going(wmx,wmy,-1,0)
-    if nmx >=0:
-        gbstate.mainmap[wmx][wmy].move_type=MoveStep
-        return (nmx,nmy)
-
-    if gbstate.inventory_has_pole:
-        # try down/south
-        (nmx,nmy)=planning_try_going_pole(wmx,wmy,0,1)
-        if nmx >=0:
-            gbstate.mainmap[wmx][wmy].move_type=MovePole
-            return (nmx,nmy)
-        # try up/north
-        (nmx,nmy)=planning_try_going_pole(wmx,wmy,0,-1)
-        if nmx >=0:
-            gbstate.mainmap[wmx][wmy].move_type=MovePole
-            return (nmx,nmy)
-        # try right/east
-        (nmx,nmy)=planning_try_going_pole(wmx,wmy,1,0)
-        if nmx >=0:
-            gbstate.mainmap[wmx][wmy].move_type=MovePole
-            return (nmx,nmy)
-        # try left/west
-        (nmx,nmy)=planning_try_going_pole(wmx,wmy,-1,0)
-        if nmx >=0:
-            gbstate.mainmap[wmx][wmy].move_type=MovePole
-            return (nmx,nmy)
-
-    return (-1,-1)
-
-    # Try moving with a step.
-def planning_try_going(wmx,wmy,dx,dy):
-    #print("planning_try_going",wmx,wmy,dx,dy)
-    v1=gbstate.mainmap[wmx][wmy].planning_distance
-    #print("v1",v1)
-    mx=wmx
-    my=wmy
-    rmx=-1
-    rmy=-1
-    while True:
-        mx+=dx
-        my+=dy
-        v1-=1
-        #print("v1",v1,mx,my)
-        v2=gbstate.mainmap[mx][my].planning_distance
-        #print("v2",v2,mx,my)
-        if v2 != v1:
-            break
-        rmx=mx
-        rmy=my
-        if v1 == 1: # at start position
-            print("at start")
-            break
-    #print("result",rmx,rmy)
-    return (rmx,rmy)
 
     # Return equvalent types for things at the same level.
 def node_equivalent_type(n):
@@ -493,182 +231,11 @@ def node_equivalent_type(n):
             return atype
     return atype
 
-    # Try moving with a pole.
-def planning_try_going_pole(wmx,wmy,dx,dy):
-    print("planning_try_going_pole",wmx,wmy,dx,dy)
-    v1=gbstate.mainmap[wmx][wmy].planning_distance
-    print("v1",v1)
-    mx=wmx
-    my=wmy
-    rmx=-1
-    rmy=-1
-
-    na=gbstate.mainmap[wmx][wmy]
-    atype=na.phonemap2
-
-    if MapTypeUnknown == atype:
-        return (rmx,rmy) # nope
-    if MapTypeWater == atype:
-        return (rmx,rmy) # nope
-    if MapTypeDock == atype:
-        return (rmx,rmy) # nope
-    if MapTypeJunk == atype:
-        return (rmx,rmy) # nope
-    if MapTypeDiagonalNW == atype:
-        return (rmx,rmy) # nope
-    if MapTypeDiagonalSW == atype:
-        return (rmx,rmy) # nope
-
-    # make sure the first step is water
-    mx+=dx
-    my+=dy
-    if gbstate.mainmap[mx][my].phonemap2 != MapTypeWater:
-        print("first step not water")
-        return (rmx,rmy)
-
-    # find the other side
-    for j in range(5):
-        mx+=dx
-        my+=dy
-        if gbstate.mainmap[mx][my].phonemap2 != MapTypeWater:
-            break
-
-    # see if the water was too wide
-    if gbstate.mainmap[mx][my].phonemap2 == MapTypeWater:
-        print("water too wide")
-        return (rmx,rmy)
-
-    nb=gbstate.mainmap[mx][my]
-    btype=nb.phonemap2
-
-    # make sure the source and destination type match
-    if atype != btype:
-        print("src dst type mismatch")
-        # Now try pole equivalent types comparison.
-        eatype=node_equivalent_type(na)
-        ebtype=node_equivalent_type(nb)
-        if eatype != ebtype:
-            print("src dst equivalent type mismatch")
-            return (rmx,rmy)
-
-    # now make sure the destination distance is one cost less than the source
-    global pole_cost
-    v1-=pole_cost
-    v2=gbstate.mainmap[mx][my].planning_distance
-    if v1 != v2:
-        print("distance mismatch")
-        return (rmx,rmy)
-
-    # ok, we can pole across
-    rmx=mx
-    rmy=my
-    print("result",rmx,rmy)
-    print("add poll to waypoints from",wmx,wmy,"to",rmx,rmy)
-    waypole=[rmx,rmy,wmx,wmy]
-    global waypoint_pole
-    waypoint_pole.append(waypole)
-    return (rmx,rmy)
-
 def gather_phonemap_squares():
     print("gather_phonemap_squares")
 
-    ## Clear out the old data.
-    #gbstate.x_hist=[0 for x in range(gbdata.phonemap_swidth)]
-    #gbstate.y_hist=[0 for y in range(gbdata.phonemap_sheight)]
-
     pixel_start_x=gbdata.phonemap_left
     pixel_start_y=gbdata.phonemap_top
-
-    ## Gather the y histogram first.
-    #for data_x in range(gbdata.phonemap_swidth):
-    #    pixel_x=pixel_start_x+data_x
-    #    pr=-1
-    #    pg=-1
-    #    pb=-1
-    #    for data_y in range(gbdata.phonemap_sheight):
-    #        pixel_y=pixel_start_y+data_y
-    #        (b,g,r)=gbscreen.get_pixel(pixel_x,pixel_y)
-    #        r=int(r)
-    #        g=int(b)
-    #        b=int(b)
-    #        if pr >= 0:
-    #            dr=abs(r-pr)
-    #            dg=abs(g-pg)
-    #            db=abs(b-pb)
-    #            gbstate.y_hist[data_y] += (dr+dg+db)
-    #        pr=r
-    #        pg=g
-    #        pb=b
-
-    #ymax=1
-    #for data_y in range(gbdata.phonemap_sheight):
-    #    if ymax < gbstate.y_hist[data_y]:
-    #        ymax=gbstate.y_hist[data_y]
-
-    #for data_y in range(gbdata.phonemap_sheight):
-    #    gbstate.y_hist[data_y] /= ymax
-
-    ## Gather the x histogram
-    #for data_y in range(gbdata.phonemap_sheight):
-    #    pixel_y=pixel_start_y+data_y
-    #    pr=-1
-    #    pg=-1
-    #    pb=-1
-    #    for data_x in range(gbdata.phonemap_swidth):
-    #        pixel_x=pixel_start_x+data_x
-    #        (b,g,r)=gbscreen.get_pixel(pixel_x,pixel_y)
-    #        r=int(r)
-    #        g=int(b)
-    #        b=int(b)
-    #        if pr >= 0:
-    #            dr=abs(r-pr)
-    #            dg=abs(g-pg)
-    #            db=abs(b-pb)
-    #            gbstate.x_hist[data_x] += (dr+dg+db)
-    #        pr=r
-    #        pg=g
-    #        pb=b
-
-    #xmax=1
-    #for data_x in range(gbdata.phonemap_swidth):
-    #    if xmax < gbstate.x_hist[data_x]:
-    #        xmax=gbstate.x_hist[data_x]
-
-    #for data_x in range(gbdata.phonemap_swidth):
-    #    gbstate.x_hist[data_x] /= xmax
-
-    ## Use the estimates of the dashed lines to find
-    ## the measured dashed lines.
-
-    #gbstate.phonemap_measured_dashes_L2R=[]
-    #for l2r in gbdata.phonemap_dashes_L2R:
-    #    iestimate=l2r-pixel_start_x
-    #    imin=find_minimum_index(gbstate.x_hist,iestimate,1)
-    #    print(iestimate,imin)
-    #    m=pixel_start_x+imin
-    #    print("m",m)
-    #    gbstate.phonemap_measured_dashes_L2R.append(m)
-
-    #for j in range(len(gbdata.phonemap_dashes_L2R)-1):
-    #    v1=gbdata.phonemap_dashes_L2R[j]
-    #    v2=gbdata.phonemap_dashes_L2R[j+1]
-    #    dx=v2-v1
-    #    print("dx",dx)
-
-    #gbstate.phonemap_measured_dashes_T2B=[]
-    #for t2b in gbdata.phonemap_dashes_T2B:
-    #    iestimate=t2b-pixel_start_y
-    #    imin=find_minimum_index(gbstate.y_hist,iestimate,1)
-    #    print(iestimate,imin)
-    #    m=pixel_start_y+imin
-    #    print("m",m)
-    #    gbstate.phonemap_measured_dashes_T2B.append(m)
-
-    #for j in range(len(gbdata.phonemap_dashes_T2B)-1):
-    #    v1=gbdata.phonemap_dashes_T2B[j]
-    #    v2=gbdata.phonemap_dashes_T2B[j+1]
-    #    dy=v2-v1
-    #    print("dy",dy)
 
     # Gather map statistics.
     gbstate.map2stats=[]
@@ -719,9 +286,18 @@ def gather_phonemap2():
     tnow=time.monotonic()
     if gbstate.mainmap_latest_update != 0:
         telapsed=tnow-gbstate.mainmap_latest_update
-        if telapsed < gbdata.phonemap_update_rate:
-            return
+        if gbstate.mainmap_update_count <= gbdata.mainmap_update_fast_limit:
+            if telapsed < gbdata.mainmap_update_fast_rate:
+                return
+        else:
+            if telapsed < gbdata.mainmap_update_slow_rate:
+                return
     gbstate.mainmap_latest_update=tnow
+    gbstate.mainmap_update_count+=1
+
+    gbstate.dijkstra_walk_edges=[]
+    gbstate.dijkstra_ladder_edges=[]
+    gbstate.dijkstra_pole_edges=[]
 
     gather_phonemap_squares()
 
@@ -1454,3 +1030,9 @@ def is_player_house_color(pixel_x,pixel_y):
     if gbscreen.color_match_array_list(pixel_x,pixel_y,gbdata.player_house_colors,2):
         return True
     return False
+
+def dijkstra_path_plan(fmx,fmy,tmx,tmy):
+    if gbstate.dijkstra_walk_edges is None or len(gbstate.dijkstra_walk_edges) < 1:
+        gbdijkstra.build_graph()
+    gbdijkstra.path_plan(fmx,fmy,tmx,tmy)
+    return
