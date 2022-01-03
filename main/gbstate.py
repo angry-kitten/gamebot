@@ -37,12 +37,17 @@ mainmap=None
 mainmap_latest_update=0
 mainmap_update_count=0
 unreachable=False
+
 # (node1,type)
 dijkstra_waypoints=[]
 # (node1,node2,type)
 dijkstra_walk_edges=[]
 dijkstra_ladder_edges=[]
 dijkstra_pole_edges=[]
+dijkstra_new_walk_edges=[]
+dijkstra_new_ladder_edges=[]
+dijkstra_new_pole_edges=[]
+
 map2stats=[]
 map2maybediagonals=[]
 map2diagonals=[]
@@ -149,10 +154,8 @@ inventory=None
 inventory_name=None
 
 inventory_has_net=False
-#inventory_has_pole=False
-inventory_has_pole=True
-#inventory_has_ladder=False
-inventory_has_ladder=True
+inventory_has_pole=False
+inventory_has_ladder=False
 inventory_has_shovel=False
 inventory_has_wetsuit=False
 inventory_has_fishingpole=False
@@ -217,3 +220,9 @@ ocr_frame=None
 ocr_reader=None
 
 hand_slot=0
+
+gathermap_worker_thread=None
+gathermap_completed=False
+
+buildgraph_worker_thread=None
+buildgraph_completed=False

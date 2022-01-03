@@ -10,6 +10,8 @@ import gbstate
 import gbscreen
 import gbdisplay
 import gbdijkstra
+import threadmanager
+import gbdijkstra
 
 icons=[]
 
@@ -74,6 +76,7 @@ class MapSquare:
         self.dijkstra=[]
         self.dijkstra_distance=-1
         self.dijkstra_prev=-1
+        self.dijkstra_new=[]
         return
 
 def init_map():
@@ -299,13 +302,13 @@ def gather_phonemap2():
     gbstate.mainmap_latest_update=tnow
     gbstate.mainmap_update_count+=1
 
-    gbdijkstra.clear_memory()
-
     gather_phonemap_squares()
 
     locate_buildings()
 
     locate_player_house()
+
+    gbdijkstra.trigger_buildgraph()
 
     return
 
@@ -1033,8 +1036,17 @@ def is_player_house_color(pixel_x,pixel_y):
         return True
     return False
 
-def dijkstra_path_plan(fmx,fmy,tmx,tmy):
-    if gbstate.dijkstra_walk_edges is None or len(gbstate.dijkstra_walk_edges) < 1:
-        gbdijkstra.build_graph()
-    gbdijkstra.path_plan(fmx,fmy,tmx,tmy)
+def init_gathermap():
+    gbstate.gathermap_worker_thread=threadmanager.ThreadManager(gathermap_worker,"gathermap")
+    return
+
+def gathermap_worker():
+    print("before gathermap_worker")
+
+    gather_phonemap2()
+
+    with gbstate.gathermap_worker_thread.data_lock:
+        gbstate.gathermap_completed=True
+
+    print("after gathermap_worker")
     return

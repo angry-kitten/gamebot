@@ -9,7 +9,7 @@ import threading
 class ThreadManager():
     """ThreadManager Object"""
 
-    def __init__(self,runme):
+    def __init__(self,runme,name):
         # Run this to process a work item.
         self.runme=runme
         # Data that is passed in or out in globals will be protected
@@ -19,6 +19,7 @@ class ThreadManager():
         # a work item.
         self.worker_condition=threading.Condition()
         self.worker_thread=threading.Thread(target=self.worker_thread_wrapper,daemon=True)
+        self.worker_thread.name=name
         self.worker_thread.start()
         return
 

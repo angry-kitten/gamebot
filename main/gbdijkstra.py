@@ -11,6 +11,8 @@ import gbscreen
 import gbdisplay
 import gbdijkstra
 import gbmap
+import gbmem
+import threadmanager
 
 def xy_to_index(mx,my):
     i=mx+(my*gbdata.map_width)
@@ -52,6 +54,59 @@ def clear_memory():
     gc.collect()
     return
 
+def clear_new_memory():
+    # Clear out the variables needed to build a new graph. These
+    # will be swapped into the main variables once the build
+    # is complete.
+
+    # The clear() empties the list in place and the =[] dumps
+    # the old empty list for a new empty one.
+    gbstate.dijkstra_new_walk_edges.clear()
+    gbstate.dijkstra_new_walk_edges=[]
+    gbstate.dijkstra_new_ladder_edges.clear()
+    gbstate.dijkstra_new_ladder_edges=[]
+    gbstate.dijkstra_new_pole_edges.clear()
+    gbstate.dijkstra_new_pole_edges=[]
+
+    if gbstate.mainmap is not None:
+        for mx in range(gbdata.map_width):
+            for my in range(gbdata.map_height):
+                node=gbstate.mainmap[mx][my]
+                node.dijkstra_new.clear()
+                node.dijkstra_new=[]
+
+    # Poke the garbage collector.
+    gc.collect()
+    return
+
+def swap_in_new_memory():
+    # Swap the newly built graph into the main variables.
+
+    # The clear() empties the list in place.
+    gbstate.dijkstra_walk_edges.clear()
+    gbstate.dijkstra_walk_edges=gbstate.dijkstra_new_walk_edges
+    gbstate.dijkstra_new_walk_edges=[]
+
+    gbstate.dijkstra_ladder_edges.clear()
+    gbstate.dijkstra_ladder_edges=gbstate.dijkstra_new_ladder_edges
+    gbstate.dijkstra_new_ladder_edges=[]
+
+    gbstate.dijkstra_pole_edges.clear()
+    gbstate.dijkstra_pole_edges=gbstate.dijkstra_new_pole_edges
+    gbstate.dijkstra_new_pole_edges=[]
+
+    if gbstate.mainmap is not None:
+        for mx in range(gbdata.map_width):
+            for my in range(gbdata.map_height):
+                node=gbstate.mainmap[mx][my]
+                node.dijkstra.clear()
+                node.dijkstra=node.dijkstra_new
+                node.dijkstra_new=[]
+
+    # Poke the garbage collector.
+    gc.collect()
+    return
+
 def clear_waypoints():
     # The clear() empties the list in place and the =[] dumps
     # the old empty list for a new empty one.
@@ -61,33 +116,53 @@ def clear_waypoints():
 
 def build_graph():
     print("build_graph")
+    print("here b 1",flush=True)
 
-    clear_memory()
+    clear_new_memory()
 
+    print("here b 2",flush=True)
     # Build the ladder graph parts first to make for easy
     # de-duplication.
     build_ladder_edges()
 
+    print("here b 3",flush=True)
     # Build the pole graph parts first to make for easy
     # de-duplication.
     build_pole_edges()
+    print("here b 4",flush=True)
 
     build_walk_edges()
 
-    # Build the walk graph parts as the start of the main graph.
+    print("here b 5",flush=True)
     build_main_graph()
 
+    print("here b 6",flush=True)
     # Add the ladder and pole parts to the main graph.
+
+    swap_in_new_memory()
+
+    print("here b 7",flush=True)
+
     return
 
 def path_plan(fmx,fmy,tmx,tmy):
     print("path_plan")
+    print("here 1",flush=True)
     fmx=int(round(fmx))
     fmy=int(round(fmy))
     tmx=int(round(tmx))
     tmy=int(round(tmy))
 
+    # Make sure the graph is there first.
+    while True:
+        with gbstate.buildgraph_worker_thread.data_lock:
+            if gbstate.dijkstra_walk_edges is not None:
+                if len(gbstate.dijkstra_walk_edges) > 0:
+                    break
+        time.sleep(1)
+
     clear_waypoints()
+    print("here 2",flush=True)
 
     node=gbstate.mainmap[fmx][fmy]
     if len(node.dijkstra) < 1:
@@ -101,30 +176,47 @@ def path_plan(fmx,fmy,tmx,tmy):
         fmy=new_fmy
         node=gbstate.mainmap[fmx][fmy]
 
+    print("here 3",flush=True)
+    # Clear only the dijkstra_distance and dijkstra_prev. The other info is
+    # reused with each path planning call.
     for mx in range(gbdata.map_width):
         for my in range(gbdata.map_height):
             node=gbstate.mainmap[mx][my]
             node.dijkstra_distance=-1
+            node.dijkstra_prev=-1
 
+    print("here 4",flush=True)
     node.dijkstra_distance=0
+    node.dijkstra_prev=-1
     queue=[]
     index=xy_to_index(fmx,fmy)
     queue.append(index)
     # Nominally all the unvisited nodes are in queue. But
     # queue really only contains tentative nodes.
 
+    print("here 5",flush=True)
+    edge_count=0
+    queue_count=0
     while len(queue) > 0:
+        queue_count+=1
+        print("queue_count",queue_count,flush=True)
+        gbmem.memory_report()
         i1=node_with_min_distance(queue)
         queue.remove(i1)
         (mx,my)=index_to_xy(i1)
         if mx == tmx and my == tmy:
-            print("found target")
+            print("found target",flush=True)
             build_waypoint_list(i1)
+            print("after build",flush=True)
             reduce_waypoint_list()
+            print("after reduce",flush=True)
             return
         n1=node_from_index(i1)
 
         for edge in n1.dijkstra:
+            edge_count+=1
+            print("edge_count",edge_count,flush=True)
+            gbmem.memory_report()
             t=edge[2]
             if gbdata.dijkstra_pole_type == t:
                 if not gbstate.inventory_has_pole:
@@ -132,21 +224,22 @@ def path_plan(fmx,fmy,tmx,tmy):
             if gbdata.dijkstra_ladder_type == t:
                 if not gbstate.inventory_has_ladder:
                     continue
+            d=type_to_distance(t)
+            alt=n1.dijkstra_distance+d
             i2=other_index(i1,edge)
             n2=node_from_index(i2)
-            if n2.dijkstra_distance == -1 or i2 in queue:
-                t=edge[2]
-                d=type_to_distance(t)
-                alt=n1.dijkstra_distance+d
-                if n2.dijkstra_distance == -1:
-                    n2.dijkstra_distance=alt
-                    n2.dijkstra_prev=i1
-                    queue.append(i2)
-                elif alt < n2.dijkstra_distance:
+            if n2.objstruction_status == gbmap.Obstructed:
+                continue
+            if n2.dijkstra_distance == -1:
+                n2.dijkstra_distance=alt
+                n2.dijkstra_prev=i1
+                queue.append(i2)
+            elif i2 in queue:
+                if alt < n2.dijkstra_distance:
                     n2.dijkstra_distance=alt
                     n2.dijkstra_prev=i1
 
-    print("unreachable")
+    print("unreachable",flush=True)
     return
 
 def node_with_min_distance(queue):
@@ -165,18 +258,34 @@ def node_with_min_distance(queue):
     return best_node_index
 
 def build_waypoint_list(i1):
+    print("i1",i1)
     clear_waypoints()
     while True:
+        print("add waypoint",flush=True)
+        gbmem.memory_report()
         n1=node_from_index(i1)
+        print("i1",i1)
         i2=n1.dijkstra_prev
+        print("i2",i2)
+        if i2 < 0: # -1
+            print("single waypoint case")
+            # We don't know what movement type because there
+            # is no edge. It should be walk.
+            wp=(i1,gbdata.dijkstra_walk_type)
+            gbstate.dijkstra_waypoints.append(wp)
+            # The distance should be 0.
+            print("distance",n1.dijkstra_distance)
+            break
         edge=find_edge(i1,i2,n1.dijkstra)
         t=edge[2]
         wp=(i1,t)
         gbstate.dijkstra_waypoints.append(wp)
+        print("distance",n1.dijkstra_distance)
         if n1.dijkstra_distance == 0:
             break;
         i1=i2
-    print("dijkstra",gbstate.dijkstra_waypoints)
+    print("dijkstra",gbstate.dijkstra_waypoints,flush=True)
+    gbmem.memory_report()
     return
 
 def reduce_waypoint_list():
@@ -287,7 +396,8 @@ def alternate_start(mx1,my1):
 
 def build_ladder_edges():
     print("build_ladder_edges")
-    gbstate.dijkstra_ladder_edges=[]
+    gbstate.dijkstra_new_ladder_edges.clear()
+    gbstate.dijkstra_new_ladder_edges=[]
 
     for mx in range(gbdata.map_width):
         for my in range(gbdata.map_height):
@@ -390,15 +500,16 @@ def add_ladder_edge(n1,n2):
         add_ladder_edge(n2,n1)
         return
     edge=(n1,n2,gbdata.dijkstra_ladder_type)
-    if edge in gbstate.dijkstra_ladder_edges:
+    if edge in gbstate.dijkstra_new_ladder_edges:
         return
-    gbstate.dijkstra_ladder_edges.append(edge)
-    #print("ladder",gbstate.dijkstra_ladder_edges)
+    gbstate.dijkstra_new_ladder_edges.append(edge)
+    #print("ladder",gbstate.dijkstra_new_ladder_edges)
     return
 
 def build_pole_edges():
     print("build_pole_edges")
-    gbstate.dijkstra_pole_edges=[]
+    gbstate.dijkstra_new_pole_edges.clear()
+    gbstate.dijkstra_new_pole_edges=[]
 
     for mx in range(gbdata.map_width):
         for my in range(gbdata.map_height):
@@ -502,15 +613,16 @@ def add_pole_edge(n1,n2):
         add_pole_edge(n2,n1)
         return
     edge=(n1,n2,gbdata.dijkstra_pole_type)
-    if edge in gbstate.dijkstra_pole_edges:
+    if edge in gbstate.dijkstra_new_pole_edges:
         return
-    gbstate.dijkstra_pole_edges.append(edge)
-    #print("pole",gbstate.dijkstra_pole_edges)
+    gbstate.dijkstra_new_pole_edges.append(edge)
+    #print("pole",gbstate.dijkstra_new_pole_edges)
     return
 
 def build_walk_edges():
     print("build_walk_edges")
-    gbstate.dijkstra_walk_edges=[]
+    gbstate.dijkstra_new_walk_edges.clear()
+    gbstate.dijkstra_new_walk_edges=[]
 
     for mx in range(gbdata.map_width):
         for my in range(gbdata.map_height):
@@ -545,10 +657,10 @@ def add_walk_edge(n1,n2):
         add_walk_edge(n2,n1)
         return
     edge=(n1,n2,gbdata.dijkstra_walk_type)
-    if edge in gbstate.dijkstra_walk_edges:
+    if edge in gbstate.dijkstra_new_walk_edges:
         return
-    gbstate.dijkstra_walk_edges.append(edge)
-    #print("walk",gbstate.dijkstra_walk_edges)
+    gbstate.dijkstra_new_walk_edges.append(edge)
+    #print("walk",gbstate.dijkstra_new_walk_edges)
     return
 
 def build_main_graph():
@@ -559,12 +671,18 @@ def build_main_graph():
     return
 
 def identify_edges_for_node(mx,my):
+    print("here c 1",flush=True)
     node=gbstate.mainmap[mx][my]
     index=xy_to_index(mx,my)
-    node.dijkstra=[]
-    identify_edges_in_list(node,index,gbstate.dijkstra_walk_edges)
-    identify_edges_in_list(node,index,gbstate.dijkstra_pole_edges)
-    identify_edges_in_list(node,index,gbstate.dijkstra_ladder_edges)
+    node.dijkstra_new.clear()
+    node.dijkstra_new=[]
+    print("here c 2",flush=True)
+    identify_edges_in_list(node,index,gbstate.dijkstra_new_walk_edges)
+    print("here c 3",flush=True)
+    identify_edges_in_list(node,index,gbstate.dijkstra_new_pole_edges)
+    print("here c 4",flush=True)
+    identify_edges_in_list(node,index,gbstate.dijkstra_new_ladder_edges)
+    print("here c 5",flush=True)
     return
 
 def identify_edges_in_list(node,index,list):
@@ -573,7 +691,7 @@ def identify_edges_in_list(node,index,list):
         if n1 != index:
             if n2 != index:
                 continue
-        node.dijkstra.append(edge)
+        node.dijkstra_new.append(edge)
     return
 
 def find_edge(i1,i2,edgelist):
@@ -584,3 +702,24 @@ def find_edge(i1,i2,edgelist):
         if i1 == edge[1] and i2 == edge[0]:
             return edge
     return None
+
+def init_buildgraph():
+    gbstate.buildgraph_worker_thread=threadmanager.ThreadManager(buildgraph_worker,"buildgraph")
+    return
+
+def buildgraph_worker():
+    print("before buildgraph_worker")
+
+    build_graph()
+
+    with gbstate.buildgraph_worker_thread.data_lock:
+        gbstate.buildgraph_completed=True
+
+    print("after buildgraph_worker")
+    return
+
+def trigger_buildgraph():
+    with gbstate.buildgraph_worker_thread.data_lock:
+        gbstate.buildgraph_completed=False
+    gbstate.buildgraph_worker_thread.RunOnce()
+    return

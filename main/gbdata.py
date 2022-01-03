@@ -54,8 +54,12 @@ minimap_pin_center_to_tip=19
 #minimap_pin_tune_mx=-0.25
 #minimap_pin_tune_my=0.0
 #minimap_pin_tune_mx=0.5+common_tune_mx
-minimap_pin_tune_mx=0.2+common_tune_mx
-minimap_pin_tune_my=-1.0+common_tune_my
+#minimap_pin_tune_mx=0.2+common_tune_mx
+#minimap_pin_tune_mx=0.0+common_tune_mx
+minimap_pin_tune_mx=-0.5+common_tune_mx
+#minimap_pin_tune_my=-1.0+common_tune_my
+#minimap_pin_tune_my=-0.5+common_tune_my
+minimap_pin_tune_my=-1.5+common_tune_my
 
 # phonemap pin info
 phonemap_pin_search_x=6
@@ -70,7 +74,8 @@ phonemap_pin_center_to_tip=23.50
 #phonemap_pin_tune_mx=0.25+common_tune_mx
 #phonemap_pin_tune_mx=0.30+common_tune_mx
 #phonemap_pin_tune_mx=0.35+common_tune_mx
-phonemap_pin_tune_mx=0.40+common_tune_mx
+#phonemap_pin_tune_mx=0.40+common_tune_mx
+phonemap_pin_tune_mx=0.50+common_tune_mx
 phonemap_pin_tune_my=0.25+common_tune_my
 
 phonemap_gray_search_x=6

@@ -6,18 +6,18 @@
 
 import time
 import numpy
-import taskobject
-import gbdata
-import gbstate
 import cv2
+import gbdata, gbstate
+import gbscreen
+import gbdisplay
+import gbmap
+import gbtrack
+import taskobject
 import taskpress
 import tasksay
 import taskdetect
 import taskgotomain
-import gbscreen
-import gbtrack
-import gbdisplay
-import gbmap
+import taskgathermap
 
 class TaskUpdatePhoneMap(taskobject.Task):
     """TaskUpdatePhoneMap Object"""
@@ -83,7 +83,7 @@ class TaskUpdatePhoneMap(taskobject.Task):
                 return
             #print("yes on phone map screen")
             self.position_from_phonemap()
-            gbmap.gather_phonemap2()
+            self.parent.Push(taskgathermap.TaskGatherMap())
             self.step=22
             return
 

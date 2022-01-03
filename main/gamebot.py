@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Copyright 2021 by angry-kitten
+# Copyright 2021-2022 by angry-kitten
 # Gamebot main program.
 #
 
@@ -17,10 +17,13 @@ from object_detection.utils import config_util
 import numpy
 from matplotlib import pyplot
 
+import gbmem
 import gbdata, gbstate, gbdisplay
 
 import threadmanager
 import gbocr
+import gbmap
+import gbdijkstra
 
 import taskobject
 import tasksay
@@ -372,6 +375,7 @@ def main_loop(vid):
         # or in sleep mode that the USB device is not configured. That
         # makes it impossible to wake it from the USB device without
         # USB remote wakeup support.
+        gbmem.memory_report()
 
         if gbstate.frame is None:
             print("g_frame does not exist")
@@ -496,7 +500,10 @@ def setup_run_cleanup():
     odt=threading.Thread(target=object_detection_thread,daemon=True)
     odt.start()
 
+    # Initialized the managed threads.
     gbocr.init_ocr()
+    gbmap.init_gathermap()
+    gbdijkstra.init_buildgraph()
 
     main_loop(vid)
 

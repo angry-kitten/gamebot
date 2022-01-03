@@ -1,5 +1,5 @@
 #
-# Copyright 2021 by angry-kitten
+# Copyright 2021-2022 by angry-kitten
 # Look at the current screen and capture the minimaps and
 # determine player location from the pin.
 #
@@ -24,8 +24,7 @@ class TaskUpdateMini(taskobject.Task):
         super().__init__()
         self.name="TaskUpdateMini"
         print("new",self.name,"object")
-        self.additional_wait=0.1 # 100 milliseconds
-        self.additional_wait_active=False
+        self.first_time_visible=True
 
     def Poll(self):
         """check if any action can be taken"""
@@ -49,23 +48,15 @@ class TaskUpdateMini(taskobject.Task):
 
         if not gbscreen.is_minimap():
             #print("minimap not visible yet")
+            self.parent.Push(taskobject.TaskTimed(1.0))
             return
 
         print("minimap visible")
 
-        if not self.additional_wait_active:
-            # Wait an additional time to allow for the minimap to
-            # slide fully into position.
-            print("activate additional wait")
-            self.additional_wait_active=True
-            self.additioanl_wait_after=time_now+self.additional_wait
-            return
-        else:
-            if time_now <= self.additioanl_wait_after:
-                print("additional wait")
-                return
+        if self.first_time_visible:
+            self.parent.Push(taskobject.TaskTimed(1.0))
+            self.first_time_visible=False
 
-        print("additional wait complete")
         self.position_from_minimap()
         print(self.name,"done")
         self.taskdone=True

@@ -149,10 +149,8 @@ class TaskTakeInventory(taskobject.Task):
         print("inventory_slots_free",gbstate.inventory_slots_free)
 
         gbstate.inventory_has_net=False
-        #gbstate.inventory_has_pole=False
-        gbstate.inventory_has_pole=True
-        #gbstate.inventory_has_ladder=False
-        gbstate.inventory_has_ladder=True
+        gbstate.inventory_has_pole=False
+        gbstate.inventory_has_ladder=False
         gbstate.inventory_has_shovel=False
         gbstate.inventory_has_wetsuit=False
         gbstate.inventory_has_fishingpole=False

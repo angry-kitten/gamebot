@@ -68,7 +68,8 @@ class TaskPathPlanGoTo(taskobject.Task):
         fmy=int(round(gbstate.player_my))
         tmx=int(round(self.target_mx))
         tmy=int(round(self.target_my))
-        gbmap.dijkstra_path_plan(fmx,fmy,tmx,tmy)
+
+        gbdijkstra.path_plan(fmx,fmy,tmx,tmy)
 
         # use Dijkstra
         if len(gbstate.dijkstra_waypoints) < 1:

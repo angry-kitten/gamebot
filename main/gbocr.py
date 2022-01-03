@@ -20,7 +20,7 @@ import taskpress
 
 def init_ocr():
     gbstate.ocr_reader=easyocr.Reader(['en'], gpu=False)
-    gbstate.ocr_worker_thread=threadmanager.ThreadManager(ocr_worker)
+    gbstate.ocr_worker_thread=threadmanager.ThreadManager(ocr_worker,"OCR")
     return
 
 def ocr_worker():
