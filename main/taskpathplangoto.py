@@ -48,7 +48,7 @@ class TaskPathPlanGoTo(taskobject.Task):
         if gbstate.frame is None:
             return
 
-        gbstate.dijkstra_waypoints=[]
+        gbdijkstra.clear_waypoints()
         gbstate.plan_goto_target_mx=-1
         gbstate.plan_goto_target_my=-1
         print(self.name,"done")

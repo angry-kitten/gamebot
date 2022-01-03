@@ -3,7 +3,7 @@
 # Implement the Dijkstra shortest path algorithm for bot path planning.
 #
 
-import time
+import time, gc
 import numpy
 import gbdata
 import gbstate
@@ -26,13 +26,43 @@ def node_from_index(i):
     n1=gbstate.mainmap[mx][my]
     return n1
 
+def clear_memory():
+    # Clear out the previous graph and edges, but not the
+    # waypoint list.
+
+    # The clear() empties the list in place and the =[] dumps
+    # the old empty list for a new empty one.
+    gbstate.dijkstra_walk_edges.clear()
+    gbstate.dijkstra_walk_edges=[]
+    gbstate.dijkstra_ladder_edges.clear()
+    gbstate.dijkstra_ladder_edges=[]
+    gbstate.dijkstra_pole_edges.clear()
+    gbstate.dijkstra_pole_edges=[]
+
+    if gbstate.mainmap is not None:
+        for mx in range(gbdata.map_width):
+            for my in range(gbdata.map_height):
+                node=gbstate.mainmap[mx][my]
+                node.dijkstra.clear()
+                node.dijkstra=[]
+                node.dijkstra_distance=-1
+                node.dijkstra_prev=-1
+
+    # Poke the garbage collector.
+    gc.collect()
+    return
+
+def clear_waypoints():
+    # The clear() empties the list in place and the =[] dumps
+    # the old empty list for a new empty one.
+    gbstate.dijkstra_waypoints.clear()
+    gbstate.dijkstra_waypoints=[]
+    return
+
 def build_graph():
     print("build_graph")
 
-    gbstate.dijkstra_waypoints=[]
-    gbstate.dijkstra_walk_edges=[]
-    gbstate.dijkstra_ladder_edges=[]
-    gbstate.dijkstra_pole_edges=[]
+    clear_memory()
 
     # Build the ladder graph parts first to make for easy
     # de-duplication.
@@ -57,7 +87,7 @@ def path_plan(fmx,fmy,tmx,tmy):
     tmx=int(round(tmx))
     tmy=int(round(tmy))
 
-    gbstate.dijkstra_waypoints=[]
+    clear_waypoints()
 
     node=gbstate.mainmap[fmx][fmy]
     if len(node.dijkstra) < 1:
@@ -135,7 +165,7 @@ def node_with_min_distance(queue):
     return best_node_index
 
 def build_waypoint_list(i1):
-    gbstate.dijkstra_waypoints=[]
+    clear_waypoints()
     while True:
         n1=node_from_index(i1)
         i2=n1.dijkstra_prev

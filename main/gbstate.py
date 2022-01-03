@@ -37,8 +37,9 @@ mainmap=None
 mainmap_latest_update=0
 mainmap_update_count=0
 unreachable=False
-# (node1,node2,type)
+# (node1,type)
 dijkstra_waypoints=[]
+# (node1,node2,type)
 dijkstra_walk_edges=[]
 dijkstra_ladder_edges=[]
 dijkstra_pole_edges=[]

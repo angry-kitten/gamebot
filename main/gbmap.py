@@ -299,9 +299,7 @@ def gather_phonemap2():
     gbstate.mainmap_latest_update=tnow
     gbstate.mainmap_update_count+=1
 
-    gbstate.dijkstra_walk_edges=[]
-    gbstate.dijkstra_ladder_edges=[]
-    gbstate.dijkstra_pole_edges=[]
+    gbdijkstra.clear_memory()
 
     gather_phonemap_squares()
 

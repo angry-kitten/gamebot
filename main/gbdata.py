@@ -53,7 +53,8 @@ minimap_pin_height=26
 minimap_pin_center_to_tip=19
 #minimap_pin_tune_mx=-0.25
 #minimap_pin_tune_my=0.0
-minimap_pin_tune_mx=0.5+common_tune_mx
+#minimap_pin_tune_mx=0.5+common_tune_mx
+minimap_pin_tune_mx=0.2+common_tune_mx
 minimap_pin_tune_my=-1.0+common_tune_my
 
 # phonemap pin info
