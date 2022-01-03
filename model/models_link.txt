@@ -1,0 +1,21 @@
+Download an object detect model from here:
+https://drive.google.com/drive/folders/1mP5QqyTzPnTY2g8P5GbIUQadGiPPjakL?usp=sharing
+
+Place the files in this directory so it looks like this:
+
+$ /bin/ls -l
+total 28
+drwxr-xr-x 2 jph jph 4096 Dec 28 16:10 checkpoint
+-rwxr-xr-x 1 jph jph 4301 Dec 25 16:15 label_map.pbtxt
+-rw-rw-r-- 1 jph jph  311 Jan  3 17:24 models_link.txt
+-rwxr-xr-x 1 jph jph 4499 Dec 28 07:52 pipeline.config
+drwxr-xr-x 4 jph jph 4096 Dec 28 16:10 saved_model
+
+$ du -ks .
+36456   .
+
+(Should also work on non-Linux like Windows)
+
+The models are currently not very good. I have a new machine with a new gpu and should
+be able to train better models in 2022.
+A gpu is not required to use them but it will be slow.
