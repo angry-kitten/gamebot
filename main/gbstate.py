@@ -226,3 +226,8 @@ gathermap_completed=False
 
 buildgraph_worker_thread=None
 buildgraph_completed=False
+
+phonemap_pin_box_sx1=None
+phonemap_pin_box_sy1=None
+phonemap_pin_box_sx2=None
+phonemap_pin_box_sy2=None

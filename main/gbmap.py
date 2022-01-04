@@ -312,12 +312,33 @@ def gather_phonemap2():
 
     return
 
+def ignore_pin(sx,sy):
+    if sx < gbstate.phonemap_pin_box_sx1:
+        return False
+    if sx > gbstate.phonemap_pin_box_sx2:
+        return False
+    if sy < gbstate.phonemap_pin_box_sy1:
+        return False
+    if sy > gbstate.phonemap_pin_box_sy2:
+        return False
+    return True
+
 def process_phonemap_square(mx,my,isx1,isx2,isy1,isy2):
     # Find the average first.
     count=0
     sumr=0
     sumg=0
     sumb=0
+
+    if ignore_pin(isx1,isy1):
+        return
+    if ignore_pin(isx2,isy1):
+        return
+    if ignore_pin(isx1,isy2):
+        return
+    if ignore_pin(isx2,isy2):
+        return
+
     for sx in range(isx1,isx2+1):
         for sy in range(isy1,isy2+1):
             (b,g,r)=gbscreen.get_pixel(sx,sy)
@@ -977,41 +998,66 @@ def compare_icons(icon1,icon2):
 
 def set_building(name,sx,sy):
     # Calculate the map location given the screen location.
-    mx=int(round((sx-gbdata.phonemap_origin_x)/gbdata.phonemap_square_spacing))
-    my=int(round((sy-gbdata.phonemap_origin_y)/gbdata.phonemap_square_spacing))
+    #mx=int(round((sx-gbdata.phonemap_origin_x)/gbdata.phonemap_square_spacing))
+    #my=int(round((sy-gbdata.phonemap_origin_y)/gbdata.phonemap_square_spacing))
+    mx=(sx-gbdata.phonemap_origin_x)/gbdata.phonemap_square_spacing
+    my=(sy-gbdata.phonemap_origin_y)/gbdata.phonemap_square_spacing
+
+    w=4
+    h=4
 
     # binfo is [name,centermx,centermy,doormx,doormy]
     if name == 'campsite':
         binfo=[name,mx,my,mx,my+2]
         gbstate.building_info_campsite=binfo
+        w=4
+        h=4
     elif name == 'museum':
         binfo=[name,mx,my,mx,my+2]
         print("museum",binfo)
         gbstate.building_info_museum=binfo
+        w=7
+        h=4
     elif name == 'cranny':
         binfo=[name,mx,my,mx,my+2]
         gbstate.building_info_cranny=binfo
+        w=7
+        h=4
     elif name == 'services':
         binfo=[name,mx,my,mx,my+2]
         gbstate.building_info_services=binfo
+        # The tent is little. The building is larger.
+        w=4
+        h=2
     elif name == 'tailors':
         binfo=[name,mx,my,mx,my+2]
         gbstate.building_info_tailors=binfo
+        w=5
+        h=4
     elif name == 'airport':
         binfo=[name,mx,my,mx,my+2]
         gbstate.building_info_airport=binfo
+        w=4
+        h=4
     elif name == 'player_house':
         binfo=[name,mx,my,mx,my+2]
         print("player house",binfo)
         gbstate.building_info_player_house=binfo
+        w=5
+        h=4
     else:
         print("unknown building name")
+        w=4
+        h=4
 
-    for dx in range(3):
-        for dy in range(3):
-            mx2=mx+(dx-1)
-            my2=my+(dy-1)
-            n=gbstate.mainmap[mx2][my2]
+    ulmx=int(round(mx-(w/2)))
+    ulmy=int(round(my-(h/2)))
+
+    for mx2 in range(w):
+        for my2 in range(h):
+            mx3=ulmx+mx2
+            my3=ulmy+my2
+            n=gbstate.mainmap[mx3][my3]
             n.phonemap2=MapTypeBuilding
     return
 

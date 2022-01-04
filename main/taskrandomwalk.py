@@ -51,8 +51,8 @@ class TaskRandomWalk(taskobject.Task):
         distance=random.randint(0,5)
         print(heading,distance)
         (dmx,dmy)=gbtrack.calculate_dx_dy(heading,distance)
-        mx=gbstate.position_minimap_x
-        my=gbstate.position_minimap_y
+        mx=gbstate.player_mx
+        my=gbstate.player_my
         mx+=dmx
         my+=dmy
         self.parent.Push(tasktrackgoto.TaskTrackGoTo(mx,my))

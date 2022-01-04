@@ -92,6 +92,9 @@ class TaskPathPlanGoTo(taskobject.Task):
         # floating point map location.
         self.parent.Push(tasksimplegoto.TaskSimpleGoTo(self.target_mx,self.target_my))
 
+        # Allow some settling time to make sure the minimap is up, etc.
+        self.parent.Push(taskobject.TaskTimed(2.0))
+
         # The waypoints are ordered from the destination to the start. This
         # works well because we have to push the task in reverse order anyway.
         # Add 0.5 to the waypoints to go to the center of the map squares.

@@ -410,6 +410,12 @@ class TaskUpdatePhoneMap(taskobject.Task):
         #print("tip_x=",tip_x)
         #print("tip_y=",tip_y)
 
+        # Calculate the box to ignore when gathering the map.
+        gbstate.phonemap_pin_box_sx1=int(round(tip_x-(gbdata.phonemap_pin_width/2)))
+        gbstate.phonemap_pin_box_sy1=int(round(tip_y-gbdata.phonemap_pin_height))
+        gbstate.phonemap_pin_box_sx2=int(round(tip_x+(gbdata.phonemap_pin_width/2)))
+        gbstate.phonemap_pin_box_sy2=int(round(tip_y))
+
         # Calculate the map location from the tip location.
         map_x=(tip_x-gbdata.phonemap_origin_x)/gbdata.phonemap_square_spacing
         map_y=(tip_y-gbdata.phonemap_origin_y)/gbdata.phonemap_square_spacing

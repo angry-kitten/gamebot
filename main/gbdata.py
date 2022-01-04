@@ -56,10 +56,12 @@ minimap_pin_center_to_tip=19
 #minimap_pin_tune_mx=0.5+common_tune_mx
 #minimap_pin_tune_mx=0.2+common_tune_mx
 #minimap_pin_tune_mx=0.0+common_tune_mx
-minimap_pin_tune_mx=-0.5+common_tune_mx
+#minimap_pin_tune_mx=-0.5+common_tune_mx
+minimap_pin_tune_mx=0.5+common_tune_mx # best so far 1
 #minimap_pin_tune_my=-1.0+common_tune_my
 #minimap_pin_tune_my=-0.5+common_tune_my
-minimap_pin_tune_my=-1.5+common_tune_my
+#minimap_pin_tune_my=-1.5+common_tune_my
+minimap_pin_tune_my=-0.5+common_tune_my # best so far 1
 
 # phonemap pin info
 phonemap_pin_search_x=6
@@ -75,8 +77,11 @@ phonemap_pin_center_to_tip=23.50
 #phonemap_pin_tune_mx=0.30+common_tune_mx
 #phonemap_pin_tune_mx=0.35+common_tune_mx
 #phonemap_pin_tune_mx=0.40+common_tune_mx
-phonemap_pin_tune_mx=0.50+common_tune_mx
-phonemap_pin_tune_my=0.25+common_tune_my
+#phonemap_pin_tune_mx=0.50+common_tune_mx
+#phonemap_pin_tune_mx=0.0+common_tune_mx
+#phonemap_pin_tune_mx=1.0+common_tune_mx
+phonemap_pin_tune_mx=0.0+common_tune_mx # best so far 1
+phonemap_pin_tune_my=0.25+common_tune_my # best so far 1
 
 phonemap_gray_search_x=6
 phonemap_gray_search_y=6
@@ -1411,6 +1416,11 @@ ocr_to_inventory={
     'Tricera tail':'InvBones',
     'Tricera torso':'InvBones',
     'Trilobite':'InvBones',
+
+    'Red pansies':'InvRedPansy',
+    'White pansies':'InvWhitePansy',
+    'Yellow pansies':'InvYellowPansy',
+    'Blue pansies':'InvBluePansy',
 }
 
 item_keep=[
@@ -1454,6 +1464,10 @@ item_store=[
 item_sell=[
     "InvBones",
     "InvWasp",
+    'InvRedPansy',
+    'InvWhitePansy',
+    'InvYellowPansy',
+    'InvBluePansy',
 ]
 
 item_museum_assess=[

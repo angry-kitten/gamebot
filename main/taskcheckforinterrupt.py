@@ -113,12 +113,15 @@ class TaskCheckForInterrupt(taskobject.Task):
                             self.parent.Push(taskpathplangoto.TaskPathPlanGoTo(self.target_mx,self.target_my))
                     if not self.added_sell:
                         self.added_sell=True
+                        self.parent.Push(tasktakeinventory.TaskTakeInventory())
                         self.parent.Push(tasksell.TaskSell())
                     if not self.added_store:
                         self.added_store=True
+                        self.parent.Push(tasktakeinventory.TaskTakeInventory())
                         self.parent.Push(taskstore.TaskStore())
                     if not self.added_museum:
                         self.added_museum=True
+                        self.parent.Push(tasktakeinventory.TaskTakeInventory())
                         self.parent.Push(taskmuseum.TaskMuseum())
                     return
                 return
@@ -135,12 +138,15 @@ class TaskCheckForInterrupt(taskobject.Task):
                             self.parent.Push(taskpathplangoto.TaskPathPlanGoTo(self.target_mx,self.target_my))
                     if not self.added_sell:
                         self.added_sell=True
+                        self.parent.Push(tasktakeinventory.TaskTakeInventory())
                         self.parent.Push(tasksell.TaskSell())
                     if not self.added_store:
                         self.added_store=True
+                        self.parent.Push(tasktakeinventory.TaskTakeInventory())
                         self.parent.Push(taskstore.TaskStore())
                     if not self.added_museum:
                         self.added_museum=True
+                        self.parent.Push(tasktakeinventory.TaskTakeInventory())
                         self.parent.Push(taskmuseum.TaskMuseum())
                     return
                 return

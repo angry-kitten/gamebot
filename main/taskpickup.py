@@ -23,6 +23,7 @@ import taskstore
 import tasksell
 import taskmuseum
 import tasktrackturn
+import tasktakeinventory
 
 class TaskPickup(taskobject.Task):
     """TaskPickup Object"""
@@ -84,8 +85,11 @@ class TaskPickup(taskobject.Task):
             # Go back to the original location.
             self.parent.Push(taskpathplangoto.TaskPathPlanGoTo(self.target_mx,self.target_my))
 
+        self.parent.Push(tasktakeinventory.TaskTakeInventory())
         self.parent.Push(tasksell.TaskSell())
+        self.parent.Push(tasktakeinventory.TaskTakeInventory())
         self.parent.Push(taskmuseum.TaskMuseum())
+        self.parent.Push(tasktakeinventory.TaskTakeInventory())
         self.parent.Push(taskstore.TaskStore())
 
         self.parent.Push(taskobject.TaskTimed(1.0)) # wait for the animation

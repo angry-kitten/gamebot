@@ -125,6 +125,8 @@ class TaskTrackGoTo(taskobject.Task):
 
         self.parent.Push(taskdetermineposition.TaskDeterminePosition(low_precision=self.low_precision))
 
+        self.parent.Push(taskobject.TaskTimed(1.0))
+
         #seconds=gbtrack.heading_change_and_distance_to_time(previous_heading,heading,distance)
         #seconds=gbtrack.heading_change_and_distance_to_time(heading,heading,distance)
         seconds=gbtrack.estimate_distance_to_time(distance)

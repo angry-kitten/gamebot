@@ -1,5 +1,5 @@
 #
-# Copyright 2021 by angry-kitten
+# Copyright 2021-2022 by angry-kitten
 # Go to the store, Nook's Cranny, and sell stuff.
 #
 
@@ -60,7 +60,7 @@ class TaskSell(taskobject.Task):
             # Do a detect to get ready for is_inside_building_screen
             self.parent.Push(taskdetect.TaskDetect())
 
-            self.parent.Push(taskobject.TaskTimed(12.0)) # wait for interior of cranny
+            self.parent.Push(taskobject.TaskTimed(14.0)) # wait for interior of cranny
 
             # Press 'A' to enter the door.
             self.parent.Push(taskpress.TaskPress('A'))
@@ -73,6 +73,11 @@ class TaskSell(taskobject.Task):
         if self.step == 1: # player character should be inside
             # But it could be after hours.
             if not gbscreen.is_inside_building_screen():
+                print("maybe not inside")
+                if gbscreen.is_continue_triangle():
+                    print("chat on enter")
+                    self.step=2
+                    return
                 print("not inside")
                 self.step=99
                 return

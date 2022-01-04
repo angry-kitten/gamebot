@@ -116,42 +116,35 @@ def clear_waypoints():
 
 def build_graph():
     print("build_graph")
-    print("here b 1",flush=True)
 
     clear_new_memory()
 
-    print("here b 2",flush=True)
     # Build the ladder graph parts first to make for easy
     # de-duplication.
     build_ladder_edges()
 
-    print("here b 3",flush=True)
     # Build the pole graph parts first to make for easy
     # de-duplication.
     build_pole_edges()
-    print("here b 4",flush=True)
 
     build_walk_edges()
 
-    print("here b 5",flush=True)
     build_main_graph()
 
-    print("here b 6",flush=True)
     # Add the ladder and pole parts to the main graph.
 
     swap_in_new_memory()
-
-    print("here b 7",flush=True)
 
     return
 
 def path_plan(fmx,fmy,tmx,tmy):
     print("path_plan")
-    print("here 1",flush=True)
+    print(fmx,fmy,tmx,tmy)
     fmx=int(round(fmx))
     fmy=int(round(fmy))
     tmx=int(round(tmx))
     tmy=int(round(tmy))
+    print(fmx,fmy,tmx,tmy)
 
     # Make sure the graph is there first.
     while True:
@@ -162,7 +155,6 @@ def path_plan(fmx,fmy,tmx,tmy):
         time.sleep(1)
 
     clear_waypoints()
-    print("here 2",flush=True)
 
     node=gbstate.mainmap[fmx][fmy]
     if len(node.dijkstra) < 1:
@@ -176,25 +168,23 @@ def path_plan(fmx,fmy,tmx,tmy):
         fmy=new_fmy
         node=gbstate.mainmap[fmx][fmy]
 
-    print("here 3",flush=True)
     # Clear only the dijkstra_distance and dijkstra_prev. The other info is
     # reused with each path planning call.
     for mx in range(gbdata.map_width):
         for my in range(gbdata.map_height):
-            node=gbstate.mainmap[mx][my]
-            node.dijkstra_distance=-1
-            node.dijkstra_prev=-1
+            n5=gbstate.mainmap[mx][my]
+            n5.dijkstra_distance=-1
+            n5.dijkstra_prev=-1
 
-    print("here 4",flush=True)
     node.dijkstra_distance=0
     node.dijkstra_prev=-1
     queue=[]
     index=xy_to_index(fmx,fmy)
     queue.append(index)
+    print("index",index)
     # Nominally all the unvisited nodes are in queue. But
     # queue really only contains tentative nodes.
 
-    print("here 5",flush=True)
     edge_count=0
     queue_count=0
     while len(queue) > 0:
@@ -671,18 +661,13 @@ def build_main_graph():
     return
 
 def identify_edges_for_node(mx,my):
-    print("here c 1",flush=True)
     node=gbstate.mainmap[mx][my]
     index=xy_to_index(mx,my)
     node.dijkstra_new.clear()
     node.dijkstra_new=[]
-    print("here c 2",flush=True)
     identify_edges_in_list(node,index,gbstate.dijkstra_new_walk_edges)
-    print("here c 3",flush=True)
     identify_edges_in_list(node,index,gbstate.dijkstra_new_pole_edges)
-    print("here c 4",flush=True)
     identify_edges_in_list(node,index,gbstate.dijkstra_new_ladder_edges)
-    print("here c 5",flush=True)
     return
 
 def identify_edges_in_list(node,index,list):
@@ -709,6 +694,9 @@ def init_buildgraph():
 
 def buildgraph_worker():
     print("before buildgraph_worker")
+
+    # Try to do the equivalent of a yield(), not the python yield.
+    time.sleep(0.000001)
 
     build_graph()
 

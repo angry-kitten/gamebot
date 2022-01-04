@@ -1,5 +1,5 @@
 #
-# Copyright 2021 by angry-kitten
+# Copyright 2021-2022 by angry-kitten
 # Look at the current screen for treeable items and gather wood
 # and fruit.
 #
@@ -74,9 +74,11 @@ class TaskDig(taskobject.Task):
             # Put away the shovel.
             self.parent.Push(taskholdtool.TaskHoldTool('None'))
 
+            self.parent.Push(taskobject.TaskTimed(2.0)) # wait for the animation
+
             # close the presentation text with 'B'
             self.parent.Push(taskpress.TaskPress('B'))
-            self.parent.Push(taskobject.TaskTimed(8.0)) # wait for the dig animation
+            self.parent.Push(taskobject.TaskTimed(9.0)) # wait for the dig and presentation animation
             # Dig with 'A'
             self.parent.Push(taskpress.TaskPress('A'))
 

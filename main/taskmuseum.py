@@ -129,8 +129,8 @@ class TaskMuseum(taskobject.Task):
 # I'm donating it!
 # I'Il take it home.
 # #3
-#
-# busy
+# Please!
+# I'm a bit busy...
 
             (index,is_last)=gbocr.locate_menu_text(self.ocr_menu,'Assess fossils')
             if index is not None:
@@ -190,7 +190,7 @@ class TaskMuseum(taskobject.Task):
                 self.step=2
                 return
 
-            (index,is_last)=gbocr.locate_menu_text(self.ocr_menu,'busy')
+            (index,is_last)=gbocr.locate_menu_text(self.ocr_menu,"I'm a bit busy")
             if index is not None:
                 print("menu #3")
                 # Do we want to hear a description of the fossil? Nope.
