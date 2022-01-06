@@ -40,7 +40,7 @@ unreachable=False
 
 # (node1,type)
 dijkstra_waypoints=[]
-# (node1,node2,type)
+# (node1,node2,type,cost)
 dijkstra_walk_edges=[]
 dijkstra_ladder_edges=[]
 dijkstra_pole_edges=[]
@@ -231,3 +231,5 @@ phonemap_pin_box_sx1=None
 phonemap_pin_box_sy1=None
 phonemap_pin_box_sx2=None
 phonemap_pin_box_sy2=None
+
+beachcomber_list=None

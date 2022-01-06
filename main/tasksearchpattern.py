@@ -1,12 +1,12 @@
 #
-# Copyright 2021 by angry-kitten
+# Copyright 2021-2022 by angry-kitten
 # Walk a search pattern and call a function at each node.
 #
 
-import taskobject
-import gbdata
-import gbstate
+import random
 import cv2
+import gbdata, gbstate, gbscreen, gbdisplay
+import taskobject
 import taskpress
 import tasksay
 import taskdetect
@@ -14,9 +14,6 @@ import taskgotomain
 import taskupdatemini
 import taskrandomwalk
 import tasksimplegoto
-import gbscreen
-import gbdisplay
-import random
 import tasksimplegoto
 import taskpathplangoto
 import taskcheckforinterrupt
@@ -27,7 +24,7 @@ class TaskSearchPattern(taskobject.Task):
     def __init__(self,pattern_number,callme):
         super().__init__()
         self.name="TaskSearchPattern"
-        print("new TaskSearchPattern object")
+        print("new",self.name,"object")
         self.callme=callme # call this function at every node
 
         # Set the default pattern.
@@ -49,7 +46,7 @@ class TaskSearchPattern(taskobject.Task):
 
     def Poll(self):
         """check if any action can be taken"""
-        print("TaskSearchPattern Poll")
+        print(self.name,"Poll")
         if not self.started:
             self.Start()
             return
@@ -77,18 +74,18 @@ class TaskSearchPattern(taskobject.Task):
 
     def Start(self):
         """Cause the task to begin doing whatever."""
-        print("TaskSearchPattern Start")
+        print(self.name,"Start")
         if self.started:
             return # already started
         self.started=True
         self.pattern_start()
 
     def DebugRecursive(self,indent=0):
-        self.DebugPrint("TaskSearchPattern",indent)
+        self.DebugPrint(self.name,indent)
 
     def NameRecursive(self):
         gbstate.task_stack_names.append(self.name)
-        myname="TaskSearchPattern"
+        myname=self.name
         return myname
 
     # pattern 0 is top to bottom, left to right
@@ -107,7 +104,7 @@ class TaskSearchPattern(taskobject.Task):
             self.search_my+=self.search_step
             if self.search_my >= gbdata.map_height:
                 self.search_my=0
-                print("TaskSearchPattern done")
+                print(self.name,"done")
                 self.taskdone=True
                 return
         self.parent.Push(taskpathplangoto.TaskPathPlanGoTo(self.search_mx,self.search_my))
@@ -125,7 +122,7 @@ class TaskSearchPattern(taskobject.Task):
     def pattern1_start(self):
         l=len(self.search_list)
         if l < 1:
-            print("TaskSearchPattern done")
+            print(self.name,"done")
             self.taskdone=True
             return
         j=random.randint(0,l-1)
@@ -138,7 +135,7 @@ class TaskSearchPattern(taskobject.Task):
     def pattern1_poll(self):
         l=len(self.search_list)
         if l < 1:
-            print("TaskSearchPattern done")
+            print(self.name,"done")
             self.taskdone=True
             return
         j=random.randint(0,l-1)
@@ -165,7 +162,7 @@ class TaskSearchPattern(taskobject.Task):
     def pattern2_start(self):
         l=len(self.search_list)
         if l < 1:
-            print("TaskSearchPattern done")
+            print(self.name,"done")
             self.taskdone=True
             return
         j=random.randint(0,l-1)
@@ -178,7 +175,7 @@ class TaskSearchPattern(taskobject.Task):
     def pattern2_poll(self):
         l=len(self.search_list)
         if l < 1:
-            print("TaskSearchPattern done")
+            print(self.name,"done")
             self.taskdone=True
             return
         j=random.randint(0,l-1)

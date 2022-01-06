@@ -525,10 +525,10 @@ def draw_targets(frame):
         draw_x_at(frame,x,y,color_orange,line_width=line_width_x_narrow)
 
     if gbstate.plan_goto_target_mx >= 0:
-        draw_marker_at_map(frame,cv2.MARKER_STAR,gbstate.plan_goto_target_mx,gbstate.plan_goto_target_my,color_yellow)
+        draw_marker_at_map(frame,cv2.MARKER_STAR,gbstate.plan_goto_target_mx,gbstate.plan_goto_target_my,color_red)
         x=gbdata.minimap_origin_x+gbstate.plan_goto_target_mx*gbdata.minimap_square_spacing
         y=gbdata.minimap_origin_y+gbstate.plan_goto_target_my*gbdata.minimap_square_spacing
-        draw_marker_at(frame,cv2.MARKER_STAR,x,y,color_yellow)
+        draw_marker_at(frame,cv2.MARKER_STAR,x,y,color_red)
 
     # Draw over the phonemap
     w=gbdata.stdscreen_size[0]
@@ -568,7 +568,7 @@ def draw_targets(frame):
     if gbstate.plan_goto_target_mx >= 0:
         x=origin_sx+1+gbstate.plan_goto_target_mx*3
         y=origin_sy+1+gbstate.plan_goto_target_my*3
-        draw_marker_at(frame,cv2.MARKER_STAR,x,y,color_yellow)
+        draw_marker_at(frame,cv2.MARKER_STAR,x,y,color_red)
 
     return
 
@@ -1085,7 +1085,7 @@ def draw_simple_edges(frame,edges):
     origin_sy=0
 
     for edge in edges:
-        (n1,n2,t)=edge
+        (n1,n2,t,c)=edge
         (mx1,my1)=gbdijkstra.index_to_xy(n1)
         (mx2,my2)=gbdijkstra.index_to_xy(n2)
         sx1=origin_sx+1+mx1*3

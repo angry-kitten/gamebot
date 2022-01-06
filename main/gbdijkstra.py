@@ -3,7 +3,7 @@
 # Implement the Dijkstra shortest path algorithm for bot path planning.
 #
 
-import time, gc
+import time, math, gc
 import numpy
 import gbdata
 import gbstate
@@ -138,13 +138,13 @@ def build_graph():
     return
 
 def path_plan(fmx,fmy,tmx,tmy):
-    print("path_plan")
-    print(fmx,fmy,tmx,tmy)
+    #print("path_plan")
+    #print(fmx,fmy,tmx,tmy)
     fmx=int(round(fmx))
     fmy=int(round(fmy))
     tmx=int(round(tmx))
     tmy=int(round(tmy))
-    print(fmx,fmy,tmx,tmy)
+    #print(fmx,fmy,tmx,tmy)
 
     # Make sure the graph is there first.
     while True:
@@ -181,7 +181,7 @@ def path_plan(fmx,fmy,tmx,tmy):
     queue=[]
     index=xy_to_index(fmx,fmy)
     queue.append(index)
-    print("index",index)
+    #print("index",index)
     # Nominally all the unvisited nodes are in queue. But
     # queue really only contains tentative nodes.
 
@@ -189,23 +189,23 @@ def path_plan(fmx,fmy,tmx,tmy):
     queue_count=0
     while len(queue) > 0:
         queue_count+=1
-        print("queue_count",queue_count,flush=True)
+        #print("queue_count",queue_count,flush=True)
         gbmem.memory_report()
         i1=node_with_min_distance(queue)
         queue.remove(i1)
         (mx,my)=index_to_xy(i1)
         if mx == tmx and my == tmy:
-            print("found target",flush=True)
+            #print("found target",flush=True)
             build_waypoint_list(i1)
-            print("after build",flush=True)
+            #print("after build",flush=True)
             reduce_waypoint_list()
-            print("after reduce",flush=True)
+            #print("after reduce",flush=True)
             return
         n1=node_from_index(i1)
 
         for edge in n1.dijkstra:
             edge_count+=1
-            print("edge_count",edge_count,flush=True)
+            #print("edge_count",edge_count,flush=True)
             gbmem.memory_report()
             t=edge[2]
             if gbdata.dijkstra_pole_type == t:
@@ -214,7 +214,8 @@ def path_plan(fmx,fmy,tmx,tmy):
             if gbdata.dijkstra_ladder_type == t:
                 if not gbstate.inventory_has_ladder:
                     continue
-            d=type_to_distance(t)
+            c=edge[3] # cost
+            d=c
             alt=n1.dijkstra_distance+d
             i2=other_index(i1,edge)
             n2=node_from_index(i2)
@@ -229,7 +230,7 @@ def path_plan(fmx,fmy,tmx,tmy):
                     n2.dijkstra_distance=alt
                     n2.dijkstra_prev=i1
 
-    print("unreachable",flush=True)
+    #print("unreachable",flush=True)
     return
 
 def node_with_min_distance(queue):
@@ -338,18 +339,8 @@ def reduce_waypoint_list():
     gbstate.dijkstra_waypoints=new_waypoints
     return
 
-def type_to_distance(t):
-    # type to cost, really
-    if gbdata.dijkstra_walk_type == t:
-        return gbdata.dijkstra_walk_cost
-    if gbdata.dijkstra_pole_type == t:
-        return gbdata.dijkstra_pole_cost
-    if gbdata.dijkstra_ladder_type == t:
-        return gbdata.dijkstra_ladder_cost
-    return 1
-
 def other_index(i0,edge):
-    (i1,i2,t)=edge
+    (i1,i2,t,c)=edge
     if i0 != i1:
         return i1
     return i2
@@ -489,7 +480,7 @@ def add_ladder_edge(n1,n2):
     if n1 > n2:
         add_ladder_edge(n2,n1)
         return
-    edge=(n1,n2,gbdata.dijkstra_ladder_type)
+    edge=(n1,n2,gbdata.dijkstra_ladder_type,gbdata.dijkstra_ladder_cost)
     if edge in gbstate.dijkstra_new_ladder_edges:
         return
     gbstate.dijkstra_new_ladder_edges.append(edge)
@@ -556,7 +547,8 @@ def test_pole_pair(mx1,my1,dx,dy):
             return
         n1=xy_to_index(mx1,my1)
         n2=xy_to_index(mx2,my2)
-        add_pole_edge(n1,n2)
+        c=j*(gbdata.dijkstra_pole_cost/5)
+        add_pole_edge(n1,n2,c)
         break
 
     return
@@ -598,11 +590,11 @@ def is_grass_sand_pair(mx1,my1,mx2,my2):
         return False
     return False
 
-def add_pole_edge(n1,n2):
+def add_pole_edge(n1,n2,c):
     if n1 > n2:
-        add_pole_edge(n2,n1)
+        add_pole_edge(n2,n1,c)
         return
-    edge=(n1,n2,gbdata.dijkstra_pole_type)
+    edge=(n1,n2,gbdata.dijkstra_pole_type,c)
     if edge in gbstate.dijkstra_new_pole_edges:
         return
     gbstate.dijkstra_new_pole_edges.append(edge)
@@ -620,13 +612,13 @@ def build_walk_edges():
     return
 
 def identify_walk_positions(mx,my):
-    test_walk_pair(mx,my,mx+1,my)
-    test_walk_pair(mx,my,mx,my+1)
-    test_walk_pair(mx,my,mx+1,my-1)
-    test_walk_pair(mx,my,mx+1,my+1)
+    test_walk_pair(mx,my,mx+1,my,gbdata.dijkstra_walk_cost)
+    test_walk_pair(mx,my,mx,my+1,gbdata.dijkstra_walk_cost)
+    test_walk_pair(mx,my,mx+1,my-1,(gbdata.dijkstra_walk_cost*math.sqrt(2)))
+    test_walk_pair(mx,my,mx+1,my+1,(gbdata.dijkstra_walk_cost*math.sqrt(2)))
     return
 
-def test_walk_pair(mx1,my1,mx2,my2):
+def test_walk_pair(mx1,my1,mx2,my2,c):
     if not gbmap.is_valid_location(mx2,my2):
         return
     l1=gbmap.map_level(mx1,my1)
@@ -639,14 +631,14 @@ def test_walk_pair(mx1,my1,mx2,my2):
         return
     n1=xy_to_index(mx1,my1)
     n2=xy_to_index(mx2,my2)
-    add_walk_edge(n1,n2)
+    add_walk_edge(n1,n2,c)
     return
 
-def add_walk_edge(n1,n2):
+def add_walk_edge(n1,n2,c):
     if n1 > n2:
-        add_walk_edge(n2,n1)
+        add_walk_edge(n2,n1,c)
         return
-    edge=(n1,n2,gbdata.dijkstra_walk_type)
+    edge=(n1,n2,gbdata.dijkstra_walk_type,c)
     if edge in gbstate.dijkstra_new_walk_edges:
         return
     gbstate.dijkstra_new_walk_edges.append(edge)
@@ -672,7 +664,7 @@ def identify_edges_for_node(mx,my):
 
 def identify_edges_in_list(node,index,list):
     for edge in list:
-        (n1,n2,t)=edge
+        (n1,n2,t,c)=edge
         if n1 != index:
             if n2 != index:
                 continue

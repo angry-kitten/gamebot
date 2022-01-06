@@ -895,7 +895,7 @@ slingshot_tools=['InvSlingshot']
 # These will cut trees down.
 cutting_axe_tools=['InvAxe','InvGoldenAxe']
 # These will not cut trees down.
-stone_axe_tools=['InvStoneAxe']
+stone_axe_tools=['InvFlimsyAxe','InvStoneAxe']
 axe_tools=stone_axe_tools.copy()
 axe_tools.extend(cutting_axe_tools)
 axe_shovel_tools=axe_tools.copy()
@@ -1304,26 +1304,28 @@ player_house_max_width=35
 player_house_max_height=25
 
 ocr_to_inventory={
-    'Peaches':'InvPeach',
-    'Peach':'InvPeach',
     'Axe':'InvAxe',
+    'Flimsy axe':'InvFlimsyAxe',
+    'Stone axe':'InvStoneAxe',
+    'Vaulting pole':'InvPole',
+    'Flimsy net':'InvFlimsyNet',
+    'Shovel':'InvShovel',
+    'Flimsy shovel':'InvFlimsyShovel',
+    'Ladder':'InvLadder',
     'Tree branches':'InvBranches',
     'Tree branch':'InvBranches',
-    'Vaulting pole':'InvPole',
-    'Flimsy net':'InvNet',
-    'Shovel':'InvShovel',
     'Wasp nest':'InvWaspNest',
     'Hardwood':'InvHardWood',
     'Wood':'InvWood',
-    'Ladder':'InvLadder',
     'Slingshot':'InvSlingshot',
     'Softwood':'InvSoftWood',
+    'Peaches':'InvPeach',
+    'Peach':'InvPeach',
     'Sand dollar':'InvSandDollar',
     'Coral':'InvCoral',
     'Cowrie':'InvCowrie',
     'Clump of weeds':'InvWeeds',
     'Clumps of weeds':'InvWeeds',
-    'Stone axe':'InvStoneAxe',
     'Fossil':'InvFossil',
     'Wasp':'InvWasp',
     'Stone':'InvStone',
@@ -1425,9 +1427,12 @@ ocr_to_inventory={
 
 item_keep=[
     "InvAxe",
+    "InvFlimsyAxe",
     "InvPole",
     "InvNet",
+    "InvFlimsyNet",
     "InvShovel",
+    "InvFlimsyShovel",
     "InvStoneAxe",
 ]
 

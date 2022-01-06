@@ -1,12 +1,11 @@
 #
-# Copyright 2021 by angry-kitten
+# Copyright 2021-2022 by angry-kitten
 # Pick something for the character to do.
 #
 
-import taskobject
-import gbdata
-import gbstate
 import cv2
+import gbdata, gbstate
+import taskobject
 import taskpress
 import tasksay
 import taskdetect
@@ -19,6 +18,7 @@ import tasksearchpattern
 import taskcheckforinterrupt
 import taskholdtool
 import taskpicksomethingsearch
+import taskbeachcomber
 
 class TaskDoSomething(taskobject.Task):
     """TaskDoSomething Object"""
@@ -56,6 +56,9 @@ class TaskDoSomething(taskobject.Task):
         #self.parent.Push(taskholdtool.TaskHoldTool('None'))
 
         #self.parent.Push(taskcheckforinterrupt.TaskCheckForInterrupt())
+
+        self.parent.Push(taskbeachcomber.TaskBeachcomber())
+
         return
 
     def Start(self):

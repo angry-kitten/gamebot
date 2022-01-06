@@ -178,6 +178,12 @@ class TaskUpdatePhoneMap(taskobject.Task):
         #self.parent.Push(taskobject.TaskTimed(4.0))
         #self.parent.Push(taskobject.TaskTimed(5.0))
         self.parent.Push(taskobject.TaskTimed(6.0))
+
+        # Make sure the pointer hand is in the upper left. (eventually)
+        # The pointer hand state is saved over invocations.
+        self.parent.Push(taskpress.TaskPress('hat_LEFT'))
+        self.parent.Push(taskpress.TaskPress('hat_TOP'))
+        self.parent.Push(taskobject.TaskTimed(1))
         # Pop up the map with A
         self.parent.Push(taskpress.TaskPress('A'))
 

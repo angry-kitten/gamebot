@@ -88,9 +88,9 @@ class TaskPickup(taskobject.Task):
         self.parent.Push(tasktakeinventory.TaskTakeInventory())
         self.parent.Push(tasksell.TaskSell())
         self.parent.Push(tasktakeinventory.TaskTakeInventory())
-        self.parent.Push(taskmuseum.TaskMuseum())
-        self.parent.Push(tasktakeinventory.TaskTakeInventory())
         self.parent.Push(taskstore.TaskStore())
+        self.parent.Push(tasktakeinventory.TaskTakeInventory())
+        self.parent.Push(taskmuseum.TaskMuseum())
 
         self.parent.Push(taskobject.TaskTimed(1.0)) # wait for the animation
         # press A to select 'drop it'
