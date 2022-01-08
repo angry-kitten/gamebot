@@ -35,7 +35,7 @@ conttriangle_color=[246,186,8] # RGB 0-255
 
 mainmap_update_fast_limit=5 # Update fast 5 times then update slow.
 mainmap_update_fast_rate=60*5 # Update every 5 minutes.
-mainmap_update_slow_rate=60*25 # Update every 25 minutes.
+mainmap_update_slow_rate=60*60 # Update every 60 minutes.
 # minimap pin color. It flashes between these two.
 pin_orange1=[233,130,46] # rgb
 pin_orange2=[230,92,45] # rgb

@@ -1,5 +1,5 @@
 #
-# Copyright 2021 by angry-kitten
+# Copyright 2021-2022 by angry-kitten
 # Move the player character to a location with no pathing or object
 # avoidance. Track the feet box.
 #
@@ -163,10 +163,13 @@ class TaskTrackGoTo(taskobject.Task):
     def process_move(self):
         # See if we reached the target.
         if gbscreen.match_within(gbstate.move_after_mx,self.target_mx,self.within) and gbscreen.match_within(gbstate.move_after_my,self.target_my,self.within):
-            gbstate.move_obstructed=False
+            # low and high severity obstruction
+            gbstate.move_obstructed_low=False
+            gbstate.move_obstructed_high=False
             print("not obstructed")
         else:
-            gbstate.move_obstructed=True
+            # low severity obstruction
+            gbstate.move_obstructed_low=True
             print("obstructed")
             print("wanted",self.target_mx,self.target_my)
             print("got",gbstate.move_after_mx,gbstate.move_after_my)
@@ -178,6 +181,8 @@ class TaskTrackGoTo(taskobject.Task):
                 if gbscreen.match_within(gbstate.move_before_mx,gbstate.move_after_mx,self.within_obstructed) and gbscreen.match_within(gbstate.move_before_my,gbstate.move_after_my,self.within_obstructed):
                     # We ran into an obstruction.
                     print("small movement")
+                    # high severity obstruction
+                    gbstate.move_obstructed_high=True
                     if (self.target_heading >= 0 and self.target_heading < 45) or (self.target_heading >= 315 and self.target_heading <= 360):
                         print("obstructed up/north")
                         mx=int(round(gbstate.move_after_mx))

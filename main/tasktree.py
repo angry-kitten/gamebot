@@ -1,5 +1,5 @@
 #
-# Copyright 2021 by angry-kitten
+# Copyright 2021-2022 by angry-kitten
 # Look at the current screen for treeable items and gather wood
 # and fruit.
 #
@@ -52,13 +52,14 @@ class TaskTree(taskobject.Task):
             return
         if gbstate.frame is None:
             return
-        # Find a tree
+
+        print(self.name,f"step={self.step}")
 
         if self.step == 0: # initial search
             print("tasktree step 0")
             if self.target_mx < 0:
                 # At this point a search for an item hasn't been done yet.
-                self.find_an_item()
+                self.find_an_item(False) # False= do not prefer north/up
                 if self.target_mx < 0:
                     # At this point no item was found by the search.
                     print("no target found")
@@ -67,8 +68,48 @@ class TaskTree(taskobject.Task):
                     return
                 # At this point a tree was found by the search and subtasks
                 # have been added to the stack to go to the tree.
-                self.step=1
+                self.step=101
                 return
+            self.step=99 # done
+            return
+
+        if self.step == 101:
+            # Go to a spot in front of the target to be
+            # able to get a better fix on its location.
+
+            self.parent.Push(taskdetect.TaskDetect())
+            self.parent.Push(taskdetermineposition.TaskDeterminePosition())
+
+            self.parent.Push(taskpathplangoto.TaskPathPlanGoTo(self.target_mx,self.target_my+2))
+            self.step=102
+            return
+
+        if self.step == 102:
+            # Search again at this location to try to get a better fix.
+            self.find_an_item(True) # True= do prefer north/up
+            if self.target_mx < 0:
+                # no item was found by the search.
+                print("no target found")
+                print(self.name,"done")
+                self.taskdone=True
+                self.step=99 # done
+                return
+
+            # Face up/north to face the tree.
+            self.parent.Push(tasktrackturn.TaskTrackTurn(0))
+
+            # walk up against the tree
+            self.parent.Push(taskheadinggoto.TaskHeadingGoTo(0,0.4))
+
+            # This will cause the player character to face down/south.
+            self.parent.Push(taskholdtool.TaskHoldTool('Net'))
+
+            # Go to the tree facing north.
+            self.parent.Push(taskpathplangoto.TaskPathPlanGoTo(self.target_mx,self.target_my))
+            # Go to one square in front of the tree.
+            self.parent.Push(taskpathplangoto.TaskPathPlanGoTo(self.target_mx,self.target_my+1))
+            self.step=1
+            return
 
         if self.step == 1: # Verify the net
             print("tasktree step 1")
@@ -80,19 +121,6 @@ class TaskTree(taskobject.Task):
                 self.parent.Push(taskholdtool.TaskHoldTool('None'))
                 return
 
-            #self.parent.Push(taskobject.TaskTimed(1.0))
-
-            # push tasks in reverse order
-            # Face up/north to face the tree.
-            self.parent.Push(tasktrackturn.TaskTrackTurn(0))
-
-            # walk up against the tree
-            self.parent.Push(taskheadinggoto.TaskHeadingGoTo(0,0.4))
-
-            # Go to the tree facing north.
-            self.parent.Push(taskpathplangoto.TaskPathPlanGoTo(self.target_mx,self.target_my))
-            # Go to one square in front of the tree.
-            self.parent.Push(taskpathplangoto.TaskPathPlanGoTo(self.target_mx,self.target_my+1))
             self.step=2
             return
 
@@ -106,6 +134,10 @@ class TaskTree(taskobject.Task):
             self.parent.Push(taskobject.TaskTimed(8))
 
             # Swing the net just in case a wasp nest was triggered.
+            self.parent.Push(taskpress.TaskPress('A'))
+            self.parent.Push(taskpress.TaskPress('A'))
+            self.parent.Push(taskpress.TaskPress('A'))
+            self.parent.Push(taskpress.TaskPress('A'))
             self.parent.Push(taskpress.TaskPress('A'))
             # Wait for a possible wasp nest animation.
             self.parent.Push(taskobject.TaskTimed(2.5))
@@ -149,7 +181,7 @@ class TaskTree(taskobject.Task):
             self.parent.Push(tasktrackturn.TaskTrackTurn(0))
 
             # walk up against the tree
-            self.parent.Push(taskheadinggoto.TaskHeadingGoTo(0,1))
+            self.parent.Push(taskheadinggoto.TaskHeadingGoTo(0,0.8))
 
             self.step=10
             return
@@ -243,6 +275,7 @@ class TaskTree(taskobject.Task):
         # push tasks in reverse order
         self.parent.Push(taskdetect.TaskDetect())
         self.parent.Push(taskdetermineposition.TaskDeterminePosition())
+        self.parent.Push(taskholdtool.TaskHoldTool('None'))
 
     def DebugRecursive(self,indent=0):
         self.DebugPrint(self.name,indent)
@@ -251,8 +284,10 @@ class TaskTree(taskobject.Task):
         gbstate.task_stack_names.append(self.name)
         return self.name
 
-    def find_an_item(self):
+    def find_an_item(self,prefer_north):
         print("find an item")
+        self.target_mx=-1
+        self.target_my=-1
         with gbstate.detection_lock:
             if gbstate.digested is None:
                 return False
@@ -272,8 +307,37 @@ class TaskTree(taskobject.Task):
             print("empty found_list 2")
             return
 
-        pick=random.randint(0,l-1)
-        best_thing=found_list[pick]
+        if prefer_north:
+            # Pick a target that is as close to north of the player
+            # character as we can get. This should have a good position
+            # fix. It should also be the target picked by the previous
+            # call to find_an_item.
+            best_thing=None
+            best_mx_offset=0
+            for thing in found_list:
+                (mx,my)=gbdisplay.convert_pixel_to_map(thing[4],thing[5])
+                if mx < 0:
+                    print("bad position")
+                    continue
+                if my >= gbstate.player_my:
+                    # Only accept items north/up from player character.
+                    continue
+                dx=gbstate.player_mx-mx
+                offset=abs(dx)
+                print("offset",offset,thing)
+                if best_thing is None:
+                    best_thing=thing
+                    best_mx_offset=offset
+                elif offset < best_mx_offset:
+                    best_thing=thing
+                    best_mx_offset=offset
+            if best_thing is None:
+                print("item not found with prefer_north")
+                return
+        else:
+            # Pick a random target from the list.
+            pick=random.randint(0,l-1)
+            best_thing=found_list[pick]
 
         print("best_thing",best_thing)
 
@@ -292,7 +356,4 @@ class TaskTree(taskobject.Task):
         self.target_mx=mx
         self.target_my=my
 
-        # Start holding the net now because it causes the player character to
-        # face down/south.
-        self.parent.Push(taskholdtool.TaskHoldTool('Net'))
-        self.parent.Push(taskholdtool.TaskHoldTool('None'))
+        return

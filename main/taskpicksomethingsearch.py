@@ -1,5 +1,5 @@
 #
-# Copyright 2021 by angry-kitten
+# Copyright 2021-2022 by angry-kitten
 # Look at the current screen for weeds and pick them.
 #
 
@@ -52,7 +52,7 @@ class TaskPickSomethingSearch(taskobject.Task):
         self.started=True
 
         # push tasks in reverse order
-        self.parent.Push(tasksearchpattern.TaskSearchPattern(2,self.picksomething))
+        self.parent.Push(tasksearchpattern.TaskSearchPattern(3,self.picksomething))
 
     def DebugRecursive(self,indent=0):
         self.DebugPrint(self.name,indent)

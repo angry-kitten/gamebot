@@ -28,6 +28,9 @@ class TaskBeachcomber(taskobject.Task):
         self.name="TaskBeachcomber"
         print("new",self.name,"object")
         self.step=0
+        self.offset=0
+        self.max_steps=0
+        self.step_limit=100
 
     def Poll(self):
         """check if any action can be taken"""
@@ -38,11 +41,23 @@ class TaskBeachcomber(taskobject.Task):
         if self.taskdone:
             return
 
-        if self.step < len(gbstate.beachcomber_list):
-            entry=gbstate.beachcomber_list[self.step]
+        if self.step < self.max_steps:
+            l=len(gbstate.beachcomber_list)
+            index=(self.step+self.offset)%l
+            entry=gbstate.beachcomber_list[index]
             self.step+=1
 
             (mx1,my1,mx2,my2)=entry
+
+            if (self.step % 10) == 0:
+                self.parent.Push(taskcheckforinterrupt.TaskCheckForInterrupt())
+                # Back away from the beach every once in a while to
+                # avoid getting stuck behind an obsticle. (Airport case)
+                dx=mx2-mx1
+                dy=my2-my1
+                mx3=mx2+(4*dx)
+                my3=my2+(4*dy)
+                self.parent.Push(taskpathplangoto.TaskPathPlanGoTo(mx3,my3))
 
             # Try to pick up whatever is there.
             self.parent.Push(taskpickup.TaskPickupSpin())
@@ -68,6 +83,12 @@ class TaskBeachcomber(taskobject.Task):
         if gbstate.beachcomber_list is None:
             self.build_list()
         self.step=0
+        l=len(gbstate.beachcomber_list)
+        l2=l
+        if l2 > self.step_limit:
+            l2=self.step_limit
+        self.offset=random.randint(0,l-1)
+        self.max_steps=random.randint(0,l2-1)
         return
 
     def DebugRecursive(self,indent=0):

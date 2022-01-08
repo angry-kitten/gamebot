@@ -1,5 +1,5 @@
 #
-# Copyright 2021 by angry-kitten
+# Copyright 2021-2022 by angry-kitten
 # Go to the home and store stuff.
 #
 
@@ -161,21 +161,26 @@ class TaskStore(taskobject.Task):
                 # long curved name.
                 # Check for something from the basic "take inventory".
                 inv_name=gbstate.inventory_name[self.store_slot]
-                if inv_name is None:
-                    self.step=19 # close the menu without selecting anything
-                    return
             else:
                 inv_name=gbocr.ocr_name_to_inv_name(self.ocr_name)
-                if inv_name is None:
-                    self.step=19 # close the menu without selecting anything
-                    return
 
             print("inv_name",inv_name)
 
-            # Look at the item and decide if we want to store it.
-            if inv_name not in gbdata.item_store:
-                self.step=19 # close the menu without selecting anything
-                return
+            store_it=False
+
+            if inv_name is not None:
+                if inv_name != '':
+                    # Look at the item and decide if we want to store it.
+                    if inv_name not in gbdata.item_store:
+                        # We know the inventory name of the item and it
+                        # is not in the list of things to store.
+                        self.step=19 # close the menu without selecting anything
+                        return
+                    else:
+                        store_it=True
+
+            # At this point we either know the name of an item and will
+            # store it or we don't know what it is.
 
             if len(self.ocr_menu) < 1:
                 self.step=19 # close the menu without selecting anything
@@ -184,6 +189,102 @@ class TaskStore(taskobject.Task):
             if index is None:
                 self.step=19 # close the menu without selecting anything
                 return
+
+            if not store_it:
+                # We don't know the inventory name of the item.
+                # We know the item can be stored. Get hints from the menu
+                # about the properties of the item.
+                can_wear=False
+                can_place=False
+                can_hang=False
+                can_drop=False
+                can_grab=False
+                can_show=False
+                can_eat=False
+                can_open=False
+                can_clear_favorite=False
+                can_favorite=False
+                can_put_away=False
+                (index2,is_last2)=gbocr.locate_menu_text(self.ocr_menu,'Wear')
+                if index2 is not None:
+                    can_wear=True
+                (index2,is_last2)=gbocr.locate_menu_text(self.ocr_menu,'Place Item')
+                if index2 is not None:
+                    can_place=True
+                (index2,is_last2)=gbocr.locate_menu_text(self.ocr_menu,'Hang on Wall')
+                if index2 is not None:
+                    can_hang=True
+                (index2,is_last2)=gbocr.locate_menu_text(self.ocr_menu,'Drop Item')
+                if index2 is not None:
+                    can_drop=True
+                (index2,is_last2)=gbocr.locate_menu_text(self.ocr_menu,'Grab 1')
+                if index2 is not None:
+                    can_grab=True
+                (index2,is_last2)=gbocr.locate_menu_text(self.ocr_menu,'Show it off!')
+                if index2 is not None:
+                    can_show=True
+                (index2,is_last2)=gbocr.locate_menu_text(self.ocr_menu,'Eat')
+                if index2 is not None:
+                    can_eat=True
+                (index2,is_last2)=gbocr.locate_menu_text(self.ocr_menu,'Open')
+                if index2 is not None:
+                    can_open=True
+                (index2,is_last2)=gbocr.locate_menu_text(self.ocr_menu,'Clear Favorite')
+                if index2 is not None:
+                    can_clear_favorite=True
+                (index2,is_last2)=gbocr.locate_menu_text(self.ocr_menu,'Favorite')
+                if index2 is not None:
+                    can_favorite=True
+                (index2,is_last2)=gbocr.locate_menu_text(self.ocr_menu,'Put Away')
+                if index2 is not None:
+                    can_put_away=True
+
+                print(f"can_wear={can_wear}")
+                print(f"can_place={can_place}")
+                print(f"can_hang={can_hang}")
+                print(f"can_drop={can_drop}")
+                print(f"can_grab={can_grab}")
+                print(f"can_show={can_show}")
+                print(f"can_eat={can_eat}")
+                print(f"can_open={can_open}")
+                print(f"can_clear_favorite={can_clear_favorite}")
+                print(f"can_favorite={can_favorite}")
+                print(f"can_put_away={can_put_away}")
+
+                if can_put_away:
+                    # Most likely bag of bells. There shouldn't be
+                    # a "Put in Storage" option anyway.
+                    self.step=19 # close the menu without selecting anything
+                    return
+                elif can_clear_favorite or can_favorite:
+                    # Most likely a tool. Don't store.
+                    self.step=19 # close the menu without selecting anything
+                    return
+                elif can_eat:
+                    # A fruit or meal of some kind. Store.
+                    store_it=True
+                elif can_wear and can_hang:
+                    # An item of clothing, but not a flower (which can be worn)
+                    store_it=True
+                elif can_wear and not can_hang:
+                    # A flower or similar item.
+                    self.step=19 # close the menu without selecting anything
+                    return
+                elif can_drop and can_grab:
+                    # A bulk item like iron or weeds.
+                    store_it=True
+                elif can_place and not can_wear:
+                    # A house item that is not a flower.
+                    store_it=True
+                elif can_open:
+                    # A present or message bottle.
+                    # This code will probably not be reached because
+                    # there shouldn't be a "Put in Storage" option.
+                    store_it=True
+                else:
+                    # Not enough info to guess.
+                    self.step=19 # close the menu without selecting anything
+                    return
 
             # At this point we know we have an item to store and the
             # menu has an option for it. Move the pointer hand to the

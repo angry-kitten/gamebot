@@ -42,7 +42,6 @@ class TaskDoSomething(taskobject.Task):
         #self.parent.Push(taskrandomwalk.TaskRandomWalk())
         ##self.parent.Push(taskweed.TaskWeed())
         ##self.parent.Push(taskweedsearch.TaskWeedSearch())
-        self.parent.Push(taskpicksomethingsearch.TaskPickSomethingSearch())
         #self.parent.Push(taskholdtool.TaskHoldTool('None'))
         #self.parent.Push(taskholdtool.TaskHoldTool('Pole'))
         #self.parent.Push(taskholdtool.TaskHoldTool('Ladder'))
@@ -58,6 +57,7 @@ class TaskDoSomething(taskobject.Task):
         #self.parent.Push(taskcheckforinterrupt.TaskCheckForInterrupt())
 
         self.parent.Push(taskbeachcomber.TaskBeachcomber())
+        self.parent.Push(taskpicksomethingsearch.TaskPickSomethingSearch())
 
         return
 

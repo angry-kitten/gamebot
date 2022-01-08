@@ -1,5 +1,5 @@
 #
-# Copyright 2021 by angry-kitten
+# Copyright 2021-2022 by angry-kitten
 # A task for the player character to begin holding a tool if possible.
 #
 
@@ -35,12 +35,12 @@ class TaskHoldTool(taskobject.Task):
             return
 
         if self.step == 0:
-            print("detect was just done")
+            #print("detect was just done")
             self.find_tool_and_pointer()
             return
 
         if self.step == 1:
-            print("tool and hand found, moving pointer hand")
+            #print("tool and hand found, moving pointer hand")
             self.move_pointer_hand()
             return
 

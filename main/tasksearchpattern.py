@@ -26,6 +26,7 @@ class TaskSearchPattern(taskobject.Task):
         self.name="TaskSearchPattern"
         print("new",self.name,"object")
         self.callme=callme # call this function at every node
+        self.step_limit=100
 
         # Set the default pattern.
         self.pattern_init=self.pattern0_init
@@ -41,6 +42,11 @@ class TaskSearchPattern(taskobject.Task):
             self.pattern_init=self.pattern2_init
             self.pattern_start=self.pattern2_start
             self.pattern_poll=self.pattern2_poll
+
+        if pattern_number == 3:
+            self.pattern_init=self.pattern3_init
+            self.pattern_start=self.pattern3_start
+            self.pattern_poll=self.pattern3_poll
 
         self.pattern_init()
 
@@ -184,3 +190,53 @@ class TaskSearchPattern(taskobject.Task):
         self.search_mx=mx
         self.search_my=my
         self.parent.Push(taskpathplangoto.TaskPathPlanGoTo(mx,my))
+
+    # pattern 3 is the same as pattern 1 but selected
+    # with smaller steps.
+    def pattern3_init(self):
+        self.search_mx=0
+        self.search_my=0
+        self.search_step=4
+        self.search_list=[]
+        for my in range(0,gbdata.map_height,self.search_step):
+            for mx in range(0,gbdata.map_width,self.search_step):
+                self.search_list.append((mx+0.5,my+0.5))
+        l=len(self.search_list)
+        if l <= self.step_limit:
+            return
+        l2=l
+        if l2 > self.step_limit:
+            l2=self.step_limit
+        offset=random.randint(0,l-1)
+        max_steps=random.randint(0,l2-1)
+
+        if (offset+max_steps) <= l:
+            # the reduced list is a one-part subset of the original list
+            reduced_list=self.search_list[offset:(offset+max_steps)]
+            self.search_list=reduced_list
+            return
+        # the reduced list is a two-part subset of the original list
+
+        reduced_part_1=self.search_list[offset:]
+        reduced_part_2=self.search_list[0:((offset+max_steps)%l)]
+        self.search_list=reduced_part_1
+        self.search_list.extend(reduced_part_2)
+        return
+
+    def pattern3_start(self):
+        self.pattern_poll()
+        return
+
+    def pattern3_poll(self):
+        l=len(self.search_list)
+        if l < 1:
+            print(self.name,"done")
+            self.taskdone=True
+            return
+        j=random.randint(0,l-1)
+        (mx,my)=self.search_list[j]
+        del self.search_list[j]
+        self.search_mx=mx
+        self.search_my=my
+        self.parent.Push(taskpathplangoto.TaskPathPlanGoTo(mx,my))
+        return

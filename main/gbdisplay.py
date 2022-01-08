@@ -731,7 +731,7 @@ def draw_maps(frame):
                 v=mo.objstruction_status
                 color=None
                 if v == gbmap.Obstructed:
-                    color=color_yellow # obstructed
+                    color=color_red # obstructed
                 elif v == gbmap.ObStandingOnWater:
                     color=color_white
                 if color is not None:

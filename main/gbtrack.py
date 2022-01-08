@@ -1,5 +1,5 @@
 #
-# Copyright 2021 by angry-kitten
+# Copyright 2021-2022 by angry-kitten
 # Various functions for drawing status on a frame.
 #
 
@@ -45,7 +45,6 @@ def evaluate_position(mx,my):
         return
     if gbstate.mainmap is None:
         return
-    #v=gbstate.mainmap[mx][my].phonemap
     v=gbstate.mainmap[mx][my].phonemap2
     if v == gbmap.MapTypeWater:
         set_standing_on_water(mx,my)

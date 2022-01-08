@@ -47,7 +47,7 @@ class TaskRandomWalk(taskobject.Task):
         if self.started:
             return # already started
         self.started=True
-        heading=random.randint(0,360)
+        heading=random.randint(0,360-1)
         distance=random.randint(0,5)
         print(heading,distance)
         (dmx,dmy)=gbtrack.calculate_dx_dy(heading,distance)

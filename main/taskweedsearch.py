@@ -1,5 +1,5 @@
 #
-# Copyright 2021 by angry-kitten
+# Copyright 2021-2022 by angry-kitten
 # Look at the current screen for weeds and pick them.
 #
 
@@ -51,7 +51,7 @@ class TaskWeedSearch(taskobject.Task):
         self.started=True
 
         # push tasks in reverse order
-        self.parent.Push(tasksearchpattern.TaskSearchPattern(2,self.weedhere))
+        self.parent.Push(tasksearchpattern.TaskSearchPattern(3,self.weedhere))
 
     def DebugRecursive(self,indent=0):
         self.DebugPrint("TaskWeedSearch",indent)

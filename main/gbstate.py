@@ -124,7 +124,10 @@ move_attempted_mx=-1
 move_attempted_my=-1
 move_actual_mx=-1
 move_actual_my=-1
-move_obstructed=False
+
+# low and high severity obstruction
+move_obstructed_low=False
+move_obstructed_high=False
 
 # The target map position of TaskSimpleGoTo
 goto_target_mx=-1
