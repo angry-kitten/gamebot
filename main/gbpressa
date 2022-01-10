@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+set -x
+if [ -z "$DISPLAY" ];then
+    export DISPLAY=:0.0
+fi
+xdotool search --name captured key 6

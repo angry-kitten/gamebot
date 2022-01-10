@@ -236,3 +236,7 @@ phonemap_pin_box_sx2=None
 phonemap_pin_box_sy2=None
 
 beachcomber_list=None
+
+latest_save_restart=0
+
+inside_building_count=0

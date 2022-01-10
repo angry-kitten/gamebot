@@ -30,7 +30,9 @@ skbuc=[
 stdscreen_size=[1280,720] # wxh upper left origin
 
 # continue triangle info
-conttriangle_loc=[641,663] # x and y based on 1280x720 upper left origin
+conttriangle_loc1=[641,663] # x and y based on 1280x720 upper left origin
+conttriangle_loc2=[644,659]
+conttriangle_loc3=[642,654]
 conttriangle_color=[246,186,8] # RGB 0-255
 
 mainmap_update_fast_limit=5 # Update fast 5 times then update slow.
@@ -1510,3 +1512,7 @@ dijkstra_walk_cost=1
 dijkstra_pole_cost=20
 dijkstra_ladder_cost=50
 dijkstra_use=True
+
+save_restart_period=60*60*4 # four hours in seconds
+
+inside_building_limit=5

@@ -1,5 +1,5 @@
 #
-# Copyright 2021 by angry-kitten
+# Copyright 2021-2022 by angry-kitten
 # Look at the video at startup and see what the current screen is.
 # Move to the main playing screen.
 #
@@ -15,6 +15,7 @@ import taskupdatemini
 import taskupdatephonemap
 import tasktakeinventory
 import taskcheckforinterrupt
+import tasksaverestart
 
 class TaskTakeStock(taskobject.Task):
     """TaskTakeStock Object"""
@@ -51,6 +52,7 @@ class TaskTakeStock(taskobject.Task):
         self.parent.Push(tasktakeinventory.TaskTakeInventory())
         self.parent.Push(taskupdatephonemap.TaskUpdatePhoneMap())
         self.parent.Push(taskupdatemini.TaskUpdateMini())
+        #self.parent.Push(tasksaverestart.TaskSaveRestart())
         self.parent.Push(taskgotomain.TaskGoToMain())
 
     def DebugRecursive(self,indent=0):

@@ -1,5 +1,5 @@
 #
-# Copyright 2021 by angry-kitten
+# Copyright 2021-2022 by angry-kitten
 # Look at the video at startup and see what the current screen is.
 # Move to the main playing screen.
 #
@@ -11,6 +11,7 @@ import taskpress
 import taskdetect
 import taskheadinggoto
 import taskocr
+import tasksaverestart
 
 class TaskGoToMain(taskobject.Task):
     """TaskGoToMain Object"""
@@ -127,11 +128,18 @@ class TaskGoToMain(taskobject.Task):
 
         if gbscreen.is_inside_building_screen():
             print("maybe inside building")
+            gbstate.inside_building_count+=1
+            if gbstate.inside_building_count >= gbdata.inside_building_limit:
+                gbstate.inside_building_count=0
+                self.parent.Push(tasksaverestart.TaskSaveRestart())
+                return
+
             # Wait for the exit animation.
             self.parent.Push(taskobject.TaskTimed(10.0))
             # Walk out of the building, mapless.
             self.parent.Push(taskheadinggoto.TaskHeadingGoTo(180,8))
             return
+        gbstate.inside_building_count=0
 
         # purturb the game to see if it was screen dimmed or something
         self.parent.Push(taskocr.TaskOCR())

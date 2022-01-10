@@ -4,6 +4,7 @@
 # triangle that needs to be acknowledged.
 #
 
+import time
 import random
 import cv2
 import gbdata, gbstate, gbscreen
@@ -21,6 +22,7 @@ import tasktakeinventory
 import taskacceptnookmiles
 import taskheadinggoto
 import taskpathplangoto
+import tasksaverestart
 
 class TaskCheckForInterrupt(taskobject.Task):
     """TaskCheckForInterrupt Object"""
@@ -157,6 +159,21 @@ class TaskCheckForInterrupt(taskobject.Task):
                     self.parent.Push(taskacceptnookmiles.TaskAcceptNookMiles())
                 elif gbscreen.has_label('PhoneActivePlus',0.30,-1,-1,-1):
                     self.parent.Push(taskacceptnookmiles.TaskAcceptNookMiles())
+                return
+
+            if self.step == 5:
+                self.step=6
+
+                # See if we have been running for a while and should save
+                # and restart.
+                tnow=time.monotonic()
+                if gbstate.latest_save_restart == 0:
+                    gbstate.latest_save_restart=tnow
+                else:
+                    telapsed=tnow-gbstate.latest_save_restart
+                    if telapsed >= gbdata.save_restart_period:
+                        gbstate.latest_save_restart=tnow
+                        self.parent.Push(tasksaverestart.TaskSaveRestart())
                 return
 
             print(self.name,"done")

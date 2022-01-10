@@ -41,6 +41,7 @@ import taskdetermineposition
 import tasktrackgoto
 import tasktakeinventory
 import taskmuseum
+import tasksaverestart
 
 
 sys.path.append(os.path.join(os.getcwd(),"..","..","gamebot-serial","pylib"))
@@ -376,6 +377,24 @@ def main_loop(vid):
         # makes it impossible to wake it from the USB device without
         # USB remote wakeup support.
         gbmem.memory_report()
+
+        # Check if something external wants gamebot to restart.
+        ffrs='flagfile_restart'
+        if os.path.isfile(ffrs):
+            os.remove(ffrs)
+            return
+
+        # Check if something external wants gamebot to exit.
+        fft='flagfile_terminate'
+        if os.path.isfile(fft):
+            # Don't remove the file. The external thing will handle it.
+            return
+
+        # Check if something external wants gamebot to save.
+        ffsrs='flagfile_saverestart'
+        if os.path.isfile(ffsrs):
+            os.remove(ffsrs)
+            gbstate.tasks.AddToThread(0,tasksaverestart.TaskSaveRestart())
 
         if gbstate.frame is None:
             print("g_frame does not exist")

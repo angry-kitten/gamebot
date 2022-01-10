@@ -1,5 +1,5 @@
 #
-# Copyright 2021 by angry-kitten
+# Copyright 2021-2022 by angry-kitten
 # Various functions for looking at the screen.
 # gbscreen
 #
@@ -133,6 +133,8 @@ def has_label(label,ratio,x,y,within):
         if gbstate.digested is None:
             return False
         localdigested=gbstate.digested
+    rv=False
+    print('has_label {') # }
     for det in localdigested:
         print(det) # det is [name,score,cx,cy,bx,by]
         if det[0] == label:
@@ -140,12 +142,16 @@ def has_label(label,ratio,x,y,within):
                 if x < 0:
                     # don't match on location
                     print("has with no location")
-                    return True
+                    rv=True
+                    break
                 if match_within(det[2],x,within):
                     if match_within(det[3],y,within):
                         print("has")
-                        return True
-    return False
+                        rv=True
+                        break
+    # {
+    print('} has_label',rv)
+    return rv
 
 def has_label_prefix(label_prefix,ratio,x,y,within):
     with gbstate.detection_lock:
@@ -265,16 +271,25 @@ def is_loading_screen():
     return True
 
 def is_continue_triangle():
-    if not color_match(gbdata.conttriangle_loc[0],gbdata.conttriangle_loc[1],gbdata.conttriangle_color[0],gbdata.conttriangle_color[1],gbdata.conttriangle_color[2],5):
-        return False
-    print("continue triangle")
-    return True
+    if color_match_array(gbdata.conttriangle_loc1[0],gbdata.conttriangle_loc1[1],gbdata.conttriangle_color,5):
+        print("continue triangle")
+        return True
+    if color_match_array(gbdata.conttriangle_loc2[0],gbdata.conttriangle_loc2[1],gbdata.conttriangle_color,5):
+        print("continue triangle")
+        return True
+    if color_match_array(gbdata.conttriangle_loc3[0],gbdata.conttriangle_loc3[1],gbdata.conttriangle_color,5):
+        print("continue triangle")
+        return True
+    return False
 
 def is_continue_triangle_detect():
-    if not has_label('ContinueTriangle',0.30,644,659,5):
-        return False
-    print("continue triangle detect")
-    return True
+    if has_label('ContinueTriangle',0.30,644,659,5):
+        print("continue triangle detect")
+        return True
+    if has_label('ContinueTriangle',0.30,642,654,5):
+        print("continue triangle detect")
+        return True
+    return False
 
 def is_selection_screen_no_ACNH():
     with gbstate.detection_lock:
@@ -317,6 +332,10 @@ def is_main_logo_screen():
     with gbstate.detection_lock:
         if gbstate.digested is None:
             return False
+    if not has_label('ACNHMainLogo',0.95,625,200,20):
+        return True
+    if not has_label('ACNHMainLogo',0.95,636,180,20):
+        return True
     if not has_label('ACNHMainLogo',0.30,625,200,20):
         return False
     if not has_label('ButtonA',0.15,693,635,5):

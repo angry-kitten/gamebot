@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -x
+while [ ! -f flagfile_terminate ]
+do
+    ( sleep 20 ; xdotool search --name captured windowmove 1600 0 ) &
+    ./gamebot.py 2>&1 | tee e0
+    cp e0 e1
+done
+rm flagfile_terminate

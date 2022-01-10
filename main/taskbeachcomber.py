@@ -142,8 +142,8 @@ class TaskBeachcomber(taskobject.Task):
             t=me.phonemap2
             if t == gbmap.MapTypeSand:
                 # We found where the beach meets the water.
-                # Verify that it is sand two more map squares in.
-                for k in range(1,3):
+                # Verify that it is sand four more map squares in.
+                for k in range(1,5):
                     mx3=mx+(j+k)*dx
                     my3=my+(j+k)*dy
                     me=gbstate.mainmap[mx3][my3]
@@ -151,7 +151,9 @@ class TaskBeachcomber(taskobject.Task):
                     if t != gbmap.MapTypeSand:
                         # The beach isn't wide enough.
                         return
-                entry=(mx2,my2,mx3,my3)
+                # Set the gather point one square in from the
+                # start of the beach.
+                entry=(mx2+dx,my2+dy,mx3,my3)
                 gbstate.beachcomber_list.append(entry)
                 return
             if t != gbmap.MapTypeWater:
