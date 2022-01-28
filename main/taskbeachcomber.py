@@ -82,8 +82,18 @@ class TaskBeachcomber(taskobject.Task):
         self.started=True
         if gbstate.beachcomber_list is None:
             self.build_list()
+        if gbstate.beachcomber_list is None:
+            print("E beachcomber_list is None")
+            print(self.name,"done")
+            self.taskdone=True
+            return
         self.step=0
         l=len(gbstate.beachcomber_list)
+        if l < 1:
+            print("E beachcomber_list is empty")
+            print(self.name,"done")
+            self.taskdone=True
+            return
         l2=l
         if l2 > self.step_limit:
             l2=self.step_limit

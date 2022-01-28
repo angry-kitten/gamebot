@@ -19,11 +19,13 @@ from matplotlib import pyplot
 
 import gbmem
 import gbdata, gbstate, gbdisplay
+import gblogfile
 
 import threadmanager
 import gbocr
 import gbmap
 import gbdijkstra
+import gbscreen
 
 import taskobject
 import tasksay
@@ -55,11 +57,17 @@ default_camera_index=0
 gbstate.modelpath=os.path.join("..","model");
 print("modelpath=",gbstate.modelpath)
 
+odt=None
 
 # Set the apparently platform specific key codes.
 print("os",os.name)
 
 if "posix" == os.name:
+    keycode_numpad_8=151
+    keycode_numpad_6=152
+    keycode_numpad_4=150
+    keycode_numpad_2=153
+if "nt" == os.name:
     keycode_numpad_8=151
     keycode_numpad_6=152
     keycode_numpad_4=150
@@ -248,6 +256,9 @@ def process_key(key):
         gbstate.debug_state_on=not gbstate.debug_state_on
         if gbstate.debug_state_on:
             print("debug state on",flush=True)
+            if gbstate.drawn_on is not None:
+                cv2.imwrite('debug.png',gbstate.drawn_on)
+
         else:
             print("debug state off",flush=True)
         return 0
@@ -378,6 +389,20 @@ def main_loop(vid):
         # USB remote wakeup support.
         gbmem.memory_report()
 
+        global odt
+        if not odt.is_alive():
+            print("E odt thread is not alive")
+            return
+        if not gbstate.ocr_worker_thread.is_alive():
+            print("E ocr thread is not alive")
+            return
+        if not gbstate.gathermap_worker_thread.is_alive():
+            print("E gathermap thread is not alive")
+            return
+        if not gbstate.buildgraph_worker_thread.is_alive():
+            print("E buildgraph thread is not alive")
+            return
+
         # Check if something external wants gamebot to restart.
         ffrs='flagfile_restart'
         if os.path.isfile(ffrs):
@@ -413,6 +438,11 @@ def main_loop(vid):
         height, width, channels=frame.shape
         #print("width",width,"height",height,"channels",channels)
 
+        #frame2=cv2.multiply(frame,(gbdata.win_scale_r,gbdata.win_scale_g,gbdata.win_scale_b))
+        #frame=cv2.multiply(frame,(1.0,1.05,1.05,1.0))
+        frame=cv2.multiply(frame,(1.0,1.0,1.0,1.0))
+        #gbscreen.scale_components(frame)
+
         gbstate.frame=frame
 
         # show the frame as captured
@@ -424,6 +454,7 @@ def main_loop(vid):
             cv2.moveWindow("show detections",1024,0)
             prebuild_window=False
         gbdisplay.draw_on(scaled)
+        gbstate.drawn_on=scaled
         cv2.imshow('captured',scaled)
 
         if start_delay_frames > 0:
@@ -460,6 +491,9 @@ def main_loop(vid):
 
 def setup_run_cleanup():
     random.seed()
+
+    gblogfile.init_log_file_locks()
+    gblogfile.log('start new run\n')
 
     # get a packetserial object
     gbstate.ps=packetserial.PacketSerial()
@@ -516,6 +550,7 @@ def setup_run_cleanup():
     gbstate.detection_condition=threading.Condition()
 
     # start the object detection thread
+    global odt
     odt=threading.Thread(target=object_detection_thread,daemon=True)
     odt.start()
 

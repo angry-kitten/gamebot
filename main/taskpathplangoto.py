@@ -46,6 +46,7 @@ class TaskPathPlanGoTo(taskobject.Task):
         if self.taskdone:
             return
         if gbstate.frame is None:
+            print("no frame")
             return
 
         gbdijkstra.clear_waypoints()
@@ -69,7 +70,27 @@ class TaskPathPlanGoTo(taskobject.Task):
         tmx=int(round(self.target_mx))
         tmy=int(round(self.target_my))
 
+        if not gbstate.map_is_gathered:
+            print("E map is not gathered")
+            gbstate.unreachable=True
+            gbstate.plan_goto_target_mx=-1
+            gbstate.plan_goto_target_my=-1
+            print(self.name,"done")
+            self.taskdone=True
+            return
+
+        if not gbstate.graph_is_built:
+            print("E graph is not built")
+            gbstate.unreachable=True
+            gbstate.plan_goto_target_mx=-1
+            gbstate.plan_goto_target_my=-1
+            print(self.name,"done")
+            self.taskdone=True
+            return
+
+        print("before dijkstra")
         gbdijkstra.path_plan(fmx,fmy,tmx,tmy)
+        print("after dijkstra")
 
         # use Dijkstra
         if len(gbstate.dijkstra_waypoints) < 1:

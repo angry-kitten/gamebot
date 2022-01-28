@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -x
+while [ ! -f flagfile_terminate ]
+do
+    python ./gamebot.py 2>&1 | tee e0
+    cp e0 e1
+done
+rm flagfile_terminate

@@ -4,6 +4,7 @@
 # Wait for it to be generated.
 #
 
+import cv2
 import taskobject
 import gbdata, gbstate
 import gbdijkstra
@@ -31,6 +32,9 @@ class TaskGatherMap(taskobject.Task):
                 return
 
         gbstate.pause_message=None
+        gbstate.map_is_gathered=True
+
+        #cv2.imwrite('gather.png',gbstate.frame)
 
         #print(self.name,"done")
         self.taskdone=True

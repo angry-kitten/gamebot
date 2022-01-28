@@ -117,6 +117,10 @@ def clear_waypoints():
 def build_graph():
     print("build_graph")
 
+    if not gbstate.map_is_gathered:
+        print("E map not gathered")
+        return
+
     clear_new_memory()
 
     # Build the ladder graph parts first to make for easy
@@ -135,10 +139,12 @@ def build_graph():
 
     swap_in_new_memory()
 
+    gbstate.graph_is_built=True
+
     return
 
 def path_plan(fmx,fmy,tmx,tmy):
-    #print("path_plan")
+    print("path_plan 1")
     #print(fmx,fmy,tmx,tmy)
     fmx=int(round(fmx))
     fmy=int(round(fmy))
@@ -146,15 +152,19 @@ def path_plan(fmx,fmy,tmx,tmy):
     tmy=int(round(tmy))
     #print(fmx,fmy,tmx,tmy)
 
+    print("path_plan 2")
     # Make sure the graph is there first.
     while True:
         with gbstate.buildgraph_worker_thread.data_lock:
             if gbstate.dijkstra_walk_edges is not None:
                 if len(gbstate.dijkstra_walk_edges) > 0:
                     break
+        print("path_plan 3")
         time.sleep(1)
 
+    print("path_plan 4")
     clear_waypoints()
+    print("path_plan 5")
 
     node=gbstate.mainmap[fmx][fmy]
     if len(node.dijkstra) < 1:
@@ -168,6 +178,7 @@ def path_plan(fmx,fmy,tmx,tmy):
         fmy=new_fmy
         node=gbstate.mainmap[fmx][fmy]
 
+    print("path_plan 6")
     # Clear only the dijkstra_distance and dijkstra_prev. The other info is
     # reused with each path planning call.
     for mx in range(gbdata.map_width):
@@ -185,11 +196,12 @@ def path_plan(fmx,fmy,tmx,tmy):
     # Nominally all the unvisited nodes are in queue. But
     # queue really only contains tentative nodes.
 
+    print("path_plan 7")
     edge_count=0
     queue_count=0
     while len(queue) > 0:
         queue_count+=1
-        #print("queue_count",queue_count,flush=True)
+        print("queue_count",queue_count,flush=True)
         gbmem.memory_report()
         i1=node_with_min_distance(queue)
         queue.remove(i1)

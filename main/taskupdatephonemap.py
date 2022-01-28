@@ -4,7 +4,7 @@
 # determine player location from the pin.
 #
 
-import time
+import sys, time
 import numpy
 import cv2
 import gbdata, gbstate
@@ -40,7 +40,7 @@ class TaskUpdatePhoneMap(taskobject.Task):
         if gbstate.frame is None:
             return
 
-        #print("step is",self.step)
+        print(self.name,"step is",self.step)
 
         if self.step == 0:
             self.select_map()
@@ -75,13 +75,13 @@ class TaskUpdatePhoneMap(taskobject.Task):
 
         if self.step == 21:
             if not gbscreen.is_phone_map_screen():
-                #print("not on phone map screen")
+                print("not on phone map screen")
                 self.step=99
                 self.parent.Push(taskpress.TaskPress('B',1.0))
                 self.parent.Push(taskpress.TaskPress('B',1.0))
                 self.parent.Push(taskpress.TaskPress('B',1.0))
                 return
-            #print("yes on phone map screen")
+            print("yes on phone map screen")
             self.position_from_phonemap()
             self.parent.Push(taskgathermap.TaskGatherMap())
             self.step=22
@@ -106,6 +106,8 @@ class TaskUpdatePhoneMap(taskobject.Task):
         #print(self.name,"done")
         self.taskdone=True
         gbstate.do_draw_buildings=False
+        print("not exiting",flush=True)
+        #sys.exit(2)
         return
 
     def Start(self):
@@ -136,7 +138,7 @@ class TaskUpdatePhoneMap(taskobject.Task):
             (sx,sy)=gbdata.phone_locations[i]
             sx2=sx+gbdata.phone_map_color_offset_x
             sy2=sy+gbdata.phone_map_color_offset_y
-            if gbscreen.color_match_array(sx2,sy2,gbdata.phone_map_color,5):
+            if gbscreen.color_match_array_list(sx2,sy2,gbdata.phone_map_color_list,5):
                 return i
         return None
 
@@ -154,7 +156,7 @@ class TaskUpdatePhoneMap(taskobject.Task):
         # Try finding the icon by color.
         self.map_slot=self.find_map_icon_by_color()
         if self.map_slot is None:
-            #print("no map slot found by color")
+            print("no map slot found by color")
             self.step=30 # close phone
             return
         #print("map slot found",self.map_slot)
@@ -232,15 +234,6 @@ class TaskUpdatePhoneMap(taskobject.Task):
                 line+=gbmap.maptype_rev[gbstate.mainmap[x][y].phonemap][1]
             #print(line)
 
-    def is_pin_orange(self,pixel_x,pixel_y):
-        pixel_x=int(round(pixel_x))
-        pixel_y=int(round(pixel_y))
-        if gbscreen.color_match_array(pixel_x,pixel_y,gbdata.pin_orange1,5):
-            return True
-        if gbscreen.color_match_array(pixel_x,pixel_y,gbdata.pin_orange2,5):
-            return True
-        return False
-
     def locate_vertical_center_line(self,startx,starty):
         # Now use the white circle to find the vertical center line.
         # Scan left from the previous center line.
@@ -248,13 +241,13 @@ class TaskUpdatePhoneMap(taskobject.Task):
         circle_right_x=startx
         for j in range(1,gbdata.phonemap_pin_width):
             lx=startx-j
-            if self.is_pin_orange(lx,starty):
+            if gbscreen.is_pin_orange(lx,starty):
                 circle_left_x=lx
                 break
         # Scan right from the previous center line.
         for j in range(1,gbdata.phonemap_pin_width):
             rx=startx+j
-            if self.is_pin_orange(rx,starty):
+            if gbscreen.is_pin_orange(rx,starty):
                 circle_right_x=rx
                 break
         # circle_right_y and circle_left_y are one pixel right and left
@@ -272,13 +265,13 @@ class TaskUpdatePhoneMap(taskobject.Task):
         circle_bottom_y=starty
         for j in range(1,gbdata.phonemap_pin_height):
             ty=starty-j
-            if self.is_pin_orange(startx,ty):
+            if gbscreen.is_pin_orange(startx,ty):
                 circle_top_y=ty
                 break
         # Scan down from the previous center line.
         for j in range(1,gbdata.phonemap_pin_height):
             by=starty+j
-            if self.is_pin_orange(startx,by):
+            if gbscreen.is_pin_orange(startx,by):
                 circle_bottom_y=by
                 break
         # circle_top_y and circle_bottom_y are one pixel above and below
@@ -300,10 +293,10 @@ class TaskUpdatePhoneMap(taskobject.Task):
         right_x=x
         for j in range(1,gbdata.phonemap_pin_width):
             lx=x-j
-            if self.is_pin_orange(lx,y):
+            if gbscreen.is_pin_orange(lx,y):
                 left_x=lx
             rx=x+j
-            if self.is_pin_orange(rx,y):
+            if gbscreen.is_pin_orange(rx,y):
                 right_x=rx
         #print("left_x=",left_x)
         #print("right_x=",right_x)
@@ -316,10 +309,10 @@ class TaskUpdatePhoneMap(taskobject.Task):
         down_y=y
         for j in range(1,gbdata.phonemap_pin_height):
             uy=y-j
-            if self.is_pin_orange(cx,uy):
+            if gbscreen.is_pin_orange(cx,uy):
                 up_y=uy
             dy=y+j
-            if self.is_pin_orange(cx,dy):
+            if gbscreen.is_pin_orange(cx,dy):
                 down_y=dy
         #print("up_y=",up_y)
         #print("down_y=",down_y)
@@ -338,14 +331,14 @@ class TaskUpdatePhoneMap(taskobject.Task):
         circle_bottom_y=down_y
         for j in range(1,gbdata.phonemap_pin_height):
             uy=up_y+j
-            if self.is_pin_orange(cx,uy):
+            if gbscreen.is_pin_orange(cx,uy):
                 circle_top_y=uy
             else:
                 break # it stopped being orange
         # Scan up from the bottom.
         for j in range(1,gbdata.phonemap_pin_height):
             dy=down_y-j
-            if self.is_pin_orange(cx,dy):
+            if gbscreen.is_pin_orange(cx,dy):
                 circle_bottom_y=dy
             else:
                 break # it stopped being orange
@@ -450,7 +443,7 @@ class TaskUpdatePhoneMap(taskobject.Task):
             pixel_y=gbdata.phonemap_top_pin+local_y
             for local_x in range(0,search_w,gbdata.phonemap_pin_search_x):
                 pixel_x=gbdata.phonemap_left+local_x
-                if self.is_pin_orange(pixel_x,pixel_y):
+                if gbscreen.is_pin_orange(pixel_x,pixel_y):
                     #print("found phonemap pin at",pixel_x,pixel_y)
                     if self.verify_pin_shape(pixel_x,pixel_y):
                         return

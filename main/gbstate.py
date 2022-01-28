@@ -16,6 +16,7 @@ ps=None # packet serial object
 model=None
 frame=None
 categgory_index=None
+drawn_on=None
 
 # below are protected by the lock
 detection_lock=None
@@ -240,3 +241,49 @@ beachcomber_list=None
 latest_save_restart=0
 
 inside_building_count=0
+
+map_is_gathered=False
+graph_is_built=False
+
+debug_window=False
+
+log_file_lock=None
+
+h_graph=None
+s_graph=None
+v_graph=None
+h_graph_s=None
+s_graph_s=None
+v_graph_s=None
+h_maxima=None
+s_maxima=None
+v_maxima=None
+
+# measured peaks will vary by map and hardware
+h_p1=None
+h_p2=None
+h_p3=None
+h_p4=None
+h_p5=None
+h_p6=None
+h_p7=None
+h_p8=None
+h_p9=None
+
+s_p1=None
+s_p2=None
+s_p3=None
+
+v_p1=None
+v_p2=None
+v_p3=None
+v_p4=None
+v_p5=None
+v_p6=None
+v_p7=None
+v_p8=None
+v_p9=None
+v_p10=None
+
+# H V to type
+hvtt=None

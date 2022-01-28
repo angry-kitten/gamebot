@@ -1,4 +1,9 @@
 *.un~
 *.py~
 e0
+e1
+l
 *~
+*.png
+model
+__pycache__

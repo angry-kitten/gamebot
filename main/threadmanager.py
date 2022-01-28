@@ -53,3 +53,6 @@ class ThreadManager():
 
         print("worker thread returning")
         return
+
+    def is_alive(self):
+        return self.worker_thread.is_alive()

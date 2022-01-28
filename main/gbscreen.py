@@ -4,13 +4,35 @@
 # gbscreen
 #
 
-import taskobject
+import math
+import cv2
 import gbdata
 import gbstate
-import cv2
+import gbdisplay
+import gblogfile
+import gbmap
+import taskobject
 import taskpress
 import taskdetect
-import gbdisplay
+
+def scale_and_bound(v,m):
+    v2=int(round(v*m))
+    if v2 < 0:
+        return 0
+    if v2 > 255:
+        return 255 
+    return v2
+
+def scale_components(f1):
+    return
+    height, width, channels=f1.shape
+    for x in range(width):
+        for y in range(height):
+            (b,g,r)=f1[y,x]
+            g=scale_and_bound(g,gbdata.win_scale_g)
+            r=scale_and_bound(r,gbdata.win_scale_r)
+            f1[y,x]=(b,g,r)
+    return
 
 def get_pixel(x,y):
     frame=gbstate.frame
@@ -36,7 +58,7 @@ def match_within(v1,v2,within):
         return True
     return False
 
-def color_match_rgb(pr,pg,pb,tr,tg,tb,within):
+def color_match_rgb_0(pr,pg,pb,tr,tg,tb,within):
     #print("color_match_rgb",pr,pg,pb,tr,tg,tb,within)
     if not match_within(tr,pr,within):
         return False
@@ -45,6 +67,13 @@ def color_match_rgb(pr,pg,pb,tr,tg,tb,within):
     if not match_within(tb,pb,within):
         return False
     return True
+
+def color_match_rgb(pr,pg,pb,tr,tg,tb,within):
+    b=color_match_rgb_0(pr,pg,pb,tr,tg,tb,within)
+    if not b:
+        if gbstate.debug_window:
+            gblogfile.log(f'no color_match_rgb {tr} {tg} {tb} {pr} {pg} {pb}\n')
+    return b
 
 def color_match_rgb_array(pr,pg,pb,a,within):
     return color_match_rgb(pr,pg,pb,a[0],a[1],a[2],within)
@@ -63,10 +92,32 @@ def color_match_rgb_array_list2(pr,pg,pb,l):
             return b
     return False
 
+def measure_how_close_rgb(pr,pg,pb,tr,tg,tb):
+    dr=abs(pr-tr)
+    dg=abs(pg-tg)
+    db=abs(pb-tb)
+    d=math.sqrt(dr*dr+dg*dg+db*db)
+    return d
+
+def measure_how_close_list2(pr,pg,pb,l):
+    best_close=None
+    for a in l:
+        close=measure_how_close_rgb(pr,pg,pb,a[0],a[1],a[2])
+        if best_close is None:
+            best_close=close
+        elif close < best_close:
+            best_close=close
+    return best_close
+
+def measure_how_close(pr,pg,pb,l):
+    return measure_how_close_list2(pr,pg,pb,l)
+
 def color_match(x,y,tr,tg,tb,within):
     x=int(round(x))
     y=int(round(y))
     (pb,pg,pr)=get_pixel(x,y)
+    if gbstate.debug_window:
+        print("color_match tr,tg,tb pr,pg,pb",tr,tg,tb,pr,pg,pb,within)
     return color_match_rgb(pr,pg,pb,tr,tg,tb,within)
 
 def color_match_array(x,y,a,within):
@@ -134,9 +185,11 @@ def has_label(label,ratio,x,y,within):
             return False
         localdigested=gbstate.digested
     rv=False
-    print('has_label {') # }
+    if gbstate.debug_window:
+        print('has_label {',label) # }
     for det in localdigested:
-        print(det) # det is [name,score,cx,cy,bx,by]
+        if gbstate.debug_window:
+            print(det) # det is [name,score,cx,cy,bx,by]
         if det[0] == label:
             if det[1] >= ratio:
                 if x < 0:
@@ -149,8 +202,9 @@ def has_label(label,ratio,x,y,within):
                         print("has")
                         rv=True
                         break
-    # {
-    print('} has_label',rv)
+    if gbstate.debug_window:
+        # {
+        print('} has_label',rv)
     return rv
 
 def has_label_prefix(label_prefix,ratio,x,y,within):
@@ -239,18 +293,22 @@ def is_minimap():
     return True
 
 def is_main_screen():
-    #print("is_main_screen 1")
+    print("is_main_screen 1")
+    #gbstate.debug_window=True
     # check for phone
     if not color_match(62,26,243,247,223,5):
+        #gbstate.debug_window=False
         return False
-    #print("is_main_screen 2")
+    print("is_main_screen 2")
     if not color_match(89,94,243,247,223,5):
+        #gbstate.debug_window=False
         return False
-    #print("is_main_screen 3")
+    print("is_main_screen 3")
     # check for minimap
     if not is_minimap():
+        #gbstate.debug_window=False
         return False
-    #print("is_main_screen 4")
+    print("is_main_screen 4")
     # check for date line
     #if not color_match(64,646,250,255,233,5):
     #    return False
@@ -258,7 +316,8 @@ def is_main_screen():
     #if not color_match(274,647,247,255,230,5):
     #    return False
     #print("is_main_screen 6")
-    #print("main screen")
+    print("main screen")
+    #gbstate.debug_window=False
     return True
 
 def is_loading_screen():
@@ -271,15 +330,20 @@ def is_loading_screen():
     return True
 
 def is_continue_triangle():
-    if color_match_array(gbdata.conttriangle_loc1[0],gbdata.conttriangle_loc1[1],gbdata.conttriangle_color,5):
+    gbstate.debug_window=True
+    if color_match_array_list(gbdata.conttriangle_loc1[0],gbdata.conttriangle_loc1[1],gbdata.conttriangle_color_list,5):
+        gbstate.debug_window=False
         print("continue triangle")
         return True
-    if color_match_array(gbdata.conttriangle_loc2[0],gbdata.conttriangle_loc2[1],gbdata.conttriangle_color,5):
+    if color_match_array_list(gbdata.conttriangle_loc2[0],gbdata.conttriangle_loc2[1],gbdata.conttriangle_color_list,5):
+        gbstate.debug_window=False
         print("continue triangle")
         return True
-    if color_match_array(gbdata.conttriangle_loc3[0],gbdata.conttriangle_loc3[1],gbdata.conttriangle_color,5):
+    if color_match_array_list(gbdata.conttriangle_loc3[0],gbdata.conttriangle_loc3[1],gbdata.conttriangle_color_list,5):
+        gbstate.debug_window=False
         print("continue triangle")
         return True
+    gbstate.debug_window=False
     return False
 
 def is_continue_triangle_detect():
@@ -332,9 +396,9 @@ def is_main_logo_screen():
     with gbstate.detection_lock:
         if gbstate.digested is None:
             return False
-    if not has_label('ACNHMainLogo',0.95,625,200,20):
+    if has_label('ACNHMainLogo',0.95,625,200,20):
         return True
-    if not has_label('ACNHMainLogo',0.95,636,180,20):
+    if has_label('ACNHMainLogo',0.95,636,180,20):
         return True
     if not has_label('ACNHMainLogo',0.30,625,200,20):
         return False
@@ -446,17 +510,17 @@ def is_phone_screen():
 
 def is_phone_map_screen():
     match_count=0
-    if color_match_array(18,31,gbdata.phone_map_background,7):
+    if color_match_array_list(18,31,gbdata.phone_map_background_list,7):
         match_count+=1
-    if color_match_array(28,681,gbdata.phone_map_background,7):
+    if color_match_array_list(28,681,gbdata.phone_map_background_list,7):
         match_count+=1
-    if color_match_array(1258,17,gbdata.phone_map_background,7):
+    if color_match_array_list(1258,17,gbdata.phone_map_background_list,7):
         match_count+=1
-    if color_match_array(1263,694,gbdata.phone_map_background,7):
+    if color_match_array_list(1263,694,gbdata.phone_map_background_list,7):
         match_count+=1
-    if color_match_array(674,686,gbdata.phone_map_background,7):
+    if color_match_array_list(674,686,gbdata.phone_map_background_list,7):
         match_count+=1
-    if color_match_array(829,708,gbdata.phone_map_background,7):
+    if color_match_array_list(829,708,gbdata.phone_map_background_list,7):
         match_count+=1
     print("match_count",match_count)
     if match_count >= 5:
@@ -565,3 +629,12 @@ def is_inside_building_screen():
         if not has_label('ButtonZL',0.30,73,37,5):
             return False
     return True
+
+def is_pin_orange(pixel_x,pixel_y):
+    pixel_x=int(round(pixel_x))
+    pixel_y=int(round(pixel_y))
+    if color_match_array_list(pixel_x,pixel_y,gbdata.pin_color_list,5):
+        return True
+    (pb,pg,pr)=get_pixel(pixel_x,pixel_y)
+    gbmap.log_closest_type(pr,pg,pb)
+    return False

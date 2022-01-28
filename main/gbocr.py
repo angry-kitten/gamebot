@@ -42,7 +42,8 @@ def ocr_worker():
 
 def run_ocr_on_frame(frame):
     #result=gbstate.ocr_reader.readtext(frame,paragraph=False,workers=4)
-    result=gbstate.ocr_reader.readtext(frame,paragraph=False,workers=4,min_size=5)
+    #result=gbstate.ocr_reader.readtext(frame,paragraph=False,workers=4,min_size=5)
+    result=None
     print(result)
     if result is None:
         result=[]

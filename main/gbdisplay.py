@@ -5,6 +5,7 @@
 
 import time
 import math
+import colorsys
 import cv2
 import gbdata, gbstate
 import taskobject
@@ -642,11 +643,94 @@ def draw_current_tool(frame):
     y=h-2
     cv2.putText(frame,n,(x,y),font,font_scale*0.75,color_white,font_line_width,line_type)
 
+def custom_color_convert(r,g,b):
+    fr=r/255
+    fg=g/255
+    fb=b/255
+    (h,s,v)=colorsys.rgb_to_hsv(fr,fg,fb)
+    #(fr2,fg2,fb2)=colorsys.hsv_to_rgb(h,1.0,1.0)
+    (fr2,fg2,fb2)=colorsys.hsv_to_rgb(h,s,v)
+    r2=int(round(fr2*255))
+    g2=int(round(fg2*255))
+    b2=int(round(fb2*255))
+    return (b2,g2,r2) # bgr
+
 def draw_maps(frame):
     w=gbdata.stdscreen_size[0]
     h=gbdata.stdscreen_size[1]
     origin_sx=w-(3*gbdata.map_width)  # origin (upper left) screen x
     origin_sy=int(h/2)                # origin (upper left) screen y
+
+    # if gbstate.h_graph is not None:
+    #     origin_sx=0
+    #     origin_sy=0
+    #     psx=origin_sx
+    #     psy=origin_sy
+    #     g=gbstate.h_graph
+    #     for i in range(len(g)):
+    #         sy=origin_sy+i
+    #         sx=origin_sx+g[i]
+    #         cv2.line(frame,(psx,psy),(sx,sy),color_orange,1)
+    #         cv2.rectangle(frame,(sx,sy),(sx,sy),color_red,-1)
+    #         psx=sx
+    #         psy=sy
+    #     origin_sx+=256
+    #     psx=origin_sx
+    #     psy=origin_sy
+    #     g=gbstate.s_graph
+    #     for i in range(len(g)):
+    #         sy=origin_sy+i
+    #         sx=origin_sx+g[i]
+    #         cv2.line(frame,(psx,psy),(sx,sy),color_orange,1)
+    #         cv2.rectangle(frame,(sx,sy),(sx,sy),color_red,-1)
+    #         psx=sx
+    #         psy=sy
+    #     origin_sx+=256
+    #     psx=origin_sx
+    #     psy=origin_sy
+    #     g=gbstate.v_graph
+    #     for i in range(len(g)):
+    #         sy=origin_sy+i
+    #         sx=origin_sx+g[i]
+    #         cv2.line(frame,(psx,psy),(sx,sy),color_orange,1)
+    #         cv2.rectangle(frame,(sx,sy),(sx,sy),color_red,-1)
+    #         psx=sx
+    #         psy=sy
+
+    #     origin_sx=0
+    #     origin_sy=256
+    #     psx=origin_sx
+    #     psy=origin_sy
+    #     g=gbstate.h_graph_s
+    #     for i in range(len(g)):
+    #         sy=origin_sy+i
+    #         sx=origin_sx+int(round(g[i]))
+    #         cv2.line(frame,(psx,psy),(sx,sy),color_orange,1)
+    #         cv2.rectangle(frame,(sx,sy),(sx,sy),color_red,-1)
+    #         psx=sx
+    #         psy=sy
+    #     origin_sx+=256
+    #     psx=origin_sx
+    #     psy=origin_sy
+    #     g=gbstate.s_graph_s
+    #     for i in range(len(g)):
+    #         sy=origin_sy+i
+    #         sx=origin_sx+int(round(g[i]))
+    #         cv2.line(frame,(psx,psy),(sx,sy),color_orange,1)
+    #         cv2.rectangle(frame,(sx,sy),(sx,sy),color_red,-1)
+    #         psx=sx
+    #         psy=sy
+    #     origin_sx+=256
+    #     psx=origin_sx
+    #     psy=origin_sy
+    #     g=gbstate.v_graph_s
+    #     for i in range(len(g)):
+    #         sy=origin_sy+i
+    #         sx=origin_sx+int(round(g[i]))
+    #         cv2.line(frame,(psx,psy),(sx,sy),color_orange,1)
+    #         cv2.rectangle(frame,(sx,sy),(sx,sy),color_red,-1)
+    #         psx=sx
+    #         psy=sy
 
     origin_sx=w-(3*gbdata.map_width)
     origin_sy=0
@@ -659,7 +743,54 @@ def draw_maps(frame):
                 sy=origin_sy+y*3
                 me=gbstate.mainmap[x][y]
 
+                #c2=maptype_to_color(me.phonemap2)
                 c2=maptype_to_color(me.phonemap2)
+                #c2=(me.b,me.g,me.r) # BGR
+                #c2=custom_color_convert(me.r,me.g,me.b)
+                # h_p1 v_p1 water
+                # h_p1 v_p2 nothing
+                # h_p1 v_p3 nothing
+                # h_p2 v_p1 nothing
+                # h_p2 v_p2 nothing
+                # h_p2 v_p3 grass0
+                # h_p3 v_p1 nothing
+                # h_p3 v_p2 sand
+                # h_p3 v_p3 nothing
+                # h_p2 v_p4 grass1
+                # h_p2 v_p5 not sure, 2 pixels, maybe grass0
+                # h_p2 v_p6 grass1
+                # h_p2 v_p7 nothing
+                # h_p2 v_p8 nothing
+                # h_p2 v_p9 nothing
+                # h_p4 v_p1 nothing
+                # h_p4 v_p2 nothing
+                # h_p4 v_p3 nothing
+                # h_p4 v_p4 nothing
+                # h_p4 v_p5 weak grass0
+                # h_p4 v_p6 nothing
+                # h_p4 v_p7 grass2
+                # h_p4 v_p8 not sure, 2 pixels, maybe grass2
+                # h_p4 v_p9 nothing
+                # h_p5 v_p9 plaza
+                # h_p6 v_p1 nothing
+                # h_p6 v_p2 nothing
+                # h_p6 v_p3 nothing
+                # h_p6 v_p4 nothing
+                # h_p6 v_p5 nothing
+                # h_p6 v_p6 nothing
+                # h_p6 v_p7 nothing
+                # h_p6 v_p8 nothing
+                # h_p6 v_p9 nothing
+                # h_p6 v_p10 rock
+                #c2=color_red
+                #if me.h == gbstate.h_p8:
+                #    if me.v == gbstate.v_p6:
+                #        c2=color_green
+                #c2=color_red
+                #t=gbmap.hv_to_type(me.h,me.v)
+                #if t is not None:
+                #    c2=maptype_to_color(t)
+
                 if c2 is not None:
                     # Draw a simple square.
                     cv2.rectangle(frame,(sx,sy),(sx+2,sy+2),c2,-1)
