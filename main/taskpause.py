@@ -1,11 +1,11 @@
 #
-# Copyright 2021 by angry-kitten
+# Copyright 2021-2022 by angry-kitten
 # A task to pause a given amount of time with a message.
 #
 
-import taskobject
 import gbdata
 import gbstate
+import taskobject
 
 class TaskPause(taskobject.TaskTimed):
     """TaskPause Object"""

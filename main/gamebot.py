@@ -21,11 +21,11 @@ import gbmem
 import gbdata, gbstate, gbdisplay
 import gblogfile
 
-import threadmanager
 import gbocr
 import gbmap
 import gbdijkstra
 import gbscreen
+import threadmanager
 
 import taskobject
 import tasksay
@@ -54,7 +54,7 @@ import packetserial
 #default_camera_index=2
 default_camera_index=0
 
-gbstate.modelpath=os.path.join("..","model");
+gbstate.modelpath=os.path.join("..","model")
 print("modelpath=",gbstate.modelpath)
 
 odt=None
@@ -72,11 +72,12 @@ if "nt" == os.name:
     keycode_numpad_6=152
     keycode_numpad_4=150
     keycode_numpad_2=153
-    
+
 def process_detections(d):
+    digested=[]
     if d is None:
         print("detections does not exist")
-        return
+        return digested
     n=d['num_detections']
     #print("n=",n)
     boxes=d['detection_boxes']
@@ -91,7 +92,6 @@ def process_detections(d):
     #print("offset=",gbstate.label_id_offset)
 
     # build a list of digested detections
-    digested=[]
     for j in range(n):
         #print("j=",j)
         detectclass=classes[j]
@@ -381,7 +381,7 @@ def main_loop(vid):
     start_delay_frames=5 # capture this many frames to get past startup noise
     prebuild_window=True
 
-    while(True):
+    while True:
         #query_state(gbstate.ps)
         # From query_state it shows that when the console is powered down
         # or in sleep mode that the USB device is not configured. That
@@ -576,4 +576,3 @@ def main(args):
 
 if __name__ == "__main__":
     main(sys.argv)
-

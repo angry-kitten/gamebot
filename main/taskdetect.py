@@ -1,13 +1,13 @@
 #
-# Copyright 2021 by angry-kitten
+# Copyright 2021-2022 by angry-kitten
 # Trigger an object detection by clearing gbstate.detections and
 # waiting for it to be generated.
 #
 
-import taskobject
 import gbdata
 import gbstate
 import gamebot
+import taskobject
 import taskocr
 
 class TaskDetect(taskobject.Task):

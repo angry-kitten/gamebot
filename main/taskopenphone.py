@@ -1,23 +1,23 @@
 #
-# Copyright 2021 by angry-kitten
+# Copyright 2021-2022 by angry-kitten
 # Look at the current screen and capture the phone map and
 # determine player location from the pin.
 #
 
 import time
 import numpy
-import taskobject
+import cv2
 import gbdata
 import gbstate
-import cv2
-import taskpress
-import tasksay
-import taskdetect
-import taskgotomain
 import gbscreen
 import gbtrack
 import gbdisplay
 import gbmap
+import taskobject
+import taskpress
+import tasksay
+import taskdetect
+import taskgotomain
 
 class TaskOpenPhone(taskobject.Task):
     """TaskOpenPhone Object"""
@@ -29,6 +29,8 @@ class TaskOpenPhone(taskobject.Task):
         self.step=0 # pop up phone
         self.icons=[]
         self.name_to_open=name_to_open
+        self.current_slot=0
+        self.name_slot=0
 
     def Poll(self):
         """check if any action can be taken"""
@@ -111,7 +113,7 @@ class TaskOpenPhone(taskobject.Task):
             (sx,sy)=gbdata.phone_locations[i]
             sx2=sx+gbdata.phone_map_color_offset_x
             sy2=sy+gbdata.phone_map_color_offset_y
-            if gbscreen.color_match_array(sx2,sy2,gbdata.phone_map_color,5):
+            if gbscreen.color_match_array_list(sx2,sy2,gbdata.phone_map_color_list,5):
                 return i
         return None
 
@@ -121,7 +123,7 @@ class TaskOpenPhone(taskobject.Task):
             (sx,sy)=gbdata.phone_locations[i]
             sx2=sx+gbdata.phone_nook_miles_color_offset_x
             sy2=sy+gbdata.phone_nook_miles_color_offset_y
-            if gbscreen.color_match_array(sx2,sy2,gbdata.phone_nook_miles_color,2):
+            if gbscreen.color_match_array_list(sx2,sy2,gbdata.phone_nook_miles_color_list,5):
                 return i
         return None
 
@@ -131,7 +133,7 @@ class TaskOpenPhone(taskobject.Task):
             (sx,sy)=gbdata.phone_locations[i]
             sx2=sx+gbdata.phone_hand_offset_x
             sy2=sy+gbdata.phone_hand_offset_y
-            if gbscreen.color_match_array(sx2,sy2,gbdata.phone_hand_color,2):
+            if gbscreen.color_match_array(sx2,sy2,gbdata.phone_hand_color,5):
                 return i
         return None
 

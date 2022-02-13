@@ -1,12 +1,15 @@
 #
-# Copyright 2021 by angry-kitten
+# Copyright 2021-2022 by angry-kitten
 # Look at the current screen for weeds and pick them.
 #
 
-import taskobject
+import random
+import cv2
 import gbdata
 import gbstate
-import cv2
+import gbscreen
+import gbdisplay
+import taskobject
 import taskpress
 import tasksay
 import taskdetect
@@ -15,9 +18,6 @@ import taskupdatemini
 import taskrandomwalk
 import tasksimplegoto
 import taskpathplangoto
-import gbscreen
-import gbdisplay
-import random
 import taskcenterplayer
 import taskpickup
 import taskdetermineposition
@@ -83,9 +83,11 @@ class TaskWeed(taskobject.Task):
 
     def find_a_weed(self):
         print("find a weed")
+        if gbstate.detection_lock is None:
+            return
         with gbstate.detection_lock:
             if gbstate.digested is None:
-                return False
+                return
             localdigested=gbstate.digested
         if gbstate.center_mx < 0:
             return
@@ -123,6 +125,9 @@ class TaskWeed(taskobject.Task):
                 best_weed=weed
 
         print("best_weed",best_weed)
+        if best_weed is None:
+            print("E no best_weed")
+            return
 
         print("found weed",best_weed)
 

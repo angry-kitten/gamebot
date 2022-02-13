@@ -1,14 +1,15 @@
 #
-# Copyright 2021 by angry-kitten
+# Copyright 2021-2022 by angry-kitten
 # Move the player character in a random direction for a random distance.
 #
 
 import random
+import cv2
 
-import taskobject
 import gbdata
 import gbstate
-import cv2
+import gbtrack
+import taskobject
 import taskpress
 import tasksay
 import taskdetect
@@ -16,7 +17,6 @@ import taskgotomain
 import taskupdatemini
 import taskjoy
 import tasktrackgoto
-import gbtrack
 
 class TaskRandomWalk(taskobject.Task):
     """TaskRandomWalk Object"""

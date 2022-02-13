@@ -1,24 +1,24 @@
 #
-# Copyright 2021 by angry-kitten
+# Copyright 2021-2022 by angry-kitten
 # Move the player character to turn to face a heading clockwise or counterclockwise.
 #
 
 import random
 import math
+import cv2
 
-import taskobject
 import gbdata
 import gbstate
-import cv2
+import gbscreen
+import gbdisplay
+import gbtrack
+import taskobject
 import taskpress
 import tasksay
 import taskdetect
 import taskgotomain
 import taskupdatemini
 import taskjoy
-import gbscreen
-import gbdisplay
-import gbtrack
 import taskdetermineposition
 import taskpause
 
@@ -59,7 +59,7 @@ class TaskTrackTurn(taskobject.Task):
         previous_heading=gbstate.player_heading
 
         if self.heading == previous_heading:
-            return;
+            return
 
         heading_change=self.heading-previous_heading
         #print("heading_change",heading_change)
@@ -72,7 +72,7 @@ class TaskTrackTurn(taskobject.Task):
             #print("heading_change",heading_change)
 
         if heading_change == 0:
-            return;
+            return
 
         # Pick the short way around as the default.
         clockwise=True

@@ -1,5 +1,5 @@
 #
-# Copyright 2021 by angry-kitten
+# Copyright 2021-2022 by angry-kitten
 # Look at the current screen for treeable items and gather wood
 # and fruit.
 #
@@ -125,8 +125,7 @@ class TaskRock(taskobject.Task):
         print("find an item")
         with gbstate.detection_lock:
             if gbstate.digested is None:
-                return False
-            localdigested=gbstate.digested
+                return
         if gbstate.center_mx < 0:
             return
 

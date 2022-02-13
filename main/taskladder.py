@@ -5,23 +5,23 @@
 
 import random
 import math
+import cv2
 
-import taskobject
 import gbdata
 import gbstate
-import cv2
+import gbscreen
+import gbdisplay
+import gbtrack
+import taskobject
 import taskpress
 import tasksay
 import taskdetect
 import taskgotomain
 import taskupdatemini
 import taskjoy
-import gbscreen
-import gbdisplay
 import tasktrackgoto
 import taskdetermineposition
 import taskholdtool
-import gbtrack
 import tasktrackturn
 import taskheadinggoto
 

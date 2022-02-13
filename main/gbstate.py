@@ -261,7 +261,8 @@ v_maxima=None
 
 # measured peaks will vary by map and hardware
 h_p1=None
-h_p2=None
+h_p2a=None
+h_p2b=None
 h_p3=None
 h_p4=None
 h_p5=None
@@ -287,3 +288,7 @@ v_p10=None
 
 # H V to type
 hvtt=None
+
+house_color_xy=[]
+
+category_index=None

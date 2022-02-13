@@ -25,7 +25,6 @@ import taskdetermineposition
 import taskholdtool
 import tasktrackturn
 import taskheadinggoto
-import taskgotomain
 
 class TaskSaveRestart(taskobject.Task):
     """TaskSaveRestart Object"""

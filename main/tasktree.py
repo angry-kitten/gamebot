@@ -4,10 +4,13 @@
 # and fruit.
 #
 
-import taskobject
+import random
+import cv2
 import gbdata
 import gbstate
-import cv2
+import gbscreen
+import gbdisplay
+import taskobject
 import taskpress
 import tasksay
 import taskdetect
@@ -16,9 +19,6 @@ import taskupdatemini
 import taskrandomwalk
 import tasksimplegoto
 import taskpathplangoto
-import gbscreen
-import gbdisplay
-import random
 import taskcenterplayer
 import taskpickup
 import taskdetermineposition
@@ -27,7 +27,6 @@ import taskholdtool
 import taskgather
 import tasktrackturn
 import taskheadinggoto
-import taskpickup
 
 class TaskTree(taskobject.Task):
     """TaskTree Object"""
@@ -288,10 +287,11 @@ class TaskTree(taskobject.Task):
         print("find an item")
         self.target_mx=-1
         self.target_my=-1
+        if gbstate.detection_lock is None:
+            return
         with gbstate.detection_lock:
             if gbstate.digested is None:
-                return False
-            localdigested=gbstate.digested
+                return
         if gbstate.center_mx < 0:
             return
 

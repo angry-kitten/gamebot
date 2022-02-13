@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Copyright 2021 by angry-kitten
+# Copyright 2021-2022 by angry-kitten
 # Evaluate movement time distance data.
 #
 
@@ -589,7 +589,6 @@ def objective(x,a,b):
 
 def eval_array(name,data):
     print("evaluating",name)
-    l=len(data)
 
     skip_below=1.0
 
@@ -600,7 +599,7 @@ def eval_array(name,data):
             secs.append(d[0])
             dist.append(d[1])
 
-    params,_ = curve_fit(objective,dist,secs)
+    (params,_) = curve_fit(objective,dist,secs) #pylint: disable=unbalanced-tuple-unpacking
     a,b=params
     print(a,b)
 
@@ -634,12 +633,12 @@ def eval_data():
     eval_array("data_distance_time_180",data_distance_time_180)
 
     print("meta slope")
-    params,_ = curve_fit(objective,fit_i,fit_slope)
+    (params,_) = curve_fit(objective,fit_i,fit_slope) #pylint: disable=unbalanced-tuple-unpacking
     a,b=params
     print(a,b)
 
     print("meta offset")
-    params,_ = curve_fit(objective,fit_i,fit_b)
+    (params,_) = curve_fit(objective,fit_i,fit_b) #pylint: disable=unbalanced-tuple-unpacking
     a,b=params
     print(a,b)
 
@@ -664,4 +663,3 @@ def main(args):
 
 if __name__ == "__main__":
     main(sys.argv)
-

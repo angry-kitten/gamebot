@@ -11,6 +11,7 @@ import gbstate
 import gbdisplay
 import gblogfile
 import gbmap
+import gbocr
 import taskobject
 import taskpress
 import taskdetect
@@ -20,7 +21,7 @@ def scale_and_bound(v,m):
     if v2 < 0:
         return 0
     if v2 > 255:
-        return 255 
+        return 255
     return v2
 
 def scale_components(f1):
@@ -51,7 +52,7 @@ def get_pixel(x,y):
     return (b,g,r)
 
 def match_within(v1,v2,within):
-    d=v1-v2;
+    d=v1-v2
     if d < 0:
         d= -d
     if d <= within:
@@ -330,20 +331,20 @@ def is_loading_screen():
     return True
 
 def is_continue_triangle():
-    gbstate.debug_window=True
+    #gbstate.debug_window=True
     if color_match_array_list(gbdata.conttriangle_loc1[0],gbdata.conttriangle_loc1[1],gbdata.conttriangle_color_list,5):
-        gbstate.debug_window=False
+        #gbstate.debug_window=False
         print("continue triangle")
         return True
     if color_match_array_list(gbdata.conttriangle_loc2[0],gbdata.conttriangle_loc2[1],gbdata.conttriangle_color_list,5):
-        gbstate.debug_window=False
+        #gbstate.debug_window=False
         print("continue triangle")
         return True
     if color_match_array_list(gbdata.conttriangle_loc3[0],gbdata.conttriangle_loc3[1],gbdata.conttriangle_color_list,5):
-        gbstate.debug_window=False
+        #gbstate.debug_window=False
         print("continue triangle")
         return True
-    gbstate.debug_window=False
+    #gbstate.debug_window=False
     return False
 
 def is_continue_triangle_detect():
@@ -392,7 +393,30 @@ def is_user_selection_screen():
         return False
     return True
 
+def if_ocr_has_text(s):
+    dets=None
+    with gbstate.ocr_worker_thread.data_lock:
+        dets=gbstate.ocr_detections
+    if dets is None:
+        return False
+    for det in dets:
+        print("det",det)
+        (box,text,score)=det
+        if s in text:
+            return True
+    # Try again but look for text that is close, but not
+    # exact.
+    for det in dets:
+        print("det",det)
+        (box,text,score)=det
+        score=gbocr.score_close_string_match(s,text)
+        if score > 0.7:
+            return True
+    return False
+
 def is_main_logo_screen():
+    if if_ocr_has_text('Select a user'):
+        return True
     with gbstate.detection_lock:
         if gbstate.digested is None:
             return False

@@ -3,17 +3,17 @@
 # Various functions for drawing status on a frame.
 #
 
-import taskobject
+import math
+import time
+import cv2
 import gbdata
 import gbstate
-import cv2
-import taskpress
-import taskdetect
-import math
 import gbdisplay
-import time
 import gbscreen
 import gbmap
+import taskobject
+import taskpress
+import taskdetect
 
 # Tracking the player position is difficult. The player character is not
 # rooted to the center of the screen. We can get the player position from
@@ -179,12 +179,12 @@ def generate_data_code_for(name,data):
     i=0
     for v in data:
         seconds=i/gbstate.data_distance_time_precision
-        sum=v[0]
+        local_sum=v[0]
         count=v[1]
         if count >= 1:
-            distance=sum/count
+            distance=local_sum/count
             print(f'    [{seconds},{distance}],')
-        i+=1;
+        i+=1
 
     print("]")
 

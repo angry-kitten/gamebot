@@ -1,20 +1,20 @@
 #
-# Copyright 2021 by angry-kitten
+# Copyright 2021-2022 by angry-kitten
 # Look at the current screen and capture the phone map and
 # determine player location from the pin.
 #
 
 import time
-import taskobject
+import cv2
 import gbdata
 import gbstate
-import cv2
+import gbscreen
+import gbtrack
+import taskobject
 import taskpress
 import tasksay
 import taskdetect
 import taskgotomain
-import gbscreen
-import gbtrack
 import taskupdatemini
 import taskupdatephonemap
 

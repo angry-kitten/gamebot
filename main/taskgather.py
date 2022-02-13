@@ -1,12 +1,15 @@
 #
-# Copyright 2021 by angry-kitten
+# Copyright 2021-2022 by angry-kitten
 # Look at the current screen for gatherable items and pick them.
 #
 
-import taskobject
+import random
+import cv2
 import gbdata
 import gbstate
-import cv2
+import gbscreen
+import gbdisplay
+import taskobject
 import taskpress
 import tasksay
 import taskdetect
@@ -15,9 +18,6 @@ import taskupdatemini
 import taskrandomwalk
 import tasksimplegoto
 import taskpathplangoto
-import gbscreen
-import gbdisplay
-import random
 import taskcenterplayer
 import taskpickup
 import taskdetermineposition
@@ -86,7 +86,7 @@ class TaskGather(taskobject.Task):
         print("find an item")
         with gbstate.detection_lock:
             if gbstate.digested is None:
-                return False
+                return
             localdigested=gbstate.digested
         if gbstate.center_mx < 0:
             return

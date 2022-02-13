@@ -8,12 +8,12 @@ import math
 import colorsys
 import cv2
 import gbdata, gbstate
-import taskobject
-import taskpress
-import taskdetect
 import gbtrack
 import gbmap
 import gbdijkstra
+import taskobject
+import taskpress
+import taskdetect
 
 color_white=(255,255,255) # BGR
 color_black=(0,0,0) # BGR
@@ -237,8 +237,8 @@ def convert_pixel_to_map(px,py):
     trylimit=1000
 
     # Start with the screen center position as the first estimate.
-    best_map_x=center_x;
-    best_map_y=center_y;
+    best_map_x=center_x
+    best_map_y=center_y
     try_mx=best_map_x
     try_my=best_map_y
     #print("center try_mx",try_mx,"try_my",try_my)
@@ -429,16 +429,16 @@ def draw_grid(frame):
             #cv2.line(frame,(int(x1),int(y1)),(int(x2),int(y2)),color_white,line_width)
             cv2.line(frame,(int(x1),int(y1)),(int(x1),int(y1+1)),color_white,line_width)
 
-def draw_x_at(frame,x,y,color,line_width=line_width_x):
-    cv2.line(frame,(int(x)-10,int(y)-10),(int(x)+10,int(y)+10),color,line_width)
-    cv2.line(frame,(int(x)-10,int(y)+10),(int(x)+10,int(y)-10),color,line_width)
+def draw_x_at(frame,x,y,color,local_line_width=line_width_x):
+    cv2.line(frame,(int(x)-10,int(y)-10),(int(x)+10,int(y)+10),color,local_line_width)
+    cv2.line(frame,(int(x)-10,int(y)+10),(int(x)+10,int(y)-10),color,local_line_width)
 
-def draw_x_at_map(frame,mx,my,color,line_width=line_width_x):
+def draw_x_at_map(frame,mx,my,color,local_line_width=line_width_x):
     (px,py)=convert_map_to_pixel(mx,my)
     if px < 0:
         #print("bad location")
         return
-    draw_x_at(frame,px,py,color,line_width=line_width)
+    draw_x_at(frame,px,py,color,local_line_width=local_line_width)
 
 def draw_marker_at(frame,marker,sx,sy,color):
     sx=int(round(sx))
@@ -467,25 +467,25 @@ def draw_x_path(frame):
     center_x=int(center_x)
     center_y=int(center_y)
     for j in range(7):
-            mx=j+center_x
-            my=center_y-j
-            (x1,y1)=convert_map_to_pixel(mx,my)
-            if x1 < 0:
-                return (-1,-1)
-            #cv2.line(frame,(int(x1)-10,int(y1)-10),(int(x1)+10,int(y1)+10),color_black,line_width)
-            #cv2.line(frame,(int(x1)-10,int(y1)+10),(int(x1)+10,int(y1)-10),color_black,line_width)
-            draw_x_at(frame,x1,y1,color_black)
-            (mx2,my2)=convert_pixel_to_map(x1,y1)
-            if mx2 < 0:
-                return (-1,-1)
-            mx2+=1
-            my2+=1
-            (x2,y2)=convert_map_to_pixel(mx2,my2)
-            if x2 < 0:
-                return (-1,-1)
-            #cv2.line(frame,(int(x2)-10,int(y2)-10),(int(x2)+10,int(y2)+10),color_red,line_width)
-            #cv2.line(frame,(int(x2)-10,int(y2)+10),(int(x2)+10,int(y2)-10),color_red,line_width)
-            draw_x_at(frame,x2,y2,color_red)
+        mx=j+center_x
+        my=center_y-j
+        (x1,y1)=convert_map_to_pixel(mx,my)
+        if x1 < 0:
+            return
+        #cv2.line(frame,(int(x1)-10,int(y1)-10),(int(x1)+10,int(y1)+10),color_black,line_width)
+        #cv2.line(frame,(int(x1)-10,int(y1)+10),(int(x1)+10,int(y1)-10),color_black,line_width)
+        draw_x_at(frame,x1,y1,color_black)
+        (mx2,my2)=convert_pixel_to_map(x1,y1)
+        if mx2 < 0:
+            return
+        mx2+=1
+        my2+=1
+        (x2,y2)=convert_map_to_pixel(mx2,my2)
+        if x2 < 0:
+            return
+        #cv2.line(frame,(int(x2)-10,int(y2)-10),(int(x2)+10,int(y2)+10),color_red,line_width)
+        #cv2.line(frame,(int(x2)-10,int(y2)+10),(int(x2)+10,int(y2)-10),color_red,line_width)
+        draw_x_at(frame,x2,y2,color_red)
 
 def draw_targets(frame):
     # Draw over the minimap
@@ -508,22 +508,22 @@ def draw_targets(frame):
         draw_marker_at(frame,cv2.MARKER_DIAMOND,sx,sy,color_green)
 
     if gbstate.goto_target_mx >= 0:
-        draw_x_at_map(frame,gbstate.goto_target_mx,gbstate.goto_target_my,color_red,line_width=line_width_x_wide)
+        draw_x_at_map(frame,gbstate.goto_target_mx,gbstate.goto_target_my,color_red,local_line_width=line_width_x_wide)
         x=gbdata.minimap_origin_x+gbstate.goto_target_mx*gbdata.minimap_square_spacing
         y=gbdata.minimap_origin_y+gbstate.goto_target_my*gbdata.minimap_square_spacing
-        draw_x_at(frame,x,y,color_red,line_width=line_width_x_wide)
+        draw_x_at(frame,x,y,color_red,local_line_width=line_width_x_wide)
 
     if gbstate.object_target_mx >= 0:
-        draw_x_at_map(frame,gbstate.object_target_mx,gbstate.object_target_my,color_green,line_width=line_width_x_wide)
+        draw_x_at_map(frame,gbstate.object_target_mx,gbstate.object_target_my,color_green,local_line_width=line_width_x_wide)
         x=gbdata.minimap_origin_x+gbstate.object_target_mx*gbdata.minimap_square_spacing
         y=gbdata.minimap_origin_y+gbstate.object_target_my*gbdata.minimap_square_spacing
-        draw_x_at(frame,x,y,color_green,line_width=line_width_x_wide)
+        draw_x_at(frame,x,y,color_green,local_line_width=line_width_x_wide)
 
     if gbstate.track_goto_target_mx >= 0:
-        draw_x_at_map(frame,gbstate.track_goto_target_mx,gbstate.track_goto_target_my,color_orange,line_width=line_width_x_narrow)
+        draw_x_at_map(frame,gbstate.track_goto_target_mx,gbstate.track_goto_target_my,color_orange,local_line_width=line_width_x_narrow)
         x=gbdata.minimap_origin_x+gbstate.track_goto_target_mx*gbdata.minimap_square_spacing
         y=gbdata.minimap_origin_y+gbstate.track_goto_target_my*gbdata.minimap_square_spacing
-        draw_x_at(frame,x,y,color_orange,line_width=line_width_x_narrow)
+        draw_x_at(frame,x,y,color_orange,local_line_width=line_width_x_narrow)
 
     if gbstate.plan_goto_target_mx >= 0:
         draw_marker_at_map(frame,cv2.MARKER_STAR,gbstate.plan_goto_target_mx,gbstate.plan_goto_target_my,color_red)
@@ -554,17 +554,17 @@ def draw_targets(frame):
     if gbstate.goto_target_mx >= 0:
         x=origin_sx+1+gbstate.goto_target_mx*3
         y=origin_sy+1+gbstate.goto_target_my*3
-        draw_x_at(frame,x,y,color_red,line_width=line_width_x_wide)
+        draw_x_at(frame,x,y,color_red,local_line_width=line_width_x_wide)
 
     if gbstate.object_target_mx >= 0:
         x=origin_sx+1+gbstate.object_target_mx*3
         y=origin_sy+1+gbstate.object_target_my*3
-        draw_x_at(frame,x,y,color_green,line_width=line_width_x_wide)
+        draw_x_at(frame,x,y,color_green,local_line_width=line_width_x_wide)
 
     if gbstate.track_goto_target_mx >= 0:
         x=origin_sx+1+gbstate.track_goto_target_mx*3
         y=origin_sy+1+gbstate.track_goto_target_my*3
-        draw_x_at(frame,x,y,color_orange,line_width=line_width_x_narrow)
+        draw_x_at(frame,x,y,color_orange,local_line_width=line_width_x_narrow)
 
     if gbstate.plan_goto_target_mx >= 0:
         x=origin_sx+1+gbstate.plan_goto_target_mx*3
@@ -628,8 +628,8 @@ def draw_inventory(frame):
     if not gbstate.draw_inventory_locations:
         return
     diam=10
-    list=gbstate.inventory_locations
-    for loc in list:
+    loclist=gbstate.inventory_locations
+    for loc in loclist:
         cv2.circle(frame,loc,diam,color_black,line_width)
 
 def draw_current_tool(frame):
@@ -959,16 +959,16 @@ def draw_distance_time_dc(frame,data,color):
     i=0
     for v in data:
         x=i*scale
-        sum=v[0]
+        vsum=v[0]
         count=v[1]
         if count >= 1:
-            distance=sum/count
+            distance=vsum/count
             y=int(round(distance*10*scale))
             x+=origin_sx
             y+=origin_sy
             #cv2.line(frame,(x,y),(x,y+1),color,line_width)
             cv2.drawMarker(frame,(x,y),color,cv2.MARKER_STAR)
-        i+=1;
+        i+=1
 
 def draw_distance_time(frame):
     draw_distance_time_dc(frame,gbstate.data_distance_time_180,color_green)
@@ -1138,6 +1138,14 @@ def draw_buildings(frame):
 
     if gbstate.building_info_player_house is not None:
         cv2.drawMarker(frame,(gbstate.player_house_sx,gbstate.player_house_sy),color_red,cv2.MARKER_SQUARE)
+
+    cv2.rectangle(frame,(gbdata.phonemap_left_close,gbdata.phonemap_top_close),(gbdata.phonemap_right_close,gbdata.phonemap_bottom_close),color_yellow,1)
+    cv2.rectangle(frame,(gbdata.phonemap_left_pin,gbdata.phonemap_top_pin),(gbdata.phonemap_right_pin,gbdata.phonemap_bottom_pin),color_yellow,1)
+
+    for t in gbstate.house_color_xy:
+        (sx,sy)=t
+        cv2.rectangle(frame,(sx,sy),(sx,sy),color_yellow,-1)
+
     return
 
 # example data:
@@ -1159,7 +1167,24 @@ def draw_ocr(frame):
     for det in dets:
         (box,text,score)=det
         ul=box[0]
+        ur=box[1]
+        lr=box[2]
         ll=box[3]
+        ul[0]=int(round(ul[0]))
+        ul[1]=int(round(ul[1]))
+        ur[0]=int(round(ur[0]))
+        ur[1]=int(round(ur[1]))
+        lr[0]=int(round(lr[0]))
+        lr[1]=int(round(lr[1]))
+        ll[0]=int(round(ll[0]))
+        ll[1]=int(round(ll[1]))
+        # draw the bounding box
+        cv2.line(frame,(ul[0],ul[1]),(ur[0],ur[1]),color_yellow,1)
+        cv2.line(frame,(ur[0],ur[1]),(lr[0],lr[1]),color_yellow,1)
+        cv2.line(frame,(lr[0],lr[1]),(ll[0],ll[1]),color_yellow,1)
+        cv2.line(frame,(ll[0],ll[1]),(ul[0],ul[1]),color_yellow,1)
+
+        # draw the text (not scaled or rotated)
         sx=int(round(ul[0]))
         sy=int(round(((ul[1]+ll[1])/2)))
         cv2.putText(frame,text,(sx,sy),font,font_scale_50,color_red,font_line_width_wide,line_type)

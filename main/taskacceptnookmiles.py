@@ -1,5 +1,5 @@
 #
-# Copyright 2021 by angry-kitten
+# Copyright 2021-2022 by angry-kitten
 # Look at the current screen and capture the phone map and
 # determine player location from the pin.
 #
@@ -7,10 +7,10 @@
 import time
 import numpy
 import cv2
-import taskobject
 import gbdata, gbstate, gbscreen, gbdisplay
 import gbtrack
 import gbmap
+import taskobject
 import taskpress
 import tasksay
 import taskdetect
@@ -26,6 +26,7 @@ class TaskAcceptNookMiles(taskobject.Task):
         print("new",self.name,"object")
         self.step=0 # pop up phone
         self.icons=[]
+        self.active_plus=None
 
     def Poll(self):
         """check if any action can be taken"""
@@ -57,11 +58,13 @@ class TaskAcceptNookMiles(taskobject.Task):
             print("check nook miles plus")
             l=len(gbdata.nook_miles_plus_blue_locations)
             self.active_plus=None
+            gbstate.debug_window=True
             for i in range(l):
                 (sx,sy)=gbdata.nook_miles_plus_blue_locations[i]
-                if gbscreen.color_match_array(sx,sy,gbdata.nook_miles_plus_blue,2):
+                if gbscreen.color_match_array_list(sx,sy,gbdata.nook_miles_plus_blue_list,5):
                     self.active_plus=i
                     break
+            gbstate.debug_window=False
             if self.active_plus is None:
                 self.step=10
                 return

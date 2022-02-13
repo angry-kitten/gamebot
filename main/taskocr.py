@@ -1,11 +1,11 @@
 #
-# Copyright 2021 by angry-kitten
+# Copyright 2021-2022 by angry-kitten
 # Trigger an OCR detection by clearing gbstate.ocr_detections and
 # waiting for it to be generated.
 #
 
-import taskobject
 import gbdata, gbstate
+import taskobject
 
 class TaskOCR(taskobject.Task):
     """TaskOCR Object"""

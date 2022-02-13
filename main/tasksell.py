@@ -3,10 +3,10 @@
 # Go to the store, Nook's Cranny, and sell stuff.
 #
 
+import cv2
 import gbdata, gbstate
 import gbscreen
 import gbocr
-import cv2
 import taskobject
 import taskpress
 import tasksay
@@ -113,6 +113,27 @@ class TaskSell(taskobject.Task):
             # Start by taking the normal inventory.
             self.parent.Push(tasktakeinventory.TaskTakeInventory())
 
+            self.step=40
+            return
+
+        if self.step == 40: # verify that chat with the twins has started
+            if gbscreen.is_continue_triangle():
+                # it has started
+                self.step=4
+                return
+            # it has not started.
+
+            # Wait for the twins to respond
+            self.parent.Push(taskobject.TaskTimed(10.0))
+
+            # Start talking to the twins
+            self.parent.Push(taskpress.TaskPress('A'))
+
+            # Wait for the twins to approach.
+            self.parent.Push(taskobject.TaskTimed(3.0))
+
+            # try facing left toward the twins in the seceond version of the cranny
+            self.parent.Push(tasktrackturn.TaskTrackTurn(315))
             self.step=4
             return
 

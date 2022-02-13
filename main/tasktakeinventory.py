@@ -1,15 +1,15 @@
 #
-# Copyright 2021 by angry-kitten
+# Copyright 2021-2022 by angry-kitten
 # Open the player inventory and record the items and slots used and free.
 #
 
-import taskobject
 import gbdata
 import gbstate
-import taskpress
-import taskdetect
 import gbscreen
 import gbdisplay
+import taskobject
+import taskpress
+import taskdetect
 
 class TaskTakeInventory(taskobject.Task):
     """TaskTakeInventory Object"""
@@ -55,6 +55,7 @@ class TaskTakeInventory(taskobject.Task):
         self.step=0
 
         # open inventory
+
         self.parent.Push(taskdetect.TaskDetect())
 
         # Get the pointer hand out of the way by moving it to the clothing
@@ -77,6 +78,7 @@ class TaskTakeInventory(taskobject.Task):
         self.parent.Push(taskobject.TaskTimed(3.0)) # wait for the inventory to open
         self.parent.Push(taskpress.TaskPress('X'))
         gbstate.draw_inventory_locations=True
+        return
 
     def DebugRecursive(self,indent=0):
         self.DebugPrint(self.name,indent)
@@ -95,10 +97,13 @@ class TaskTakeInventory(taskobject.Task):
         self.step=1 # the number of slots is known
 
     def sort_detections_to_slots(self):
+        if gbstate.detection_lock is None:
+            return
         with gbstate.detection_lock:
             if gbstate.digested is None:
                 print("no digested")
                 self.step=99
+                return
             localdigested=gbstate.digested
 
         slot_array=gbstate.inventory_locations
@@ -109,7 +114,7 @@ class TaskTakeInventory(taskobject.Task):
         for det in localdigested:
             print(det) # det is [name,score,cx,cy,bx,by]
             slot=gbscreen.find_inventory_slot(det[2],det[3])
-            if slot is not None:
+            if slot is not None and slot < gbstate.inventory_size:
                 (sx,sy)=slot_array[slot]
                 d=gbdisplay.calculate_distance(det[2],det[3],sx,sy)
                 if d < 20:
@@ -199,12 +204,12 @@ def determine_slots_bubble():
     bottom_sy=gbscreen.locate_vertical_transition(gbdata.inventory_bubble_color,sx,gbdata.inventory_bubble_20_bottom_sy-gbdata.inventory_bubble_range,gbdata.inventory_bubble_40_bottom_sy+gbdata.inventory_bubble_range)
 
     if gbscreen.match_within(top_sy,gbdata.inventory_bubble_20_top_sy,gbdata.inventory_bubble_range) and gbscreen.match_within(bottom_sy,gbdata.inventory_bubble_20_bottom_sy,gbdata.inventory_bubble_range):
-         gbstate.inventory_size=20
-         gbstate.inventory_locations=gbdata.inventory_locations_20
+        gbstate.inventory_size=20
+        gbstate.inventory_locations=gbdata.inventory_locations_20
     elif gbscreen.match_within(top_sy,gbdata.inventory_bubble_30_top_sy,gbdata.inventory_bubble_range) and gbscreen.match_within(bottom_sy,gbdata.inventory_bubble_30_bottom_sy,gbdata.inventory_bubble_range):
-         gbstate.inventory_size=30
-         gbstate.inventory_locations=gbdata.inventory_locations_30
+        gbstate.inventory_size=30
+        gbstate.inventory_locations=gbdata.inventory_locations_30
     elif gbscreen.match_within(top_sy,gbdata.inventory_bubble_40_top_sy,gbdata.inventory_bubble_range) and gbscreen.match_within(bottom_sy,gbdata.inventory_bubble_40_bottom_sy,gbdata.inventory_bubble_range):
-         gbstate.inventory_size=40
-         gbstate.inventory_locations=gbdata.inventory_locations_40
+        gbstate.inventory_size=40
+        gbstate.inventory_locations=gbdata.inventory_locations_40
     return

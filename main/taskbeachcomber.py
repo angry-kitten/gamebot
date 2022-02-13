@@ -15,7 +15,6 @@ import taskgotomain
 import taskupdatemini
 import taskrandomwalk
 import tasksimplegoto
-import tasksimplegoto
 import taskpathplangoto
 import taskcheckforinterrupt
 import taskpickup

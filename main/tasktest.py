@@ -1,15 +1,15 @@
 #
-# Copyright 2021 by angry-kitten
+# Copyright 2021-2022 by angry-kitten
 # Run a test (varies over time)
 #
 
 import random
 import math
+import cv2
 
-import taskobject
 import gbdata
 import gbstate
-import cv2
+import taskobject
 import taskpress
 import tasksay
 import taskdetect
@@ -113,4 +113,3 @@ class TaskTest(taskobject.Task):
         #else:
         #    heading=270
         self.parent.Push(taskjoy.TaskJoyLeft(heading,1.0,3.0,int(self.seconds*1000)))
-        

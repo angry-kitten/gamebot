@@ -1,12 +1,12 @@
 #
-# Copyright 2021 by angry-kitten
+# Copyright 2021-2022 by angry-kitten
 # Go the the museum and evaluate fossils and donate items.
 #
 
+import cv2
 import gbdata, gbstate
 import gbscreen
 import gbocr
-import cv2
 import taskobject
 import taskpress
 import tasksay

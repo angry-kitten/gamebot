@@ -1,12 +1,15 @@
 #
-# Copyright 2021 by angry-kitten
+# Copyright 2021-2022 by angry-kitten
 # Gather an item with 'Y' and check for pockets full.
 #
 
-import taskobject
+import random
+import cv2
 import gbdata
 import gbstate
-import cv2
+import gbscreen
+import gbdisplay
+import taskobject
 import taskpress
 import tasksay
 import taskdetect
@@ -15,9 +18,6 @@ import taskupdatemini
 import taskrandomwalk
 import tasksimplegoto
 import taskpathplangoto
-import gbscreen
-import gbdisplay
-import random
 import taskcenterplayer
 import taskstore
 import tasksell
@@ -51,7 +51,7 @@ class TaskPickup(taskobject.Task):
         #if gbscreen.is_continue_triangle_detect():
         #    print("continue triangle detect")
         #    self.handle_pockets_full()
-        elif gbscreen.is_continue_triangle():
+        if gbscreen.is_continue_triangle():
             #print("continue triangle")
             self.handle_pockets_full()
 

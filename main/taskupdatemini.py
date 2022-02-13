@@ -5,17 +5,17 @@
 #
 
 import time
-import taskobject
+import cv2
 import gbdata
 import gbstate
-import cv2
+import gbscreen
+import gbtrack
+import gbmap
+import taskobject
 import taskpress
 import tasksay
 import taskdetect
 import taskgotomain
-import gbscreen
-import gbtrack
-import gbmap
 
 class TaskUpdateMini(taskobject.Task):
     """TaskUpdateMini Object"""
@@ -25,6 +25,7 @@ class TaskUpdateMini(taskobject.Task):
         self.name="TaskUpdateMini"
         print("new",self.name,"object")
         self.first_time_visible=True
+        self.start_time=0
 
     def Poll(self):
         """check if any action can be taken"""
@@ -271,9 +272,9 @@ class TaskUpdateMini(taskobject.Task):
         return True
 
     def position_from_minimap(self):
+        """Find the orange pin."""
         gbstate.position_minimap_x=-1
         gbstate.position_minimap_y=-1
-        """Find the orange pin."""
         search_w=gbdata.minimap_right-gbdata.minimap_left
         search_h=gbdata.minimap_bottom-gbdata.minimap_top_pin
         for local_y in range(0,search_h,gbdata.minimap_pin_search_y):

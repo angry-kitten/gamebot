@@ -5,9 +5,9 @@
 #
 
 import cv2
-import taskobject
 import gbdata, gbstate
 import gbdijkstra
+import taskobject
 
 class TaskGatherMap(taskobject.Task):
     """TaskGatherMap Object"""

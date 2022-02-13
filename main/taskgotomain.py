@@ -4,8 +4,8 @@
 # Move to the main playing screen.
 #
 
-import gbdata, gbstate, gbscreen
 import cv2
+import gbdata, gbstate, gbscreen
 import taskobject
 import taskpress
 import taskdetect

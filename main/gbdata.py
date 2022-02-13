@@ -213,14 +213,21 @@ phonemap_origin_y=phonemap_dashes_T2B_0-phonemap_dashes_step
 #phonemap_origin_y+=5
 phonemap_origin_y+=1
 
-phonemap_left=int(round(phonemap_dashes_L2R_0-(phonemap_dashes_step*2)))
-phonemap_right=int(round(phonemap_dashes_L2R_5+(phonemap_dashes_step*2)))
-phonemap_top=int(round(phonemap_dashes_T2B_0-(phonemap_dashes_step*2)))
-phonemap_bottom=int(round(phonemap_dashes_T2B_4+(phonemap_dashes_step*2)))
-phonemap_top_pin=phonemap_top-phonemap_pin_height
+# These values are very close to, if not on, the map edges.
+phonemap_left_close=int(round(phonemap_dashes_L2R_0-phonemap_dashes_step))
+phonemap_right_close=int(round(phonemap_dashes_L2R_5+phonemap_dashes_step))
+phonemap_top_close=int(round(phonemap_dashes_T2B_0-phonemap_dashes_step))
+phonemap_bottom_close=int(round(phonemap_dashes_T2B_4+phonemap_dashes_step))
 
-phonemap_swidth=phonemap_right-phonemap_left
-phonemap_sheight=phonemap_bottom-phonemap_top
+# Search a wider area for the pin because the pin
+# sticks out past the map borders.
+phonemap_left_pin=int(round(phonemap_left_close-phonemap_dashes_step))
+phonemap_right_pin=int(round(phonemap_right_close+phonemap_dashes_step))
+phonemap_bottom_pin=int(round(phonemap_bottom_close+phonemap_dashes_step))
+phonemap_top_pin=phonemap_top_close-phonemap_pin_height
+
+phonemap_swidth_close=phonemap_right_close-phonemap_left_close
+phonemap_sheight_close=phonemap_bottom_close-phonemap_top_close
 
 # map and minimap data info
 # The minimap is 16x16 squares separated by dashes.
@@ -254,6 +261,11 @@ inventory_bubble_40_top_sy=38
 inventory_bubble_40_bottom_sy=361
 inventory_bubble_color=[253,249,228] # rgb
 
+# The bag slot goes up to the first entry in
+# the bottom row of slots.
+# The clothing slot goes up to the third entry
+# in the bottom row of slots.
+
 # Screen locations for the 20 item inventory. The
 # dot ones are the center of the InvEmpty dots.
 inventory_locations_20 = [
@@ -276,7 +288,9 @@ inventory_locations_20 = [
     (741,243),
     (808,250),
     (876,262),
-    (940,277)  # 19
+    (940,277), # 19
+    (385,394), # 20 bag slot
+    (523,369), # 21 clothing slot (pointer at 581,432)
 ]
 inventory_pointer_offset_x=40
 inventory_pointer_offset_y=39
@@ -311,7 +325,9 @@ inventory_locations_30 = [
     (739,264),
     (806,270),
     (872,285),
-    (938,299)
+    (938,299), # 29
+    (389,416), # 30 bag slot
+    (526,390), # 31 clothing slot (pointer at 581,432)
 ]
 
 # Screen locations for the 40 item inventory.
@@ -355,7 +371,9 @@ inventory_locations_40 = [
     (738,301),
     (804,309),
     (869,320),
-    (935,338)
+    (935,338), # 39
+    (391,454), # 40 bag slot
+    (579,427), # 41 clothing slot (pointer at 581,432)
 ]
 
 inventory_bag_10_x=386
@@ -470,8 +488,14 @@ phone_background_color=[245,243,228] # rgb 2
 phone_hand_color=[254,254,254] # rgb 2
 phone_nook_miles_color_offset_x=-36
 phone_nook_miles_color_offset_y=0
-phone_nook_miles_color=[140,151,236] # rgb 2
-nook_miles_plus_blue=[89,98,222] # rgb 2
+phone_nook_miles_color_list=[
+    [140,151,236], # rgb 2
+    [137,155,239], # w
+]
+nook_miles_plus_blue_list=[
+    [89,98,222], # rgb 2
+    [86,104,228], # w
+]
 nook_miles_plus_blue_locations=[
     (160,18),
     (281,18),
@@ -849,6 +873,31 @@ player_house_colors=[
     [242,123,38], # w orange
     [254,220,75], # w yellow
     [224,89,166], # w dark
+    [255,130,166], # w pink?
+    #[219,88,123], # w dark?
+    #[254,127,172], # w pink?
+    #[242,117,159],
+    #[254,234,75], # w yellow?
+    #[255,233,73], # w yellow?
+    #[252,233,89], # w yellow?
+    [246,129,42],
+    [255,161,64],
+    [252,144,51],
+    [255,176,69],
+    [255,216,89],
+    [208,143,20],
+    [242,200,59],
+    [255,169,65],
+    [217,140,24],
+    [236,133,36],
+    [217,137,54],
+    [254,136,179],
+    [255,136,170],
+    [238,118,157],
+    [237,106,136],
+    [219,93,125],
+    [223,92,120],
+    [240,122,163],
 ]
 player_house_max_width=35
 player_house_max_height=25
@@ -871,9 +920,6 @@ ocr_to_inventory={
     'Softwood':'InvSoftWood',
     'Peaches':'InvPeach',
     'Peach':'InvPeach',
-    'Sand dollar':'InvSandDollar',
-    'Coral':'InvCoral',
-    'Cowrie':'InvCowrie',
     'Clump of weeds':'InvWeeds',
     'Clumps of weeds':'InvWeeds',
     'Fossil':'InvFossil',
@@ -973,6 +1019,12 @@ ocr_to_inventory={
     'White pansies':'InvWhitePansy',
     'Yellow pansies':'InvYellowPansy',
     'Blue pansies':'InvBluePansy',
+
+    'White cosmos':'InvWhiteCosmos',
+
+    'Old tire':'InvOldTire',
+    'Message bottle':'InvMessageBottle',
+    'Present':'InvPresent',
 }
 
 item_keep=[
@@ -1014,6 +1066,7 @@ item_store=[
     'InvSandDollar',
     'InvCowrie',
     'InvLeaf',
+    'InvOldTire',
 ]
 
 item_sell=[
@@ -1023,6 +1076,7 @@ item_sell=[
     'InvWhitePansy',
     'InvYellowPansy',
     'InvBluePansy',
+    'InvWhiteCosmos',
 ]
 
 item_museum_assess=[
@@ -1031,6 +1085,11 @@ item_museum_assess=[
 
 item_museum_donate=[
     "InvBones",
+]
+
+item_activate=[
+    'InvMessageBottle',
+    'InvPresent',
 ]
 
 ocr_inv_menu_lane_x1=749
@@ -1076,39 +1135,91 @@ win_scale_b=1.000
 # example peaks, these vary by map
 # h_maxima
 # (255, 119)
-# (170, 84)
+# (168, 84)
 # (156, 38)
 # (64, 78)
 # (20, 30)
 # (11, 157)
+# (8, 0)
 # (5, 112)
-# (4, 27)
 # (3, 101)
+# (2, 150)
+# (2, 129)
+# (2, 124)
+# (2, 69)
+# (2, 63)
+# (1, 145)
+# (1, 144)
+# (1, 143)
+# (1, 142)
+# (1, 141)
+# (1, 140)
+# (1, 139)
+# (1, 138)
+# (1, 137)
+# (1, 135)
+# (1, 134)
+# (1, 133)
+# (1, 132)
+# (1, 94)
+# (1, 93)
+# (1, 18)
 # s_maxima
 # (255, 109)
 # (175, 80)
-# (167, 120)
+# (165, 120)
 # (101, 152)
 # (58, 159)
-# (42, 114)
 # (22, 74)
-# (14, 56)
+# (17, 0)
+# (13, 56)
 # (13, 41)
 # (11, 38)
+# (9, 71)
+# (6, 140)
+# (5, 98)
+# (5, 94)
+# (5, 65)
+# (5, 33)
+# (5, 32)
+# (4, 96)
+# (4, 61)
+# (4, 50)
+# (4, 47)
+# (4, 11)
+# (4, 4)
+# (3, 90)
+# (3, 88)
+# (3, 87)
+# (3, 29)
+# (3, 13)
+# (2, 214)
+# (2, 132)
+# (2, 27)
+# (2, 17)
+# (2, 16)
+# (1, 234)
+# (1, 233)
+# (1, 225)
+# (1, 207)
+# (1, 199)
+# (1, 194)
+# (1, 181)
+# (1, 176)
 # v_maxima
 # (255, 213)
-# (118, 236)
-# (80, 120)
+# (117, 236)
+# (78, 120)
 # (42, 160)
 # (38, 126)
 # (28, 162)
-# (23, 196)
+# (22, 196)
 # (13, 200)
-# (11, 176)
+# (10, 176)
 # (9, 136)
-# (6, 82)
-# (5, 206)
-# (5, 205)
+# (8, 0)
+# (7, 82)
+# (6, 207)
 # (4, 232)
 # (4, 231)
 # (4, 227)
@@ -1117,35 +1228,46 @@ win_scale_b=1.000
 # (4, 144)
 # (4, 142)
 # (3, 222)
-# (3, 184)
 # (3, 178)
+# (2, 254)
+# (2, 173)
+# (2, 153)
+# (1, 246)
+# (1, 104)
+# (1, 99)
+# (1, 94)
+# (1, 93)
+# (1, 90)
+# (1, 89)
+# (1, 85)
 # estimated peaks will vary by map
 # value, negative limit, positive limit
-hsv_default_limit=20
-h_p1_e=[119,hsv_default_limit,hsv_default_limit]
-h_p2_e=[84,10,10] # grass0,grass1
-h_p3_e=[38,hsv_default_limit,hsv_default_limit]
-h_p4_e=[78,hsv_default_limit,hsv_default_limit]
-h_p5_e=[30,hsv_default_limit,hsv_default_limit]
-h_p6_e=[157,30,30] # rock
+hsv_default_limit=10
+h_p1_e=[119,25,11] # water
+h_p2a_e=[84,24,36] # grass0
+h_p2b_e=[84,8,6] # grass1
+h_p3_e=[38,21,28] # sand
+h_p4_e=[78,5,7] # grass2
+h_p5_e=[30,2,3] # plaza
+h_p6_e=[157,38,16] # rock
 h_p7_e=[112,hsv_default_limit,hsv_default_limit]
-h_p8_e=[27,hsv_default_limit,hsv_default_limit]
+h_p8_e=[27,9,10] # dock
 h_p9_e=[101,hsv_default_limit,hsv_default_limit]
 
 s_p1_e=[109,hsv_default_limit,hsv_default_limit]
 s_p2_e=[80,hsv_default_limit,hsv_default_limit]
 s_p3_e=[120,hsv_default_limit,hsv_default_limit]
 
-v_p1_e=[213,hsv_default_limit,hsv_default_limit]
-v_p2_e=[236,hsv_default_limit,hsv_default_limit]
-v_p3_e=[120,30,30] # grass0
-v_p4_e=[160,10,10] # grass1
+v_p1_e=[213,41,22] # water
+v_p2_e=[236,31,18] # sand
+v_p3_e=[120,42,20] # grass0
+v_p4_e=[160,9,14] # grass1
 v_p5_e=[126,hsv_default_limit,hsv_default_limit]
-v_p6_e=[162,hsv_default_limit,hsv_default_limit]
-v_p7_e=[196,hsv_default_limit,hsv_default_limit]
+v_p6_e=[162,11,9] # dock
+v_p7_e=[196,9,11] # grass2
 v_p8_e=[200,hsv_default_limit,hsv_default_limit]
-v_p9_e=[176,hsv_default_limit,hsv_default_limit]
-v_p10_e=[136,30,30] # rock
+v_p9_e=[176,2,2] # plaza
+v_p10_e=[136,27,51] # rock
 #    gbstate.hvtt.append((gbstate.h_p1,gbstate.v_p1,MapTypeWater))
 #    gbstate.hvtt.append((gbstate.h_p2,gbstate.v_p3,MapTypeGrass0))
 #    gbstate.hvtt.append((gbstate.h_p3,gbstate.v_p2,MapTypeSand))

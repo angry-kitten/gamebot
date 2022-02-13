@@ -34,12 +34,14 @@ def memory_report():
     print("rss_percent",rss_percent)
     print("vms_percent",vms_percent)
 
-    if mem_percent > 80:
-        print("too much system memory",flush=True)
-        sys.exit(1)
-    if rss_percent > 35:
-        print("too much process memory",flush=True)
-        sys.exit(1)
+    # These values were based on the old Linux machine and
+    # need to be tuned for the new machine.
+    #if mem_percent > 80:
+    #    print("too much system memory",flush=True)
+    #    sys.exit(1)
+    #if rss_percent > 35:
+    #    print("too much process memory",flush=True)
+    #    sys.exit(1)
 
     print("memory_report end",flush=True)
     return

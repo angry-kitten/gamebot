@@ -1,4 +1,12 @@
 #!/usr/bin/env bash
 set -x
+rm -f l x
 python ./gamebot.py 2>&1 | tee e0
 cp e0 e1
+sort < l > x
+grep grass0 x | head -30
+grep grass1 x | head -30
+grep grass2 x | head -30
+grep rock x | head -30
+grep sand x | head -30
+grep water x | head -30

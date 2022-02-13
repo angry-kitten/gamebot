@@ -1,18 +1,18 @@
 #
-# Copyright 2021 by angry-kitten
+# Copyright 2021-2022 by angry-kitten
 # Look at the video and see if there is a resident to chat with.
 #
 
-import taskobject
+import cv2
 import gbdata
 import gbstate
-import cv2
+import gbscreen
+import taskobject
 import taskpress
 import tasksay
 import taskdetect
 import taskgotomain
 import taskupdatemini
-import gbscreen
 
 class TaskChat(taskobject.Task):
     """TaskChat Object"""

@@ -1,25 +1,25 @@
 #
-# Copyright 2021 by angry-kitten
+# Copyright 2021-2022 by angry-kitten
 # Move the player character to a location with no pathing or object
 # avoidance. Track the feet box.
 #
 
 import random
 import math
+import cv2
 
-import taskobject
 import gbdata
 import gbstate
-import cv2
+import gbscreen
+import gbdisplay
+import gbtrack
+import taskobject
 import taskpress
 import tasksay
 import taskdetect
 import taskgotomain
 import taskupdatemini
 import taskjoy
-import gbscreen
-import gbdisplay
-import gbtrack
 import taskdetermineposition
 import taskpause
 import tasktrackturn

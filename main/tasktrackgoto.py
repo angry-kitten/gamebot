@@ -6,20 +6,20 @@
 
 import random
 import math
+import cv2
 
-import taskobject
 import gbdata
 import gbstate
-import cv2
+import gbscreen
+import gbdisplay
+import gbtrack
+import taskobject
 import taskpress
 import tasksay
 import taskdetect
 import taskgotomain
 import taskupdatemini
 import taskjoy
-import gbscreen
-import gbdisplay
-import gbtrack
 import taskdetermineposition
 import taskpause
 import tasktrackturn
@@ -44,6 +44,7 @@ class TaskTrackGoTo(taskobject.Task):
         self.target_seconds=-1
         self.end_mx=-1
         self.end_my=-1
+        self.distance=0
         gbstate.move_before_mx=-1
         gbstate.move_before_my=-1
         gbstate.move_after_mx=-1
@@ -113,7 +114,7 @@ class TaskTrackGoTo(taskobject.Task):
         print("distance",distance)
         self.distance=distance
 
-        previous_heading=gbstate.player_heading
+        #previous_heading=gbstate.player_heading
         heading=gbtrack.calculate_heading(dx,dy)
         self.target_heading=heading
         #gbstate.player_heading=heading

@@ -6,8 +6,8 @@
 
 import random
 import cv2
-import taskobject
 import gbdata, gbstate, gbscreen, gbdisplay
+import taskobject
 import taskpress
 import tasksay
 import taskdetect
@@ -129,7 +129,7 @@ class TaskDig(taskobject.Task):
         print("find an item")
         with gbstate.detection_lock:
             if gbstate.digested is None:
-                return False
+                return
             localdigested=gbstate.digested
         if gbstate.center_mx < 0:
             return

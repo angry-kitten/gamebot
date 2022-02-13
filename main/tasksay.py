@@ -1,12 +1,12 @@
 #
-# Copyright 2021 by angry-kitten
+# Copyright 2021-2022 by angry-kitten
 # A task for the player character to say something using the screen
 # keyboard.
 #
 
-import taskobject
 import gbdata
 import gbstate
+import taskobject
 import taskpress
 
 class TaskSay(taskobject.Task):

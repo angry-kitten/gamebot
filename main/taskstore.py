@@ -3,8 +3,8 @@
 # Go to the home and store stuff.
 #
 
-import gbdata, gbstate, gbscreen
 import cv2
+import gbdata, gbstate, gbscreen
 import gbocr
 import taskobject
 import taskpress
@@ -30,6 +30,7 @@ class TaskStore(taskobject.Task):
         self.name_within=30
         self.ocr_name=None
         self.ocr_menu=None
+        self.store_slot=0
 
     def Poll(self):
         """check if any action can be taken"""
@@ -156,6 +157,15 @@ class TaskStore(taskobject.Task):
 
             # The menu was detected but not an item name.
 
+            # Make sure the menu has a store option.
+            if len(self.ocr_menu) < 1:
+                self.step=19 # close the menu without selecting anything
+                return
+            (index,is_last)=gbocr.locate_menu_text(self.ocr_menu,'Put in Storage')
+            if index is None:
+                self.step=19 # close the menu without selecting anything
+                return
+
             if self.ocr_name is None:
                 # OCR didn't find a name or it couldn't detect a
                 # long curved name.
@@ -181,14 +191,6 @@ class TaskStore(taskobject.Task):
 
             # At this point we either know the name of an item and will
             # store it or we don't know what it is.
-
-            if len(self.ocr_menu) < 1:
-                self.step=19 # close the menu without selecting anything
-                return
-            (index,is_last)=gbocr.locate_menu_text(self.ocr_menu,'Put in Storage')
-            if index is None:
-                self.step=19 # close the menu without selecting anything
-                return
 
             if not store_it:
                 # We don't know the inventory name of the item.

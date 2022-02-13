@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -x
+
+scan()
+{
+    for f in *.py
+    do
+        python -m py_compile $f || exit 1
+    done
+    for f in *.py
+    do
+        pylint --rcfile=pylint_rc $f
+    done
+}
+scan 2>&1 | tee e0

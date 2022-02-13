@@ -28,6 +28,8 @@ class TaskUpdatePhoneMap(taskobject.Task):
         #print("new",self.name,"object")
         self.step=0 # pop up phone
         self.icons=[]
+        self.current_slot=-1
+        self.map_slot=-1
 
     def Poll(self):
         """check if any action can be taken"""
@@ -90,6 +92,10 @@ class TaskUpdatePhoneMap(taskobject.Task):
         if self.step == 22:
             # close map
             self.parent.Push(taskpress.TaskPress('B',1.0))
+
+            ## delay for debug
+            #self.parent.Push(taskobject.TaskTimed(20.0))
+
             self.step=30
             return
 
@@ -433,16 +439,16 @@ class TaskUpdatePhoneMap(taskobject.Task):
         return True
 
     def position_from_phonemap(self):
+        """Find the orange pin."""
         #print("position_from_phonemap")
         gbstate.position_phonemap_x=-1
         gbstate.position_phonemap_y=-1
-        """Find the orange pin."""
-        search_w=gbdata.phonemap_right-gbdata.phonemap_left
-        search_h=gbdata.phonemap_bottom-gbdata.phonemap_top_pin
+        search_w=gbdata.phonemap_right_pin-gbdata.phonemap_left_pin
+        search_h=gbdata.phonemap_bottom_pin-gbdata.phonemap_top_pin
         for local_y in range(0,search_h,gbdata.phonemap_pin_search_y):
             pixel_y=gbdata.phonemap_top_pin+local_y
             for local_x in range(0,search_w,gbdata.phonemap_pin_search_x):
-                pixel_x=gbdata.phonemap_left+local_x
+                pixel_x=gbdata.phonemap_left_pin+local_x
                 if gbscreen.is_pin_orange(pixel_x,pixel_y):
                     #print("found phonemap pin at",pixel_x,pixel_y)
                     if self.verify_pin_shape(pixel_x,pixel_y):

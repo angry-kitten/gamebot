@@ -1,15 +1,17 @@
 #
-# Copyright 2021 by angry-kitten
+# Copyright 2021-2022 by angry-kitten
 # Center the player character on the screen.
 #
 
 import random
 import math
+import cv2
 
-import taskobject
 import gbdata
 import gbstate
-import cv2
+import gbtrack
+import gbmap
+import taskobject
 import taskpress
 import tasksay
 import taskdetect
@@ -17,7 +19,6 @@ import taskgotomain
 import taskupdatemini
 import taskjoy
 import tasktrackgoto
-import gbtrack
 
 class TaskCenterPlayer(taskobject.Task):
     """TaskCenterPlayer Object"""
@@ -91,8 +92,8 @@ class TaskCenterPlayer(taskobject.Task):
                 return False
             if v == gbmap.ObStandingOnWater:
                 return False
-            v=gbstate.mainmap[rmx][rmy].phonemap
-            if v == gbdata.maptype_water:
+            v=gbstate.mainmap[rmx][rmy].phonemap2
+            if v == gbmap.MapTypeWater:
                 return False
 
         # Go right back to start.

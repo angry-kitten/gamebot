@@ -1,5 +1,5 @@
 #
-# Copyright 2021 by angry-kitten
+# Copyright 2021-2022 by angry-kitten
 # Gamebot OCR support.
 #
 
@@ -19,7 +19,9 @@ import taskpress
 #     upper left, upper right, lower right, lower left
 
 def init_ocr():
-    gbstate.ocr_reader=easyocr.Reader(['en'], gpu=False)
+    #gbstate.ocr_reader=easyocr.Reader(['en'], gpu=False)
+    #gbstate.ocr_reader=easyocr.Reader(['en'], gpu=True)
+    gbstate.ocr_reader=easyocr.Reader(['en'], gpu='GPU:1')
     gbstate.ocr_worker_thread=threadmanager.ThreadManager(ocr_worker,"OCR")
     return
 
@@ -43,7 +45,8 @@ def ocr_worker():
 def run_ocr_on_frame(frame):
     #result=gbstate.ocr_reader.readtext(frame,paragraph=False,workers=4)
     #result=gbstate.ocr_reader.readtext(frame,paragraph=False,workers=4,min_size=5)
-    result=None
+    #result=None
+    result=gbstate.ocr_reader.readtext(frame,paragraph=False)
     print(result)
     if result is None:
         result=[]
@@ -128,6 +131,28 @@ def move_hand_to_slot(slot,obj):
     if slot == gbstate.hand_slot:
         print("pointing at slot")
         return
+
+    # Build a list of moves, then push tasks in reverse order.
+
+    move_list=[]
+    if gbstate.hand_slot >= gbstate.inventory_size:
+        print("pointer hand in irregular slots")
+        if gbstate.hand_slot == gbstate.inventory_size:
+            print("bag slot")
+            # move pointer hand up
+            gbstate.hand_slot-=10
+            #obj.parent.Push(taskobject.TaskTimed(gbdata.move_wait)) # wait for animation
+            #obj.parent.Push(taskpress.TaskPress('hat_TOP'))
+            print("up from bag")
+            move_list.append('up')
+        elif gbstate.hand_slot == gbstate.inventory_size+1:
+            print("clothing slot")
+            # move pointer hand up
+            gbstate.hand_slot-=9
+            #obj.parent.Push(taskobject.TaskTimed(gbdata.move_wait)) # wait for animation
+            #obj.parent.Push(taskpress.TaskPress('hat_TOP'))
+            print("up from clothing")
+            move_list.append('up')
     slot_row=int(slot/10)
     slot_column=int(slot%10)
     hand_row=int(gbstate.hand_slot/10)
@@ -135,15 +160,19 @@ def move_hand_to_slot(slot,obj):
     while slot_row < hand_row:
         # move pointer hand up
         gbstate.hand_slot-=10
-        obj.parent.Push(taskobject.TaskTimed(gbdata.move_wait)) # wait for animation
-        obj.parent.Push(taskpress.TaskPress('hat_TOP'))
+        #obj.parent.Push(taskobject.TaskTimed(gbdata.move_wait)) # wait for animation
+        #obj.parent.Push(taskpress.TaskPress('hat_TOP'))
         hand_row=int(gbstate.hand_slot/10)
+        print("up")
+        move_list.append('up')
     while slot_row > hand_row:
         # move pointer hand down
         gbstate.hand_slot+=10
-        obj.parent.Push(taskobject.TaskTimed(gbdata.move_wait)) # wait for animation
-        obj.parent.Push(taskpress.TaskPress('hat_BOTTOM'))
+        #obj.parent.Push(taskobject.TaskTimed(gbdata.move_wait)) # wait for animation
+        #obj.parent.Push(taskpress.TaskPress('hat_BOTTOM'))
         hand_row=int(gbstate.hand_slot/10)
+        print("down")
+        move_list.append('down')
     if slot_column < hand_column:
         # move pointer hand left
         delta=hand_column-slot_column
@@ -155,40 +184,64 @@ def move_hand_to_slot(slot,obj):
                     gbstate.hand_slot-=9
                 else:
                     gbstate.hand_slot+=1
-                obj.parent.Push(taskobject.TaskTimed(gbdata.move_wait)) # wait for animation
-                obj.parent.Push(taskpress.TaskPress('hat_RIGHT'))
+                #obj.parent.Push(taskobject.TaskTimed(gbdata.move_wait)) # wait for animation
+                #obj.parent.Push(taskpress.TaskPress('hat_RIGHT'))
                 hand_column=int(gbstate.hand_slot%10)
+                print("right")
+                move_list.append('right')
         else:
             print("no wrap")
             while slot_column < hand_column:
                 # move pointer hand left
                 gbstate.hand_slot-=1
-                obj.parent.Push(taskobject.TaskTimed(gbdata.move_wait)) # wait for animation
-                obj.parent.Push(taskpress.TaskPress('hat_LEFT'))
+                #obj.parent.Push(taskobject.TaskTimed(gbdata.move_wait)) # wait for animation
+                #obj.parent.Push(taskpress.TaskPress('hat_LEFT'))
                 hand_column=int(gbstate.hand_slot%10)
+                print("left")
+                move_list.append('left')
 
     if slot_column > hand_column:
         # move pointer hand right
         delta=slot_column-hand_column
         if delta > 5:
-            print("wrap")
+            print("wrap 2")
             for j in range((10-delta)):
                 # move pointer hand left
                 if hand_column == 0:
                     gbstate.hand_slot+=9
                 else:
                     gbstate.hand_slot-=1
-                obj.parent.Push(taskobject.TaskTimed(gbdata.move_wait)) # wait for animation
-                obj.parent.Push(taskpress.TaskPress('hat_LEFT'))
+                #obj.parent.Push(taskobject.TaskTimed(gbdata.move_wait)) # wait for animation
+                #obj.parent.Push(taskpress.TaskPress('hat_LEFT'))
                 hand_column=int(gbstate.hand_slot%10)
+                print("left 2")
+                move_list.append('left')
         else:
-            print("no wrap")
+            print("no wrap 2")
             while slot_column > hand_column:
                 # move pointer hand right
                 gbstate.hand_slot+=1
-                obj.parent.Push(taskobject.TaskTimed(gbdata.move_wait)) # wait for animation
-                obj.parent.Push(taskpress.TaskPress('hat_RIGHT'))
+                #obj.parent.Push(taskobject.TaskTimed(gbdata.move_wait)) # wait for animation
+                #obj.parent.Push(taskpress.TaskPress('hat_RIGHT'))
                 hand_column=int(gbstate.hand_slot%10)
+                print("right 2")
+                move_list.append('right')
+
+    # now push the moves in the reverse order so they run in the correct order
+    move_list.reverse()
+    for m in move_list:
+        if m == 'up':
+            obj.parent.Push(taskobject.TaskTimed(gbdata.move_wait)) # wait for animation
+            obj.parent.Push(taskpress.TaskPress('hat_TOP'))
+        elif m == 'down':
+            obj.parent.Push(taskobject.TaskTimed(gbdata.move_wait)) # wait for animation
+            obj.parent.Push(taskpress.TaskPress('hat_BOTTOM'))
+        elif m == 'left':
+            obj.parent.Push(taskobject.TaskTimed(gbdata.move_wait)) # wait for animation
+            obj.parent.Push(taskpress.TaskPress('hat_LEFT'))
+        elif m == 'right':
+            obj.parent.Push(taskobject.TaskTimed(gbdata.move_wait)) # wait for animation
+            obj.parent.Push(taskpress.TaskPress('hat_RIGHT'))
     return
 
 def combine_menu_entries(menu):

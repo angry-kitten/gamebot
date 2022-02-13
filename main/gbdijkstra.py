@@ -9,7 +9,6 @@ import gbdata
 import gbstate
 import gbscreen
 import gbdisplay
-import gbdijkstra
 import gbmap
 import gbmem
 import threadmanager
@@ -115,7 +114,7 @@ def clear_waypoints():
     return
 
 def build_graph():
-    print("build_graph")
+    #print("build_graph")
 
     if not gbstate.map_is_gathered:
         print("E map not gathered")
@@ -144,7 +143,7 @@ def build_graph():
     return
 
 def path_plan(fmx,fmy,tmx,tmy):
-    print("path_plan 1")
+    #print("path_plan 1")
     #print(fmx,fmy,tmx,tmy)
     fmx=int(round(fmx))
     fmy=int(round(fmy))
@@ -152,33 +151,33 @@ def path_plan(fmx,fmy,tmx,tmy):
     tmy=int(round(tmy))
     #print(fmx,fmy,tmx,tmy)
 
-    print("path_plan 2")
+    #print("path_plan 2")
     # Make sure the graph is there first.
     while True:
         with gbstate.buildgraph_worker_thread.data_lock:
             if gbstate.dijkstra_walk_edges is not None:
                 if len(gbstate.dijkstra_walk_edges) > 0:
                     break
-        print("path_plan 3")
+        #print("path_plan 3")
         time.sleep(1)
 
-    print("path_plan 4")
+    #print("path_plan 4")
     clear_waypoints()
-    print("path_plan 5")
+    #print("path_plan 5")
 
     node=gbstate.mainmap[fmx][fmy]
     if len(node.dijkstra) < 1:
-        print("orphan map location")
+        print("E orphan map location")
         # Pick a nearby location and pretend it is the start.
         (new_fmx,new_fmy)=alternate_start(fmx,fmy)
         if new_fmx is None:
-            print("no alternate found")
+            print("E no alternate found")
             return
         fmx=new_fmx
         fmy=new_fmy
         node=gbstate.mainmap[fmx][fmy]
 
-    print("path_plan 6")
+    #print("path_plan 6")
     # Clear only the dijkstra_distance and dijkstra_prev. The other info is
     # reused with each path planning call.
     for mx in range(gbdata.map_width):
@@ -196,12 +195,12 @@ def path_plan(fmx,fmy,tmx,tmy):
     # Nominally all the unvisited nodes are in queue. But
     # queue really only contains tentative nodes.
 
-    print("path_plan 7")
+    #print("path_plan 7")
     edge_count=0
     queue_count=0
     while len(queue) > 0:
         queue_count+=1
-        print("queue_count",queue_count,flush=True)
+        #print("queue_count",queue_count,flush=True)
         gbmem.memory_report()
         i1=node_with_min_distance(queue)
         queue.remove(i1)
@@ -261,17 +260,17 @@ def node_with_min_distance(queue):
     return best_node_index
 
 def build_waypoint_list(i1):
-    print("i1",i1)
+    #print("i1",i1)
     clear_waypoints()
     while True:
-        print("add waypoint",flush=True)
+        #print("add waypoint",flush=True)
         gbmem.memory_report()
         n1=node_from_index(i1)
-        print("i1",i1)
+        #print("i1",i1)
         i2=n1.dijkstra_prev
-        print("i2",i2)
+        #print("i2",i2)
         if i2 < 0: # -1
-            print("single waypoint case")
+            #print("single waypoint case")
             # We don't know what movement type because there
             # is no edge. It should be walk.
             wp=(i1,gbdata.dijkstra_walk_type)
@@ -283,11 +282,11 @@ def build_waypoint_list(i1):
         t=edge[2]
         wp=(i1,t)
         gbstate.dijkstra_waypoints.append(wp)
-        print("distance",n1.dijkstra_distance)
+        #print("distance",n1.dijkstra_distance)
         if n1.dijkstra_distance == 0:
-            break;
+            break
         i1=i2
-    print("dijkstra",gbstate.dijkstra_waypoints,flush=True)
+    #print("dijkstra",gbstate.dijkstra_waypoints,flush=True)
     gbmem.memory_report()
     return
 
@@ -298,7 +297,7 @@ def reduce_waypoint_list():
     new_waypoints=[]
     l=len(gbstate.dijkstra_waypoints)
     if l < 3:
-        print("only one or two waypoints")
+        #print("only one or two waypoints")
         return
 
     # The end waypoint stays the same.
@@ -388,7 +387,7 @@ def alternate_start(mx1,my1):
     return (best_mx,best_my)
 
 def build_ladder_edges():
-    print("build_ladder_edges")
+    #print("build_ladder_edges")
     gbstate.dijkstra_new_ladder_edges.clear()
     gbstate.dijkstra_new_ladder_edges=[]
 
@@ -500,7 +499,7 @@ def add_ladder_edge(n1,n2):
     return
 
 def build_pole_edges():
-    print("build_pole_edges")
+    #print("build_pole_edges")
     gbstate.dijkstra_new_pole_edges.clear()
     gbstate.dijkstra_new_pole_edges=[]
 
@@ -614,7 +613,7 @@ def add_pole_edge(n1,n2,c):
     return
 
 def build_walk_edges():
-    print("build_walk_edges")
+    #print("build_walk_edges")
     gbstate.dijkstra_new_walk_edges.clear()
     gbstate.dijkstra_new_walk_edges=[]
 
@@ -658,7 +657,7 @@ def add_walk_edge(n1,n2,c):
     return
 
 def build_main_graph():
-    print("build_main_graph")
+    #print("build_main_graph")
     for mx in range(gbdata.map_width):
         for my in range(gbdata.map_height):
             identify_edges_for_node(mx,my)
@@ -674,8 +673,8 @@ def identify_edges_for_node(mx,my):
     identify_edges_in_list(node,index,gbstate.dijkstra_new_ladder_edges)
     return
 
-def identify_edges_in_list(node,index,list):
-    for edge in list:
+def identify_edges_in_list(node,index,edgelist):
+    for edge in edgelist:
         (n1,n2,t,c)=edge
         if n1 != index:
             if n2 != index:
@@ -697,7 +696,7 @@ def init_buildgraph():
     return
 
 def buildgraph_worker():
-    print("before buildgraph_worker")
+    #print("before buildgraph_worker")
 
     # Try to do the equivalent of a yield(), not the python yield.
     time.sleep(0.000001)
@@ -707,7 +706,7 @@ def buildgraph_worker():
     with gbstate.buildgraph_worker_thread.data_lock:
         gbstate.buildgraph_completed=True
 
-    print("after buildgraph_worker")
+    #print("after buildgraph_worker")
     return
 
 def trigger_buildgraph():

@@ -7,6 +7,7 @@ import random
 import math
 
 import cv2
+
 import gbdata, gbstate
 import gbmap
 import gbscreen
@@ -145,7 +146,7 @@ class TaskPathPlanGoTo(taskobject.Task):
                 # Make sure we have an accurate starting position.
                 self.parent.Push(tasksimplegoto.TaskSimpleGoTo(cmx2,cmy2))
             else:
-                print("unknown move type",t)
+                print("unknown move type",t1)
                 break
         return
 

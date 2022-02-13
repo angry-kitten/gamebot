@@ -14,7 +14,6 @@ import taskgotomain
 import taskupdatemini
 import taskrandomwalk
 import tasksimplegoto
-import tasksimplegoto
 import taskpathplangoto
 import taskcheckforinterrupt
 
@@ -27,6 +26,10 @@ class TaskSearchPattern(taskobject.Task):
         print("new",self.name,"object")
         self.callme=callme # call this function at every node
         self.step_limit=100
+        self.search_mx=0
+        self.search_my=0
+        self.search_step=0
+        self.search_list=[]
 
         # Set the default pattern.
         self.pattern_init=self.pattern0_init

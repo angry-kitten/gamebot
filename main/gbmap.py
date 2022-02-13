@@ -4,17 +4,16 @@
 #
 
 import time, math
+import colorsys
 import numpy
 import cv2
-import colorsys
 import gbdata
 import gbstate
 import gbscreen
 import gbdisplay
 import gbdijkstra
-import threadmanager
-import gbdijkstra
 import gblogfile
+import threadmanager
 
 icons=[]
 
@@ -196,12 +195,12 @@ def set_obstruction(mx,my,v):
     n.objstruction_status=v
     return
 
-def is_grass(id):
-    if id == MapTypeGrass0:
+def is_grass(typeid):
+    if typeid == MapTypeGrass0:
         return True
-    if id == MapTypeGrass1:
+    if typeid == MapTypeGrass1:
         return True
-    if id == MapTypeGrass2:
+    if typeid == MapTypeGrass2:
         return True
     return False
 
@@ -251,9 +250,6 @@ def node_equivalent_type(n):
 
 def gather_phonemap_squares():
     print("gather_phonemap_squares")
-
-    pixel_start_x=gbdata.phonemap_left
-    pixel_start_y=gbdata.phonemap_top
 
     # Gather map statistics.
     gbstate.map2stats=[]
@@ -395,15 +391,15 @@ def fp_rgb_to_hsv(r,g,b):
     return (h2,s2,v2)
 
 def scale_graph(g):
-    max=g[0]
+    maxg=g[0]
     for v in g:
-        if v > max:
-            max=v
-    if max < 1:
-        max=1
+        if v > maxg:
+            maxg=v
+    if maxg < 1:
+        maxg=1
     for i in range(len(g)):
         v=g[i]
-        v2=int(round((255*v)/max))
+        v2=int(round((255*v)/maxg))
         g[i]=v2
     return
 
@@ -450,10 +446,10 @@ def average_halfwindow(g,halfwindow,i):
     if high >= l:
         high=l-1
     count=(high-low)+1
-    sum=0
+    gsum=0
     for j in range(low,high+1):
-        sum+=g[j]
-    av=sum/count
+        gsum+=g[j]
+    av=gsum/count
     return av
 
 def smooth_graph(g,halfwindow):
@@ -537,7 +533,8 @@ def build_graph_data():
         gblogfile.log(f'{e}\n')
 
     gbstate.h_p1=highest_peak_near(gbdata.h_p1_e,gbstate.h_maxima)
-    gbstate.h_p2=highest_peak_near(gbdata.h_p2_e,gbstate.h_maxima)
+    gbstate.h_p2a=highest_peak_near(gbdata.h_p2a_e,gbstate.h_maxima)
+    gbstate.h_p2b=highest_peak_near(gbdata.h_p2b_e,gbstate.h_maxima)
     gbstate.h_p3=highest_peak_near(gbdata.h_p3_e,gbstate.h_maxima)
     gbstate.h_p4=highest_peak_near(gbdata.h_p4_e,gbstate.h_maxima)
     gbstate.h_p5=highest_peak_near(gbdata.h_p5_e,gbstate.h_maxima)
@@ -562,6 +559,7 @@ def build_graph_data():
     gbstate.v_p10=highest_peak_near(gbdata.v_p10_e,gbstate.v_maxima)
 
     log_hsv(gbdata.pin_color_list,'pin')
+    log_hsv(gbdata.player_house_colors,'house')
 
                 # h_p1 v_p1 water
                 # h_p1 v_p2 nothing
@@ -599,17 +597,14 @@ def build_graph_data():
                 # h_p6 v_p9 nothing
                 # h_p6 v_p10 rock
     gbstate.hvtt=[]
-    gbstate.hvtt.append((gbstate.h_p1,gbstate.v_p1,MapTypeWater))
-    gbstate.hvtt.append((gbstate.h_p2,gbstate.v_p3,MapTypeGrass0))
-    gbstate.hvtt.append((gbstate.h_p3,gbstate.v_p2,MapTypeSand))
-    gbstate.hvtt.append((gbstate.h_p2,gbstate.v_p4,MapTypeGrass1))
-    gbstate.hvtt.append((gbstate.h_p4,gbstate.v_p7,MapTypeGrass2))
-    gbstate.hvtt.append((gbstate.h_p5,gbstate.v_p9,MapTypePlaza))
-    gbstate.hvtt.append((gbstate.h_p6,gbstate.v_p10,MapTypeRock))
-    gbstate.hvtt.append((gbstate.h_p8,gbstate.v_p6,MapTypeDock))
-    gbstate.hvtt.append((gbstate.h_p1,gbstate.v_p1,MapTypeWater))
-    gbstate.hvtt.append((gbstate.h_p1,gbstate.v_p1,MapTypeWater))
-    gbstate.hvtt.append((gbstate.h_p1,gbstate.v_p1,MapTypeWater))
+    gbstate.hvtt.append((gbstate.h_p1,gbstate.v_p1,MapTypeWater,'water'))
+    gbstate.hvtt.append((gbstate.h_p2a,gbstate.v_p3,MapTypeGrass0,'grass0'))
+    gbstate.hvtt.append((gbstate.h_p3,gbstate.v_p2,MapTypeSand,'sand'))
+    gbstate.hvtt.append((gbstate.h_p2b,gbstate.v_p4,MapTypeGrass1,'grass1'))
+    gbstate.hvtt.append((gbstate.h_p4,gbstate.v_p7,MapTypeGrass2,'grass2'))
+    gbstate.hvtt.append((gbstate.h_p5,gbstate.v_p9,MapTypePlaza,'plaza'))
+    gbstate.hvtt.append((gbstate.h_p6,gbstate.v_p10,MapTypeRock,'rock'))
+    gbstate.hvtt.append((gbstate.h_p8,gbstate.v_p6,MapTypeDock,'dock'))
     return
 
 def hv_distance(h1,v1,h2,v2):
@@ -639,7 +634,7 @@ def hv_to_type_1(h,v):
             best_t=t
     return best_t
 
-def hv_to_type(h,v):
+def hsv_to_type_2(h,s,v):
     if gbstate.hvtt is None:
         return None
     best_d=None
@@ -663,11 +658,68 @@ def hv_to_type(h,v):
         elif d < best_d:
             best_d=d
             best_t=t
+    if best_d is None:
+        gblogfile.log(f'not matched {h} {s} {v}')
     return best_t
 
-def rgb_to_hv_to_type(r,g,b):
+def hsv_in_range(h,s,v,j):
+    e=gbstate.hvtt[j]
+    (h2,v2,t,n)=e
+    h3=h2[0]
+    v3=v2[0]
+    brv=True
+    lim=h3-h2[1]
+    if h < lim:
+        d=lim-h
+        gblogfile.log(f'not matched 2 {d:6.2f} {h:6.2f} {s:6.2f} {v:6.2f} {j} {n} -h')
+        brv=False
+    lim=h3+h2[2]
+    if h > lim:
+        d=h-lim
+        gblogfile.log(f'not matched 2 {d:6.2f} {h:6.2f} {s:6.2f} {v:6.2f} {j} {n} +h')
+        brv=False
+    lim=v3-v2[1]
+    if v < lim:
+        d=lim-v
+        gblogfile.log(f'not matched 2 {d:6.2f} {h:6.2f} {s:6.2f} {v:6.2f} {j} {n} -v')
+        brv=False
+    lim=v3+v2[2]
+    if v > lim:
+        d=v-lim
+        gblogfile.log(f'not matched 2 {d:6.2f} {h:6.2f} {s:6.2f} {v:6.2f} {j} {n} +v')
+        brv=False
+    return brv
+
+def hsv_to_type(h,s,v):
+    if gbstate.hvtt is None:
+        return None
+    best_d=None
+    best_j=None
+    l=len(gbstate.hvtt)
+    for j in range(l):
+        e=gbstate.hvtt[j]
+        (h2,v2,t,n)=e
+        h3=h2[0]
+        v3=v2[0]
+        d=hv_distance(h,v,h3,v3)
+        if best_d is None:
+            best_d=d
+            best_j=j
+        elif d < best_d:
+            best_d=d
+            best_j=j
+    if best_d is None:
+        gblogfile.log(f'not matched 1 {h:6.2f} {s:6.2f} {v:6.2f}')
+        return None
+    if hsv_in_range(h,s,v,best_j):
+        e=gbstate.hvtt[best_j]
+        (h2,v2,t,n)=e
+        return t
+    return None
+
+def rgb_to_hsv_to_type(r,g,b):
     (h,s,v)=fp_rgb_to_hsv(r,g,b)
-    t=hv_to_type(h,v)
+    t=hsv_to_type(h,s,v)
     return t
 
     # Gather info to collect color data in pass 1.
@@ -759,7 +811,7 @@ def process_phonemap_square2(mx,my,isx1,isx2,isy1,isy2):
     # yyy
     if avg <= 80.0:
         #mt=color_to_maptype(avgr,avgg,avgb)
-        mt=hv_to_type(me.h,me.v)
+        mt=hsv_to_type(me.h,me.s,me.v)
         if mt is not None:
             if mt is not MapTypeJunk:
                 gbstate.mainmap[mx][my].phonemap2=mt
@@ -959,12 +1011,12 @@ def process_phonemap_square2(mx,my,isx1,isx2,isy1,isy2):
             # A diagonal starting at nw
             #print("nw",nw_u_avgr,nw_u_avgg,nw_u_avgb)
             #maptype_u=color_to_maptype(nw_u_avgr,nw_u_avgg,nw_u_avgb)
-            maptype_u=rgb_to_hv_to_type(nw_u_avgr,nw_u_avgg,nw_u_avgb)
+            maptype_u=rgb_to_hsv_to_type(nw_u_avgr,nw_u_avgg,nw_u_avgb)
             #print("m_u",maptype_u)
             if maptype_diagonal_is_allowed(maptype_u):
                 #print("allowed 1",nw_l_avgr,nw_l_avgg,nw_l_avgb)
                 #maptype_l=color_to_maptype(nw_l_avgr,nw_l_avgg,nw_l_avgb)
-                maptype_l=rgb_to_hv_to_type(nw_l_avgr,nw_l_avgg,nw_l_avgb)
+                maptype_l=rgb_to_hsv_to_type(nw_l_avgr,nw_l_avgg,nw_l_avgb)
                 #print("m_l",maptype_l)
                 if maptype_diagonal_is_allowed(maptype_l):
                     #print("allowed 2")
@@ -982,12 +1034,12 @@ def process_phonemap_square2(mx,my,isx1,isx2,isy1,isy2):
             # A diagonal starting at sw
             #print("sw",sw_u_avgr,sw_u_avgg,sw_u_avgb)
             #maptype_u=color_to_maptype(sw_u_avgr,sw_u_avgg,sw_u_avgb)
-            maptype_u=rgb_to_hv_to_type(sw_u_avgr,sw_u_avgg,sw_u_avgb)
+            maptype_u=rgb_to_hsv_to_type(sw_u_avgr,sw_u_avgg,sw_u_avgb)
             #print("m_u",maptype_u)
             if maptype_diagonal_is_allowed(maptype_u):
                 #print("allowed 1",sw_l_avgr,sw_l_avgg,sw_l_avgb)
                 #maptype_l=color_to_maptype(sw_l_avgr,sw_l_avgg,sw_l_avgb)
-                maptype_l=rgb_to_hv_to_type(sw_l_avgr,sw_l_avgg,sw_l_avgb)
+                maptype_l=rgb_to_hsv_to_type(sw_l_avgr,sw_l_avgg,sw_l_avgb)
                 #print("m_l",maptype_l)
                 if maptype_diagonal_is_allowed(maptype_l):
                     #print("allowed 2")
@@ -1004,10 +1056,6 @@ def process_phonemap_square2(mx,my,isx1,isx2,isy1,isy2):
 
     gbstate.map2maybediagonals.append(maybe_diagonal)
 
-    ignore_me=[isx1,isy1]
-    if ignore_me in gbdata.tmp_ignore:
-        #print("ignore this",ignore_me)
-        return
 
     gbstate.map2stats.append(entry)
 
@@ -1041,12 +1089,12 @@ def maptype_diagonal_is_allowed(maptype):
 def locate_buildings():
     print("locate_buildings")
     # find gray circles
-    search_w=gbdata.phonemap_right-gbdata.phonemap_left
-    search_h=gbdata.phonemap_bottom-gbdata.phonemap_top_pin
+    search_w=gbdata.phonemap_right_close-gbdata.phonemap_left_close
+    search_h=gbdata.phonemap_bottom_close-gbdata.phonemap_top_close
     for local_y in range(0,search_h,gbdata.phonemap_gray_search_y):
-        pixel_y=gbdata.phonemap_top+local_y
+        pixel_y=gbdata.phonemap_top_close+local_y
         for local_x in range(0,search_w,gbdata.phonemap_gray_search_x):
-            pixel_x=gbdata.phonemap_left+local_x
+            pixel_x=gbdata.phonemap_left_close+local_x
             if is_circle_gray(pixel_x,pixel_y):
                 #print("found possible circle at",pixel_x,pixel_y)
                 verify_circle(pixel_x,pixel_y)
@@ -1151,16 +1199,19 @@ def verify_player_house(sx,sy):
 
 def locate_player_house():
     print("locate_player_house")
+    gbstate.house_color_xy=[]
     # find player house colors
-    search_w=gbdata.phonemap_right-gbdata.phonemap_left
-    search_h=gbdata.phonemap_bottom-gbdata.phonemap_top_pin
+    search_w=gbdata.phonemap_right_close-gbdata.phonemap_left_close
+    search_h=gbdata.phonemap_bottom_close-gbdata.phonemap_top_close
     for local_y in range(0,search_h,gbdata.phonemap_gray_search_y):
-        pixel_y=gbdata.phonemap_top+local_y
+        pixel_y=gbdata.phonemap_top_close+local_y
         for local_x in range(0,search_w,gbdata.phonemap_gray_search_x):
-            pixel_x=gbdata.phonemap_left+local_x
+            pixel_x=gbdata.phonemap_left_close+local_x
             if is_player_house_color(pixel_x,pixel_y):
                 if verify_player_house(pixel_x,pixel_y):
                     return
+                # YYY only do one now for debug
+                return # YYY
     return
 
 def verify_circle(start_sx,start_sy):
@@ -1431,7 +1482,10 @@ def is_circle_icon(pixel_x,pixel_y):
 def is_player_house_color(pixel_x,pixel_y):
     pixel_x=int(round(pixel_x))
     pixel_y=int(round(pixel_y))
-    if gbscreen.color_match_array_list(pixel_x,pixel_y,gbdata.player_house_colors,2):
+    if gbscreen.color_match_array_list(pixel_x,pixel_y,gbdata.player_house_colors,5):
+        t=(pixel_x,pixel_y)
+        if t not in gbstate.house_color_xy:
+            gbstate.house_color_xy.append(t)
         return True
     return False
 

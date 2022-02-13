@@ -3,10 +3,13 @@
 # Look at the current screen for weeds and pick them.
 #
 
-import taskobject
+import random
+import cv2
 import gbdata
 import gbstate
-import cv2
+import gbscreen
+import gbdisplay
+import taskobject
 import taskpress
 import tasksay
 import taskdetect
@@ -14,9 +17,6 @@ import taskgotomain
 import taskupdatemini
 import taskrandomwalk
 import tasksimplegoto
-import gbscreen
-import gbdisplay
-import random
 import taskweed
 import tasksearchpattern
 

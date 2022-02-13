@@ -1,11 +1,11 @@
 #
-# Copyright 2021 by angry-kitten
+# Copyright 2021-2022 by angry-kitten
 # A task to press a controller button
 #
 
-import taskobject
 import gbdata
 import gbstate
+import taskobject
 
 class TaskPress(taskobject.TaskTimed):
     """TaskPress Object"""
