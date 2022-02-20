@@ -15,6 +15,7 @@ import shutil
 import subprocess
 from xml.etree import cElementTree as ET
 import object_detection
+import yaml
 
 # D:\gamebot\tutorial\TFODCourse
 top=""
@@ -55,7 +56,7 @@ def process_file(fn):
             if label in labeldict:
                 labeldict[label] += 1
             else:
-                print("first time")
+                #print("first time")
                 labeldict[label]=1
             #print("count=", labeldict[label])
         else:
@@ -69,13 +70,13 @@ def walk_tree(dname):
     print("processing",dname)
     global filelist
     for root, dirs, files in os.walk(dname):
-        print("root dirs files",root,dirs,files)
+        #print("root dirs files",root,dirs,files)
         for fn in files:
-            print("file", fn)
+            #print("file", fn)
             if fn.endswith(".xml"):
-                print("xml file", fn)
+                #print("xml file", fn)
                 fullpath=os.path.join(root,fn)
-                print("xml fullpath", fullpath)
+                #print("xml fullpath", fullpath)
                 filelist.append(fullpath)
                 process_file(fullpath)
 
@@ -105,6 +106,34 @@ def dump_label_report(dname):
         for key in labeldict.keys():
             count=labeldict[key]
             print(f"[{key}] {count}",file=f) 
+    return
+
+def validate_labels(topdir):
+    """Check the labels from the annotation files against a valid list."""
+
+    fname=os.path.join(topdir,"valid_labels.yaml")
+    print(fname)
+
+    ## Build the initial valid list.
+    #label_list=list(labeldict.keys())
+    #print("label_list",label_list)
+    #with open(fname,'w') as file:
+    #    yaml.dump(label_list,file)
+
+    # Read in the valid list from the yaml file.
+    with open(fname,'r') as file:
+        valid_labels=yaml.safe_load(file)
+
+    #print("valid_labels",valid_labels)
+
+    are_valid=True
+    for l in labeldict.keys():
+        if l not in valid_labels:
+            print("not valid",l)
+            are_valid=False
+
+    print("are_valid",are_valid)
+    return are_valid
 
 def find_image_file(f):
     """Find the image file given the .xml file."""
@@ -142,7 +171,7 @@ def build_test_train():
     os.mkdir(dtrain)
 
     for f in filelist:
-        print("f=",f)
+        #print("f=",f)
         if random.randint(1,100) <= test_train_split_percent:
             dest=dtest
         else:
@@ -150,7 +179,7 @@ def build_test_train():
         # Find the image file given the .xml file.
         imf=find_image_file(f)
         if imf:
-            print("found")
+            #print("found")
             shutil.copy(f,dest)
             shutil.copy(imf,dest)
         else:
@@ -214,6 +243,11 @@ def main(args):
 
     # dump the label info into label_report.txt
     dump_label_report(top)
+
+    # Check the labels from the annotation files against a valid list.
+    are_valid=validate_labels(top)
+    if not are_valid:
+        sys.exit(1)
 
     # Select images to build new test train directories randomly
     build_test_train()
