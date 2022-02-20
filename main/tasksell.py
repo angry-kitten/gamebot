@@ -29,7 +29,6 @@ class TaskSell(taskobject.Task):
         self.step=0
         self.within=1
         self.ratio=0.30
-        self.name_within=30
         self.ocr_name=None
         self.ocr_menu=None
         self.target_slot=0
@@ -270,9 +269,9 @@ class TaskSell(taskobject.Task):
 
         if self.step == 12:
             # Check the results of the OCR
-            self.digest_name()
-            print("ocr name",self.ocr_name)
-            if self.ocr_name is None:
+            gbocr.digest_inv_screen_name()
+            print("ocr name",gbstate.ocr_name)
+            if gbstate.ocr_name is None:
                 # OCR didn't find a name or it couldn't detect a
                 # long curved name.
                 # Check for something from the basic "take inventory".
@@ -283,7 +282,7 @@ class TaskSell(taskobject.Task):
                     self.step=10
                     return
             else:
-                inv_name=gbocr.ocr_name_to_inv_name(self.ocr_name)
+                inv_name=gbocr.ocr_name_to_inv_name(gbstate.ocr_name)
                 if inv_name is None:
                     # There is no item to sell here
                     self.target_slot+=1
@@ -489,23 +488,4 @@ class TaskSell(taskobject.Task):
         else:
             # Sort the menu by sy
             self.ocr_menu=sorted(menu,key=lambda entry: entry[0])
-        return
-
-    def digest_name(self):
-        self.ocr_name=None
-        with gbstate.ocr_worker_thread.data_lock:
-            dets=gbstate.ocr_detections
-        if dets is None:
-            return
-        (slot_sx,slot_sy)=gbstate.inventory_locations[gbstate.hand_slot]
-        expect_name_sx=slot_sx
-        expect_name_sy=slot_sy+gbdata.ocr_inv_name_offset_y
-        for det in dets:
-            print("det",det)
-            (box,text,score)=det
-            (csx,csy)=gbocr.ocr_box_to_center(box)
-            if gbscreen.is_near_within(expect_name_sx,expect_name_sy,csx,csy,self.name_within):
-                print("item name")
-                self.ocr_name=text
-                continue
         return

@@ -23,6 +23,7 @@ import taskacceptnookmiles
 import taskheadinggoto
 import taskpathplangoto
 import tasksaverestart
+import taskprocinv
 
 class TaskCheckForInterrupt(taskobject.Task):
     """TaskCheckForInterrupt Object"""
@@ -125,14 +126,17 @@ class TaskCheckForInterrupt(taskobject.Task):
                         self.added_sell=True
                         self.parent.Push(tasktakeinventory.TaskTakeInventory())
                         self.parent.Push(tasksell.TaskSell())
+                        self.parent.Push(taskprocinv.TaskProcInv())
                     if not self.added_store:
                         self.added_store=True
                         self.parent.Push(tasktakeinventory.TaskTakeInventory())
                         self.parent.Push(taskstore.TaskStore())
+                        self.parent.Push(taskprocinv.TaskProcInv())
                     if not self.added_museum:
                         self.added_museum=True
                         self.parent.Push(tasktakeinventory.TaskTakeInventory())
                         self.parent.Push(taskmuseum.TaskMuseum())
+                        self.parent.Push(taskprocinv.TaskProcInv())
                     return
                 return
 
@@ -150,14 +154,17 @@ class TaskCheckForInterrupt(taskobject.Task):
                         self.added_sell=True
                         self.parent.Push(tasktakeinventory.TaskTakeInventory())
                         self.parent.Push(tasksell.TaskSell())
+                        self.parent.Push(taskprocinv.TaskProcInv())
                     if not self.added_store:
                         self.added_store=True
                         self.parent.Push(tasktakeinventory.TaskTakeInventory())
                         self.parent.Push(taskstore.TaskStore())
+                        self.parent.Push(taskprocinv.TaskProcInv())
                     if not self.added_museum:
                         self.added_museum=True
                         self.parent.Push(tasktakeinventory.TaskTakeInventory())
                         self.parent.Push(taskmuseum.TaskMuseum())
+                        self.parent.Push(taskprocinv.TaskProcInv())
                     return
                 return
 

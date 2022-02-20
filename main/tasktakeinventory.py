@@ -10,6 +10,7 @@ import gbdisplay
 import taskobject
 import taskpress
 import taskdetect
+import taskprocinv
 
 class TaskTakeInventory(taskobject.Task):
     """TaskTakeInventory Object"""
@@ -39,8 +40,12 @@ class TaskTakeInventory(taskobject.Task):
             self.step=99
             return
 
+        # See if there are presents, recipes, or message bottles to process.
+        if taskprocinv.can_process_inventory():
+            self.parent.Push(taskprocinv.TaskProcInv())
+
         # close the inventory
-        self.parent.Push(taskobject.TaskTimed(2.0)) # wait for the inventory to close
+        self.parent.Push(taskobject.TaskTimed(3.0)) # wait for the inventory to close
         self.parent.Push(taskpress.TaskPress('B'))
         gbstate.draw_inventory_locations=False
         print(self.name,"done")

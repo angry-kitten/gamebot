@@ -4,9 +4,11 @@
 #
 
 import os, sys, time, random, threading
+import re
 import difflib
 import easyocr
 import gbdata, gbstate
+import gbscreen
 import threadmanager
 import taskobject
 import taskpress
@@ -119,12 +121,12 @@ def score_close_string_match(s1,s2):
     print("ratio",v)
     if s1 == s2:
         return 1.0
-    if s1 in s2:
-        print("s1 in s2")
-        return 0.95
-    if s2 in s1:
-        print("s2 in s1")
-        return 0.95
+    #if s1 in s2:
+    #    print("s1 in s2")
+    #    return 0.95
+    #if s2 in s1:
+    #    print("s2 in s1")
+    #    return 0.95
     return v
 
 def move_hand_to_slot(slot,obj):
@@ -280,6 +282,8 @@ def ocr_results_contain(s):
         (box,text,score)=det
         mscore=score_close_string_match(text,s)
         print("mscore",mscore)
+        if mscore >= 1.0:
+            return True
         if mscore > best_mscore:
             best_mscore=mscore
     print("best_mscore",best_mscore)
@@ -289,6 +293,12 @@ def ocr_results_contain(s):
 
 def ocr_name_to_inv_name(ocr_name):
     inv_name=None
+    # Check for bell bag star first because it has the
+    # number of bells in the ocr_name. This makes it hard
+    # to match a fixed string.
+    if re.fullmatch(r'\s*[\d,.]*\s*[Bb]ells\s*',ocr_name):
+        inv_name='InvBellBagStar'
+        return inv_name
     if ocr_name in gbdata.ocr_to_inventory:
         inv_name=gbdata.ocr_to_inventory[ocr_name]
         print("inv_name",inv_name)
@@ -311,3 +321,90 @@ def ocr_name_to_inv_name(ocr_name):
         inv_name=gbdata.ocr_to_inventory[best_ocr_name]
         print("inv_name",inv_name)
     return inv_name
+
+def digest_inv_screen_name():
+    gbstate.ocr_name=None
+    with gbstate.ocr_worker_thread.data_lock:
+        dets=gbstate.ocr_detections
+    if dets is None:
+        return
+    (slot_sx,slot_sy)=gbstate.inventory_locations[gbstate.hand_slot]
+    expect_name_sx=slot_sx
+    expect_name_sy=slot_sy+gbdata.ocr_inv_name_offset_y
+    for det in dets:
+        print("det",det)
+        (box,text,score)=det
+        (csx,csy)=ocr_box_to_center(box)
+        if gbscreen.is_near_within(expect_name_sx,expect_name_sy,csx,csy,gbstate.ocr_name_within):
+            print("item name")
+            gbstate.ocr_name=text
+            continue
+    return
+
+# Example OCR data
+# [([[439, 35], [641, 35], [641, 73], [439, 73]], 'Vaulting pole', 0.9577903529709549), ([[797, 339], [959, 339], [959, 380], [797, 380]], 'Place Item', 0.8997346079334698), ([[327, 394], [454, 394], [454, 446], [327, 446]], '23,555', 0.726360381715388), ([[801, 394], [1015, 394], [1015, 433], [801, 433]], 'Put in Storage', 0.9066206404337775), ([[802, 452], [924, 452], [924, 484], [802, 484]], 'Favorite', 0.9996292247387993), ([[989, 681], [1009, 681], [1009, 703], [989, 703]], 'B', 0.9999361048414812), ([[1013, 675], [1096, 675], [1096, 711], [1013, 711]], 'Close', 0.9999234436005648), ([[1148, 678], [1238, 678], [1238, 710], [1148, 710]], 'Select', 0.9999911425992467), ([[377.4871464448379, 184.4665807565786], [552.2369732838534, 160.82192444134853], [556.5128535551621, 223.5334192434214], [382.7630267161465, 247.17807555865147]], '0 P &', 0.6320404477802022)]
+def digest_inv_screen_menu():
+    gbstate.ocr_menu=None
+    with gbstate.ocr_worker_thread.data_lock:
+        dets=gbstate.ocr_detections
+    if dets is None:
+        return
+    menu=digest_screen_region_text(gbdata.ocr_inv_menu_lane_x1,gbdata.ocr_inv_menu_lane_x2,gbdata.ocr_inv_menu_lane_y1,gbdata.ocr_inv_menu_lane_y2)
+    if menu is None:
+        return
+    gbstate.ocr_menu=menu
+    return
+
+def digest_screen_region_text(x1,x2,y1,y2):
+    result=None
+    with gbstate.ocr_worker_thread.data_lock:
+        dets=gbstate.ocr_detections
+    if dets is None:
+        return result
+    result=[]
+    for det in dets:
+        print("det",det)
+        (box,text,score)=det
+        (csx,csy)=ocr_box_to_center(box)
+        if gbscreen.is_inside_box(x1,x2,y1,y2,csx,csy):
+            print("text item")
+            entry=[csy,text,box]
+            result.append(entry)
+            continue
+    if len(result) < 1:
+        result=None
+    else:
+        # Sort the text by sy
+        result=sorted(result,key=lambda entry: entry[0])
+    return result
+
+def digest_recipe_screen_text():
+    result=None
+    with gbstate.ocr_worker_thread.data_lock:
+        dets=gbstate.ocr_detections
+    if dets is None:
+        return result
+    result=digest_screen_region_text(gbdata.ocr_recipe_lane_x1,gbdata.ocr_recipe_lane_x2,gbdata.ocr_recipe_lane_y1,gbdata.ocr_recipe_lane_y2)
+    return result
+
+def nearest_entry_index(t,sy):
+    if t is None:
+        return None
+    if len(t) < 1:
+        return None
+    best_dy=None
+    best_j=None
+    for j in range(len(t)):
+        e=t[j]
+        ty=e[0]
+        dy=int(abs(sy-ty))
+        if best_dy is None:
+            best_dy=dy
+            best_j=j
+        elif dy < best_dy:
+            best_dy=dy
+            best_j=j
+
+    if best_dy is None:
+        return None
+    return best_j

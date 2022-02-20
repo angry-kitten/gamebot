@@ -166,7 +166,7 @@ class TaskTree(taskobject.Task):
             # Put the axe away.
             self.parent.Push(taskholdtool.TaskHoldTool('None'))
             # Swing the axe three times.
-            self.parent.Push(taskobject.TaskTimed(1.0)) # let the animation play out
+            self.parent.Push(taskobject.TaskTimed(2.0)) # let the animation play out
             # Swing the stone axe
             self.parent.Push(taskpress.TaskPress('A'))
             self.parent.Push(taskobject.TaskTimed(1.0)) # let the animation play out

@@ -40,14 +40,15 @@ line_width_path=3
 line_width_x_narrow=2
 line_width_x=3
 line_width_x_wide=6
-line_type=cv2.LINE_AA
+line_type=cv2.LINE_AA #pylint: disable=no-member
 font_line_width=1
 font_line_width_wide=2
+font_line_width_dropshadow=3
 font_vertical_space=26
 font_vertical_space_75=26
 font_vertical_space_50=int(round(font_vertical_space*0.50))
 font_vertical_space_25=int(round(font_vertical_space*0.25))
-font=cv2.FONT_HERSHEY_SIMPLEX
+font=cv2.FONT_HERSHEY_SIMPLEX #pylint: disable=no-member
 #font=cv2.FONT_HERSHEY_PLAIN
 #font=cv2.FONT_HERSHEY_DUPLEX
 #font=cv2.FONT_HERSHEY_COMPLEX
@@ -76,49 +77,49 @@ def control_help(frame):
     x=0
     y=120
     i=26
-    cv2.putText(frame,'a=left joy left',(x,y),font,font_scale,color_green,font_line_width,line_type)
+    cv2.putText(frame,'a=left joy left',(x,y),font,font_scale,color_green,font_line_width,line_type) #pylint: disable=no-member
     y+=i
-    cv2.putText(frame,'d=left joy right',(x,y),font,font_scale,color_green,font_line_width,line_type)
+    cv2.putText(frame,'d=left joy right',(x,y),font,font_scale,color_green,font_line_width,line_type) #pylint: disable=no-member
     y+=i
-    cv2.putText(frame,'w=left joy up',(x,y),font,font_scale,color_green,font_line_width,line_type)
+    cv2.putText(frame,'w=left joy up',(x,y),font,font_scale,color_green,font_line_width,line_type) #pylint: disable=no-member
     y+=i
-    cv2.putText(frame,'s=left joy down',(x,y),font,font_scale,color_green,font_line_width,line_type)
+    cv2.putText(frame,'s=left joy down',(x,y),font,font_scale,color_green,font_line_width,line_type) #pylint: disable=no-member
     y+=i
-    cv2.putText(frame,'f=right joy left',(x,y),font,font_scale,color_green,font_line_width,line_type)
+    cv2.putText(frame,'f=right joy left',(x,y),font,font_scale,color_green,font_line_width,line_type) #pylint: disable=no-member
     y+=i
-    cv2.putText(frame,'h=right joy right',(x,y),font,font_scale,color_green,font_line_width,line_type)
+    cv2.putText(frame,'h=right joy right',(x,y),font,font_scale,color_green,font_line_width,line_type) #pylint: disable=no-member
     y+=i
-    cv2.putText(frame,'t=right joy up',(x,y),font,font_scale,color_green,font_line_width,line_type)
+    cv2.putText(frame,'t=right joy up',(x,y),font,font_scale,color_green,font_line_width,line_type) #pylint: disable=no-member
     y+=i
-    cv2.putText(frame,'g=right joy down',(x,y),font,font_scale,color_green,font_line_width,line_type)
+    cv2.putText(frame,'g=right joy down',(x,y),font,font_scale,color_green,font_line_width,line_type) #pylint: disable=no-member
     y+=i
-    cv2.putText(frame,'8=X',(x,y),font,font_scale,color_green,font_line_width,line_type)
+    cv2.putText(frame,'8=X',(x,y),font,font_scale,color_green,font_line_width,line_type) #pylint: disable=no-member
     y+=i
-    cv2.putText(frame,'6=A',(x,y),font,font_scale,color_green,font_line_width,line_type)
+    cv2.putText(frame,'6=A',(x,y),font,font_scale,color_green,font_line_width,line_type) #pylint: disable=no-member
     y+=i
-    cv2.putText(frame,'4=Y',(x,y),font,font_scale,color_green,font_line_width,line_type)
+    cv2.putText(frame,'4=Y',(x,y),font,font_scale,color_green,font_line_width,line_type) #pylint: disable=no-member
     y+=i
-    cv2.putText(frame,'2=B',(x,y),font,font_scale,color_green,font_line_width,line_type)
+    cv2.putText(frame,'2=B',(x,y),font,font_scale,color_green,font_line_width,line_type) #pylint: disable=no-member
     y+=i
-    cv2.putText(frame,'+=plus',(x,y),font,font_scale,color_green,font_line_width,line_type)
+    cv2.putText(frame,'+=plus',(x,y),font,font_scale,color_green,font_line_width,line_type) #pylint: disable=no-member
     y+=i
-    cv2.putText(frame,'-=minus',(x,y),font,font_scale,color_green,font_line_width,line_type)
+    cv2.putText(frame,'-=minus',(x,y),font,font_scale,color_green,font_line_width,line_type) #pylint: disable=no-member
     y+=i
-    cv2.putText(frame,'u=ZL',(x,y),font,font_scale,color_green,font_line_width,line_type)
+    cv2.putText(frame,'u=ZL',(x,y),font,font_scale,color_green,font_line_width,line_type) #pylint: disable=no-member
     y+=i
-    cv2.putText(frame,'j=L',(x,y),font,font_scale,color_green,font_line_width,line_type)
+    cv2.putText(frame,'j=L',(x,y),font,font_scale,color_green,font_line_width,line_type) #pylint: disable=no-member
     y+=i
-    cv2.putText(frame,'i=ZR',(x,y),font,font_scale,color_green,font_line_width,line_type)
+    cv2.putText(frame,'i=ZR',(x,y),font,font_scale,color_green,font_line_width,line_type) #pylint: disable=no-member
     y+=i
-    cv2.putText(frame,'k=R',(x,y),font,font_scale,color_green,font_line_width,line_type)
+    cv2.putText(frame,'k=R',(x,y),font,font_scale,color_green,font_line_width,line_type) #pylint: disable=no-member
     y+=i
-    cv2.putText(frame,'q=quit',(x,y),font,font_scale,color_green,font_line_width,line_type)
+    cv2.putText(frame,'q=quit',(x,y),font,font_scale,color_green,font_line_width,line_type) #pylint: disable=no-member
     y+=i
-    cv2.putText(frame,'b=debug',(x,y),font,font_scale,color_green,font_line_width,line_type)
+    cv2.putText(frame,'b=debug',(x,y),font,font_scale,color_green,font_line_width,line_type) #pylint: disable=no-member
     y+=i
-    cv2.putText(frame,'p=position',(x,y),font,font_scale,color_green,font_line_width,line_type)
+    cv2.putText(frame,'p=position',(x,y),font,font_scale,color_green,font_line_width,line_type) #pylint: disable=no-member
     y+=i
-    cv2.putText(frame,'z=test',(x,y),font,font_scale,color_green,font_line_width,line_type)
+    cv2.putText(frame,'z=test',(x,y),font,font_scale,color_green,font_line_width,line_type) #pylint: disable=no-member
 
 def minimap_position(frame):
     if gbstate.mainmap is None:
@@ -130,7 +131,7 @@ def minimap_position(frame):
     x=int((w*8)/16)
     y=h-2
     s=f'{gbstate.position_minimap_x:.4f} {gbstate.position_minimap_y:.4f}'
-    cv2.putText(frame,s,(x,y),font,font_scale*0.75,color_white,font_line_width,line_type)
+    cv2.putText(frame,s,(x,y),font,font_scale*0.75,color_white,font_line_width,line_type) #pylint: disable=no-member
 
 def phonemap_position(frame):
 # cv::MARKER_CROSS = 0,
@@ -155,7 +156,7 @@ def phonemap_position(frame):
     x=int((w*5)/16)
     y=h-2
     s=f'{gbstate.position_phonemap_x:.4f} {gbstate.position_phonemap_y:.4f}'
-    cv2.putText(frame,s,(x,y),font,font_scale*0.75,color_white,font_line_width,line_type)
+    cv2.putText(frame,s,(x,y),font,font_scale*0.75,color_white,font_line_width,line_type) #pylint: disable=no-member
 
 def player_position(frame):
     if gbstate.player_mx < 0:
@@ -165,7 +166,7 @@ def player_position(frame):
     x=int((w*2)/16)
     y=h-2
     s=f'{gbstate.player_mx:.4f} {gbstate.player_my:.4f}'
-    cv2.putText(frame,s,(x,y),font,font_scale*0.75,color_white,font_line_width,line_type)
+    cv2.putText(frame,s,(x,y),font,font_scale*0.75,color_white,font_line_width,line_type) #pylint: disable=no-member
 
 def convert_map_to_pixel(mx,my):
     if gbstate.center_mx >= 0:
@@ -416,7 +417,7 @@ def draw_grid(frame):
             x2+=cx
             y2+=cy
             #cv2.line(frame,(int(x1),int(y1)),(int(x2),int(y2)),color_white,line_width)
-            cv2.line(frame,(int(x1),int(y1)),(int(x1+1),int(y1)),color_white,line_width)
+            cv2.line(frame,(int(x1),int(y1)),(int(x1+1),int(y1)),color_white,line_width) #pylint: disable=no-member
     # draw "vertical" lines
     for gy in range(data_h-1):
         for gx in range(data_w):
@@ -427,11 +428,11 @@ def draw_grid(frame):
             x2+=cx
             y2+=cy
             #cv2.line(frame,(int(x1),int(y1)),(int(x2),int(y2)),color_white,line_width)
-            cv2.line(frame,(int(x1),int(y1)),(int(x1),int(y1+1)),color_white,line_width)
+            cv2.line(frame,(int(x1),int(y1)),(int(x1),int(y1+1)),color_white,line_width) #pylint: disable=no-member
 
 def draw_x_at(frame,x,y,color,local_line_width=line_width_x):
-    cv2.line(frame,(int(x)-10,int(y)-10),(int(x)+10,int(y)+10),color,local_line_width)
-    cv2.line(frame,(int(x)-10,int(y)+10),(int(x)+10,int(y)-10),color,local_line_width)
+    cv2.line(frame,(int(x)-10,int(y)-10),(int(x)+10,int(y)+10),color,local_line_width) #pylint: disable=no-member
+    cv2.line(frame,(int(x)-10,int(y)+10),(int(x)+10,int(y)-10),color,local_line_width) #pylint: disable=no-member
 
 def draw_x_at_map(frame,mx,my,color,local_line_width=line_width_x):
     (px,py)=convert_map_to_pixel(mx,my)
@@ -443,7 +444,7 @@ def draw_x_at_map(frame,mx,my,color,local_line_width=line_width_x):
 def draw_marker_at(frame,marker,sx,sy,color):
     sx=int(round(sx))
     sy=int(round(sy))
-    cv2.drawMarker(frame,(sx,sy),color,marker)
+    cv2.drawMarker(frame,(sx,sy),color,marker) #pylint: disable=no-member
 
 def draw_marker_at_map(frame,marker,mx,my,color):
     (sx,sy)=convert_map_to_pixel(mx,my)
@@ -502,10 +503,10 @@ def draw_targets(frame):
         draw_marker_at(frame,cv2.MARKER_TILTED_CROSS,sx,sy,color_blue)
 
     if gbstate.player_mx >= 0:
-        draw_marker_at_map(frame,cv2.MARKER_DIAMOND,gbstate.player_mx,gbstate.player_my,color_green)
+        draw_marker_at_map(frame,cv2.MARKER_DIAMOND,gbstate.player_mx,gbstate.player_my,color_green) #pylint: disable=no-member
         sx=gbdata.minimap_origin_x+gbstate.player_mx*gbdata.minimap_square_spacing
         sy=gbdata.minimap_origin_y+gbstate.player_my*gbdata.minimap_square_spacing
-        draw_marker_at(frame,cv2.MARKER_DIAMOND,sx,sy,color_green)
+        draw_marker_at(frame,cv2.MARKER_DIAMOND,sx,sy,color_green) #pylint: disable=no-member
 
     if gbstate.goto_target_mx >= 0:
         draw_x_at_map(frame,gbstate.goto_target_mx,gbstate.goto_target_my,color_red,local_line_width=line_width_x_wide)
@@ -539,17 +540,17 @@ def draw_targets(frame):
     if gbstate.position_minimap_x >= 0:
         sx=origin_sx+1+gbstate.position_minimap_x*3
         sy=origin_sy+1+gbstate.position_minimap_y*3
-        draw_marker_at(frame,cv2.MARKER_CROSS,sx,sy,color_blue)
+        draw_marker_at(frame,cv2.MARKER_CROSS,sx,sy,color_blue) #pylint: disable=no-member
 
     if gbstate.position_phonemap_x >= 0:
         sx=origin_sx+1+gbstate.position_phonemap_x*3
         sy=origin_sy+1+gbstate.position_phonemap_y*3
-        draw_marker_at(frame,cv2.MARKER_TILTED_CROSS,sx,sy,color_blue)
+        draw_marker_at(frame,cv2.MARKER_TILTED_CROSS,sx,sy,color_blue) #pylint: disable=no-member
 
     if gbstate.player_mx >= 0:
         sx=origin_sx+1+gbstate.player_mx*3
         sy=origin_sy+1+gbstate.player_my*3
-        draw_marker_at(frame,cv2.MARKER_DIAMOND,sx,sy,color_green)
+        draw_marker_at(frame,cv2.MARKER_DIAMOND,sx,sy,color_green) #pylint: disable=no-member
 
     if gbstate.goto_target_mx >= 0:
         x=origin_sx+1+gbstate.goto_target_mx*3
@@ -569,7 +570,7 @@ def draw_targets(frame):
     if gbstate.plan_goto_target_mx >= 0:
         x=origin_sx+1+gbstate.plan_goto_target_mx*3
         y=origin_sy+1+gbstate.plan_goto_target_my*3
-        draw_marker_at(frame,cv2.MARKER_STAR,x,y,color_red)
+        draw_marker_at(frame,cv2.MARKER_STAR,x,y,color_red) #pylint: disable=no-member
 
     return
 
@@ -604,10 +605,10 @@ def draw_feet_box(frame):
     if p4x < 0:
         print("unable to draw feet box 6")
         return
-    cv2.line(frame,(int(p1x),int(p1y)),(int(p2x),int(p2y)),color_blue,line_width)
-    cv2.line(frame,(int(p2x),int(p2y)),(int(p4x),int(p4y)),color_blue,line_width)
-    cv2.line(frame,(int(p1x),int(p1y)),(int(p3x),int(p3y)),color_blue,line_width)
-    cv2.line(frame,(int(p3x),int(p3y)),(int(p4x),int(p4y)),color_blue,line_width)
+    cv2.line(frame,(int(p1x),int(p1y)),(int(p2x),int(p2y)),color_blue,line_width) #pylint: disable=no-member
+    cv2.line(frame,(int(p2x),int(p2y)),(int(p4x),int(p4y)),color_blue,line_width) #pylint: disable=no-member
+    cv2.line(frame,(int(p1x),int(p1y)),(int(p3x),int(p3y)),color_blue,line_width) #pylint: disable=no-member
+    cv2.line(frame,(int(p3x),int(p3y)),(int(p4x),int(p4y)),color_blue,line_width) #pylint: disable=no-member
 
 def draw_top_of_task_stack(frame):
     n=gbstate.tasks.NameRecursive()
@@ -616,13 +617,21 @@ def draw_top_of_task_stack(frame):
 
     # Draw the names of multiple tasks on the top of the stack along
     # the right side of the screen.
-    x=int((w*2)/4)
+    #x=int((w*2)/4)
+    x=int((w*1)/4)
     i=font_vertical_space_50 # This is the spacing between the lines vertically.
     y=i
     l=len(gbstate.task_stack_names)
+    y2=y
+    # draw the drop shadow
     for n in gbstate.task_stack_names:
-        cv2.putText(frame,n,(x,y),font,font_scale_50,color_red,font_line_width,line_type)
-        y+=i
+        cv2.putText(frame,n,(x,y2),font,font_scale_50,color_black,font_line_width_dropshadow,line_type) #pylint: disable=no-member
+        y2+=i
+    y2=y
+    # draw the text on top of the shadow
+    for n in gbstate.task_stack_names:
+        cv2.putText(frame,n,(x,y2),font,font_scale_50,color_white,font_line_width,line_type) #pylint: disable=no-member
+        y2+=i
 
 def draw_inventory(frame):
     if not gbstate.draw_inventory_locations:
@@ -630,7 +639,7 @@ def draw_inventory(frame):
     diam=10
     loclist=gbstate.inventory_locations
     for loc in loclist:
-        cv2.circle(frame,loc,diam,color_black,line_width)
+        cv2.circle(frame,loc,diam,color_black,line_width) #pylint: disable=no-member
 
 def draw_current_tool(frame):
     if gbstate.current_tool is None:
@@ -641,7 +650,7 @@ def draw_current_tool(frame):
     h=gbdata.stdscreen_size[1]
     x=0
     y=h-2
-    cv2.putText(frame,n,(x,y),font,font_scale*0.75,color_white,font_line_width,line_type)
+    cv2.putText(frame,n,(x,y),font,font_scale*0.75,color_white,font_line_width,line_type) #pylint: disable=no-member
 
 def custom_color_convert(r,g,b):
     fr=r/255
@@ -736,7 +745,7 @@ def draw_maps(frame):
     origin_sy=0
     # draw phonemap2
     if gbstate.mainmap is not None:
-        cv2.rectangle(frame,(origin_sx,origin_sy),(origin_sx+gbdata.map_width,origin_sy+gbdata.map_height),color_red,1)
+        cv2.rectangle(frame,(origin_sx,origin_sy),(origin_sx+gbdata.map_width,origin_sy+gbdata.map_height),color_red,1) #pylint: disable=no-member
         for y in range(gbdata.map_height):
             for x in range(gbdata.map_width):
                 sx=origin_sx+x*3
@@ -793,40 +802,40 @@ def draw_maps(frame):
 
                 if c2 is not None:
                     # Draw a simple square.
-                    cv2.rectangle(frame,(sx,sy),(sx+2,sy+2),c2,-1)
+                    cv2.rectangle(frame,(sx,sy),(sx+2,sy+2),c2,-1) #pylint: disable=no-member
                 elif me.phonemap2 == gbmap.MapTypeDiagonalNW:
                     # Draw a black background square.
-                    cv2.rectangle(frame,(sx,sy),(sx+2,sy+2),color_black,-1)
+                    cv2.rectangle(frame,(sx,sy),(sx+2,sy+2),color_black,-1) #pylint: disable=no-member
                     cu=maptype_to_color(me.diagonal0)
                     cl=maptype_to_color(me.diagonal1)
                     if cu is not None:
                         # Draw the upper right pixels
-                        cv2.rectangle(frame,(sx+1,sy),(sx+1,sy),cu,-1)
-                        cv2.rectangle(frame,(sx+2,sy),(sx+2,sy),cu,-1)
-                        cv2.rectangle(frame,(sx+2,sy+1),(sx+2,sy+1),cu,-1)
+                        cv2.rectangle(frame,(sx+1,sy),(sx+1,sy),cu,-1) #pylint: disable=no-member
+                        cv2.rectangle(frame,(sx+2,sy),(sx+2,sy),cu,-1) #pylint: disable=no-member
+                        cv2.rectangle(frame,(sx+2,sy+1),(sx+2,sy+1),cu,-1) #pylint: disable=no-member
                     if cl is not None:
                         # Draw the lower left pixels
-                        cv2.rectangle(frame,(sx,sy+1),(sx,sy+1),cl,-1)
-                        cv2.rectangle(frame,(sx,sy+2),(sx,sy+2),cl,-1)
-                        cv2.rectangle(frame,(sx+1,sy+2),(sx+1,sy+2),cl,-1)
+                        cv2.rectangle(frame,(sx,sy+1),(sx,sy+1),cl,-1) #pylint: disable=no-member
+                        cv2.rectangle(frame,(sx,sy+2),(sx,sy+2),cl,-1) #pylint: disable=no-member
+                        cv2.rectangle(frame,(sx+1,sy+2),(sx+1,sy+2),cl,-1) #pylint: disable=no-member
                 elif me.phonemap2 == gbmap.MapTypeDiagonalSW:
                     # Draw a black background square.
-                    cv2.rectangle(frame,(sx,sy),(sx+2,sy+2),color_black,-1)
+                    cv2.rectangle(frame,(sx,sy),(sx+2,sy+2),color_black,-1) #pylint: disable=no-member
                     cu=maptype_to_color(me.diagonal0)
                     cl=maptype_to_color(me.diagonal1)
                     if cu is not None:
                         # Draw the upper left pixels
-                        cv2.rectangle(frame,(sx,sy),(sx,sy),cu,-1)
-                        cv2.rectangle(frame,(sx+1,sy),(sx+1,sy),cu,-1)
-                        cv2.rectangle(frame,(sx,sy+1),(sx,sy+1),cu,-1)
+                        cv2.rectangle(frame,(sx,sy),(sx,sy),cu,-1) #pylint: disable=no-member
+                        cv2.rectangle(frame,(sx+1,sy),(sx+1,sy),cu,-1) #pylint: disable=no-member
+                        cv2.rectangle(frame,(sx,sy+1),(sx,sy+1),cu,-1) #pylint: disable=no-member
                     if cl is not None:
                         # Draw the lower right pixels
-                        cv2.rectangle(frame,(sx+2,sy+1),(sx+2,sy+1),cl,-1)
-                        cv2.rectangle(frame,(sx+1,sy+2),(sx+1,sy+2),cl,-1)
-                        cv2.rectangle(frame,(sx+2,sy+2),(sx+2,sy+2),cl,-1)
+                        cv2.rectangle(frame,(sx+2,sy+1),(sx+2,sy+1),cl,-1) #pylint: disable=no-member
+                        cv2.rectangle(frame,(sx+1,sy+2),(sx+1,sy+2),cl,-1) #pylint: disable=no-member
+                        cv2.rectangle(frame,(sx+2,sy+2),(sx+2,sy+2),cl,-1) #pylint: disable=no-member
                 else:
                     # Draw a simple square.
-                    cv2.rectangle(frame,(sx,sy),(sx+2,sy+2),color_red,-1)
+                    cv2.rectangle(frame,(sx,sy),(sx+2,sy+2),color_red,-1) #pylint: disable=no-member
 
         # Draw the planned path on the mainmap display.
         # Draw the waypoint lines first then the points.
@@ -841,7 +850,7 @@ def draw_maps(frame):
             if psx >= 0:
                 v=127+(n*32)%128
                 c=[v,0,0] # BGR
-                cv2.line(frame,(psx,psy),(sx,sy),c,line_width_path)
+                cv2.line(frame,(psx,psy),(sx,sy),c,line_width_path) #pylint: disable=no-member
             psx=sx
             psy=sy
         for wp in gbstate.dijkstra_waypoints:
@@ -850,7 +859,7 @@ def draw_maps(frame):
             sx=origin_sx+mx*3
             sy=origin_sy+my*3
             # use a rectangle to draw a pixel
-            cv2.rectangle(frame,(sx,sy),(sx+2,sy+2),color_red,-1)
+            cv2.rectangle(frame,(sx,sy),(sx+2,sy+2),color_red,-1) #pylint: disable=no-member
 
     # draw obstruction map 1
     if gbstate.mainmap is not None:
@@ -866,14 +875,14 @@ def draw_maps(frame):
                 elif v == gbmap.ObStandingOnWater:
                     color=color_white
                 if color is not None:
-                    cv2.line(frame,(sx,sy),(sx+2,sy+2),color,line_width)
-                    cv2.line(frame,(sx+2,sy),(sx,sy+2),color,line_width)
+                    cv2.line(frame,(sx,sy),(sx+2,sy+2),color,line_width) #pylint: disable=no-member
+                    cv2.line(frame,(sx+2,sy),(sx,sy+2),color,line_width) #pylint: disable=no-member
 
     origin_sy+=(3*gbdata.map_height)
 
     # draw obstruction map 2
     if gbstate.mainmap is not None:
-        cv2.rectangle(frame,(origin_sx,origin_sy),(origin_sx+gbdata.map_width,origin_sy+gbdata.map_height),color_red,1)
+        cv2.rectangle(frame,(origin_sx,origin_sy),(origin_sx+gbdata.map_width,origin_sy+gbdata.map_height),color_red,1) #pylint: disable=no-member
         for y in range(gbdata.map_height):
             for x in range(gbdata.map_width):
                 mo=gbstate.mainmap[x][y]
@@ -889,13 +898,13 @@ def draw_maps(frame):
                     sx=origin_sx+x
                     sy=origin_sy+y
                     # use a rectangle to draw a pixel
-                    cv2.rectangle(frame,(sx,sy),(sx,sy),color,-1)
+                    cv2.rectangle(frame,(sx,sy),(sx,sy),color,-1) #pylint: disable=no-member
 
     origin_sx+=gbdata.map_width
 
     # draw path planning
     if gbstate.mainmap is not None:
-        cv2.rectangle(frame,(origin_sx,origin_sy),(origin_sx+gbdata.map_width,origin_sy+gbdata.map_height),color_red,1)
+        cv2.rectangle(frame,(origin_sx,origin_sy),(origin_sx+gbdata.map_width,origin_sy+gbdata.map_height),color_red,1) #pylint: disable=no-member
         for y in range(gbdata.map_height):
             for x in range(gbdata.map_width):
                 v=gbstate.mainmap[x][y].dijkstra_distance
@@ -907,7 +916,7 @@ def draw_maps(frame):
                     sx=origin_sx+x
                     sy=origin_sy+y
                     # use a rectangle to draw a pixel
-                    cv2.rectangle(frame,(sx,sy),(sx,sy),color,-1)
+                    cv2.rectangle(frame,(sx,sy),(sx,sy),color,-1) #pylint: disable=no-member
 
     origin_sx+=gbdata.map_width
 
@@ -950,7 +959,7 @@ def draw_heading(frame):
     (dsx,dsy)=gbtrack.calculate_dx_dy(gbstate.player_heading,radius)
     sx=int(round(x3+dsx))
     sy=int(round(y3+dsy))
-    cv2.line(frame,(x3,y3),(sx,sy),color_green,line_width)
+    cv2.line(frame,(x3,y3),(sx,sy),color_green,line_width) #pylint: disable=no-member
 
 def draw_distance_time_dc(frame,data,color):
     scale=5
@@ -967,7 +976,7 @@ def draw_distance_time_dc(frame,data,color):
             x+=origin_sx
             y+=origin_sy
             #cv2.line(frame,(x,y),(x,y+1),color,line_width)
-            cv2.drawMarker(frame,(x,y),color,cv2.MARKER_STAR)
+            cv2.drawMarker(frame,(x,y),color,cv2.MARKER_STAR) #pylint: disable=no-member
         i+=1
 
 def draw_distance_time(frame):
@@ -983,7 +992,7 @@ def draw_pause_message(frame):
     h=gbdata.stdscreen_size[1]
     sx=int(w/2)
     sy=int(h/2)
-    cv2.putText(frame,gbstate.pause_message,(sx,sy),font,font_scale,color_red,line_width,line_type)
+    cv2.putText(frame,gbstate.pause_message,(sx,sy),font,font_scale,color_red,line_width,line_type) #pylint: disable=no-member
 
 def draw_on(frame):
     control_help(frame)
@@ -1007,8 +1016,8 @@ def draw_on(frame):
     y4=int((h*3)/4)
     #cv2.line(frame,(0,0),(x4,y4),color_white,line_width)
     #cv2.rectangle(frame,(x2,y2),(x4,y4),color_white,line_width)
-    cv2.circle(frame,(x3,y3),y2,color_white,line_width)
-    #cv2.putText(frame,'Gamebot',(x3,y3),font,font_scale,color_white,line_width,line_type)
+    cv2.circle(frame,(x3,y3),y2,color_white,line_width) #pylint: disable=no-member
+    #cv2.putText(frame,'Gamebot',(x3,y3),font,font_scale,color_white,line_width,line_type) #pylint: disable=no-member
 
     draw_top_of_task_stack(frame)
 
@@ -1134,17 +1143,17 @@ def draw_buildings(frame):
         return
     radius=int(round(gbdata.phonemap_circle_diameter/2))
     for c in gbstate.gray_circle_list:
-        cv2.circle(frame,(c[0],c[1]),radius,color_red,line_width)
+        cv2.circle(frame,(c[0],c[1]),radius,color_red,line_width) #pylint: disable=no-member
 
     if gbstate.building_info_player_house is not None:
-        cv2.drawMarker(frame,(gbstate.player_house_sx,gbstate.player_house_sy),color_red,cv2.MARKER_SQUARE)
+        cv2.drawMarker(frame,(gbstate.player_house_sx,gbstate.player_house_sy),color_red,cv2.MARKER_SQUARE) #pylint: disable=no-member
 
-    cv2.rectangle(frame,(gbdata.phonemap_left_close,gbdata.phonemap_top_close),(gbdata.phonemap_right_close,gbdata.phonemap_bottom_close),color_yellow,1)
-    cv2.rectangle(frame,(gbdata.phonemap_left_pin,gbdata.phonemap_top_pin),(gbdata.phonemap_right_pin,gbdata.phonemap_bottom_pin),color_yellow,1)
+    cv2.rectangle(frame,(gbdata.phonemap_left_close,gbdata.phonemap_top_close),(gbdata.phonemap_right_close,gbdata.phonemap_bottom_close),color_yellow,1) #pylint: disable=no-member
+    cv2.rectangle(frame,(gbdata.phonemap_left_pin,gbdata.phonemap_top_pin),(gbdata.phonemap_right_pin,gbdata.phonemap_bottom_pin),color_yellow,1) #pylint: disable=no-member
 
     for t in gbstate.house_color_xy:
         (sx,sy)=t
-        cv2.rectangle(frame,(sx,sy),(sx,sy),color_yellow,-1)
+        cv2.rectangle(frame,(sx,sy),(sx,sy),color_yellow,-1) #pylint: disable=no-member
 
     return
 
@@ -1179,15 +1188,15 @@ def draw_ocr(frame):
         ll[0]=int(round(ll[0]))
         ll[1]=int(round(ll[1]))
         # draw the bounding box
-        cv2.line(frame,(ul[0],ul[1]),(ur[0],ur[1]),color_yellow,1)
-        cv2.line(frame,(ur[0],ur[1]),(lr[0],lr[1]),color_yellow,1)
-        cv2.line(frame,(lr[0],lr[1]),(ll[0],ll[1]),color_yellow,1)
-        cv2.line(frame,(ll[0],ll[1]),(ul[0],ul[1]),color_yellow,1)
+        cv2.line(frame,(ul[0],ul[1]),(ur[0],ur[1]),color_yellow,1) #pylint: disable=no-member
+        cv2.line(frame,(ur[0],ur[1]),(lr[0],lr[1]),color_yellow,1) #pylint: disable=no-member
+        cv2.line(frame,(lr[0],lr[1]),(ll[0],ll[1]),color_yellow,1) #pylint: disable=no-member
+        cv2.line(frame,(ll[0],ll[1]),(ul[0],ul[1]),color_yellow,1) #pylint: disable=no-member
 
         # draw the text (not scaled or rotated)
         sx=int(round(ul[0]))
         sy=int(round(((ul[1]+ll[1])/2)))
-        cv2.putText(frame,text,(sx,sy),font,font_scale_50,color_red,font_line_width_wide,line_type)
+        cv2.putText(frame,text,(sx,sy),font,font_scale_50,color_red,font_line_width_wide,line_type) #pylint: disable=no-member
     return
 
 def draw_object_detect(frame):
@@ -1221,8 +1230,8 @@ def draw_object_detect(frame):
             y2=int(round(box[2]*gbdata.stdscreen_size[1]))
             x2=int(round(box[3]*gbdata.stdscreen_size[0]))
 
-            cv2.rectangle(frame,(x1,y1),(x2,y2),color_yellow,1)
-            cv2.putText(frame,name,(x1,y1),font,font_scale_25,color_blue,font_line_width,line_type)
+            cv2.rectangle(frame,(x1,y1),(x2,y2),color_yellow,1) #pylint: disable=no-member
+            cv2.putText(frame,name,(x1,y1),font,font_scale_25,color_blue,font_line_width,line_type) #pylint: disable=no-member
     return
 
 def draw_dijkstra(frame):
@@ -1248,5 +1257,5 @@ def draw_simple_edges(frame,edges):
         sy1=origin_sy+1+my1*3
         sx2=origin_sx+1+mx2*3
         sy2=origin_sy+1+my2*3
-        cv2.line(frame,(sx1,sy1),(sx2,sy2),color_yellow,1)
+        cv2.line(frame,(sx1,sy1),(sx2,sy2),color_yellow,1) #pylint: disable=no-member
     return

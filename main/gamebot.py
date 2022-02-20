@@ -48,7 +48,7 @@ import tasksaverestart
 
 sys.path.append(os.path.join(os.getcwd(),"..","..","gamebot-serial","pylib"))
 #print(sys.path)
-import packetserial
+import packetserial #pylint: disable=import-error, wrong-import-position, wrong-import-order
 
 # change this to select which webcam to use
 #default_camera_index=2
@@ -257,7 +257,7 @@ def process_key(key):
         if gbstate.debug_state_on:
             print("debug state on",flush=True)
             if gbstate.drawn_on is not None:
-                cv2.imwrite('debug.png',gbstate.drawn_on)
+                cv2.imwrite('debug.png',gbstate.drawn_on) #pylint: disable=no-member
 
         else:
             print("debug state off",flush=True)
@@ -440,7 +440,7 @@ def main_loop(vid):
 
         #frame2=cv2.multiply(frame,(gbdata.win_scale_r,gbdata.win_scale_g,gbdata.win_scale_b))
         #frame=cv2.multiply(frame,(1.0,1.05,1.05,1.0))
-        frame=cv2.multiply(frame,(1.0,1.0,1.0,1.0))
+        frame=cv2.multiply(frame,(1.0,1.0,1.0,1.0)) #pylint: disable=no-member
         #gbscreen.scale_components(frame)
 
         gbstate.frame=frame
@@ -450,12 +450,12 @@ def main_loop(vid):
         #scaled=imutils.resize(frame,width=320) # maintains aspect
         scaled=frame.copy()
         if prebuild_window:
-            cv2.imshow("show detections",scaled)
-            cv2.moveWindow("show detections",1024,0)
+            cv2.imshow("show detections",scaled) #pylint: disable=no-member
+            cv2.moveWindow("show detections",1024,0) #pylint: disable=no-member
             prebuild_window=False
         gbdisplay.draw_on(scaled)
         gbstate.drawn_on=scaled
-        cv2.imshow('captured',scaled)
+        cv2.imshow('captured',scaled) #pylint: disable=no-member
 
         if start_delay_frames > 0:
             start_delay_frames-=1
@@ -478,10 +478,10 @@ def main_loop(vid):
                 showme=gbstate.detim
                 gbstate.detim=None
         if showme is not None:
-            cv2.imshow("show detections",showme)
+            cv2.imshow("show detections",showme) #pylint: disable=no-member
             print("show detections",time.monotonic())
 
-        key=cv2.waitKey(2)
+        key=cv2.waitKey(2) #pylint: disable=no-member
         if key > 0:
             result=process_key(key)
             print("result=",result)
@@ -520,17 +520,17 @@ def setup_run_cleanup():
     gbstate.category_index=label_map_util.create_category_index_from_labelmap(label_map)
 
     # Open the capture device
-    vid = cv2.VideoCapture(default_camera_index)
+    vid = cv2.VideoCapture(default_camera_index) #pylint: disable=no-member
 
-    width=int(vid.get(cv2.CAP_PROP_FRAME_WIDTH))
-    height=int(vid.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    width=int(vid.get(cv2.CAP_PROP_FRAME_WIDTH)) #pylint: disable=no-member
+    height=int(vid.get(cv2.CAP_PROP_FRAME_HEIGHT)) #pylint: disable=no-member
     print("width=",width,"height=",height)
 
-    vid.set(cv2.CAP_PROP_FRAME_WIDTH,gbdata.stdscreen_size[0])
-    vid.set(cv2.CAP_PROP_FRAME_HEIGHT,gbdata.stdscreen_size[1])
+    vid.set(cv2.CAP_PROP_FRAME_WIDTH,gbdata.stdscreen_size[0]) #pylint: disable=no-member
+    vid.set(cv2.CAP_PROP_FRAME_HEIGHT,gbdata.stdscreen_size[1]) #pylint: disable=no-member
 
-    width=int(vid.get(cv2.CAP_PROP_FRAME_WIDTH))
-    height=int(vid.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    width=int(vid.get(cv2.CAP_PROP_FRAME_WIDTH)) #pylint: disable=no-member
+    height=int(vid.get(cv2.CAP_PROP_FRAME_HEIGHT)) #pylint: disable=no-member
     print("width=",width,"height=",height)
 
     # give time for the capture device to settle
@@ -564,7 +564,7 @@ def setup_run_cleanup():
     # clean up. If things stop working you may have to
     # reboot to reset the capture device.
     vid.release()
-    cv2.destroyAllWindows()
+    cv2.destroyAllWindows() #pylint: disable=no-member
     gbstate.ps.Close()
 
 def main(args):

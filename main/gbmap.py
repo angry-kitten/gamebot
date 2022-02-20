@@ -343,7 +343,7 @@ def gather_phonemap2():
     gbdijkstra.trigger_buildgraph()
 
     if gbstate.drawn_on is not None:
-        cv2.imwrite('gather.png',gbstate.drawn_on)
+        cv2.imwrite('gather.png',gbstate.drawn_on) #pylint: disable=no-member
 
     return
 

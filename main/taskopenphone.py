@@ -127,6 +127,16 @@ class TaskOpenPhone(taskobject.Task):
                 return i
         return None
 
+    def find_diy_icon_by_color(self):
+        l=len(gbdata.phone_locations)
+        for i in range(l):
+            (sx,sy)=gbdata.phone_locations[i]
+            sx2=sx+gbdata.phone_nook_miles_color_offset_x
+            sy2=sy+gbdata.phone_nook_miles_color_offset_y
+            if gbscreen.color_match_array_list(sx2,sy2,gbdata.phone_diy_color_list,5):
+                return i
+        return None
+
     def find_hand_by_color(self):
         l=len(gbdata.phone_locations)
         for i in range(l):
@@ -153,6 +163,13 @@ class TaskOpenPhone(taskobject.Task):
                 self.step=30 # close phone
                 return
             print("nook miles slot found",self.name_slot)
+        elif self.name_to_open == "DIY":
+            self.name_slot=self.find_diy_icon_by_color()
+            if self.name_slot is None:
+                print("no diy slot found by color")
+                self.step=30 # close phone
+                return
+            print("diy slot found",self.name_slot)
         else:
             print("name not recognized",self.name_to_open)
             self.step=30 # close phone

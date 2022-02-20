@@ -26,7 +26,7 @@ def scale_and_bound(v,m):
 
 def scale_components(f1):
     return
-    height, width, channels=f1.shape
+    height, width, channels=f1.shape #pylint: disable=unreachable
     for x in range(width):
         for y in range(height):
             (b,g,r)=f1[y,x]
@@ -393,29 +393,8 @@ def is_user_selection_screen():
         return False
     return True
 
-def if_ocr_has_text(s):
-    dets=None
-    with gbstate.ocr_worker_thread.data_lock:
-        dets=gbstate.ocr_detections
-    if dets is None:
-        return False
-    for det in dets:
-        print("det",det)
-        (box,text,score)=det
-        if s in text:
-            return True
-    # Try again but look for text that is close, but not
-    # exact.
-    for det in dets:
-        print("det",det)
-        (box,text,score)=det
-        score=gbocr.score_close_string_match(s,text)
-        if score > 0.7:
-            return True
-    return False
-
 def is_main_logo_screen():
-    if if_ocr_has_text('Select a user'):
+    if gbocr.ocr_results_contain('Select a user'):
         return True
     with gbstate.detection_lock:
         if gbstate.digested is None:
@@ -626,21 +605,39 @@ def is_nook_miles_screen():
         print("match_count 1",match_count)
         return False
     match_count=0
-    if color_match_array(31,44,gbdata.noom_miles_screen_banner_color,5):
+    if color_match_array(31,44,gbdata.nook_miles_screen_banner_color,5):
         match_count+=1
-    if color_match_array(1039,48,gbdata.noom_miles_screen_banner_color,5):
+    if color_match_array(1039,48,gbdata.nook_miles_screen_banner_color,5):
         match_count+=1
-    if color_match_array(14,164,gbdata.noom_miles_screen_color,5):
+    if color_match_array(14,164,gbdata.nook_miles_screen_color,5):
         match_count+=1
-    if color_match_array(20,679,gbdata.noom_miles_screen_color,5):
+    if color_match_array(20,679,gbdata.nook_miles_screen_color,5):
         match_count+=1
-    if color_match_array(1265,155,gbdata.noom_miles_screen_color,5):
+    if color_match_array(1265,155,gbdata.nook_miles_screen_color,5):
         match_count+=1
-    if color_match_array(1257,665,gbdata.noom_miles_screen_color,5):
+    if color_match_array(1257,665,gbdata.nook_miles_screen_color,5):
         match_count+=1
     if match_count >= 5:
         return True
     print("match_count 2",match_count)
+    return False
+
+def is_diy_screen():
+    gblogfile.log('is_diy_screen')
+    gbstate.debug_window=True
+    match_count=0
+    if color_match_array_list(16,16,gbdata.diy_screen_color_list,5):
+        match_count+=1
+    if color_match_array_list(16,720-16,gbdata.diy_screen_color_list,5):
+        match_count+=1
+    if color_match_array_list(1280-16,16,gbdata.diy_screen_color_list,5):
+        match_count+=1
+    if color_match_array_list(1280-16,720-16,gbdata.diy_screen_color_list,5):
+        match_count+=1
+    gbstate.debug_window=False
+    if match_count >= 3:
+        return True
+    print("match_count 3",match_count)
     return False
 
 def is_inside_building_screen():

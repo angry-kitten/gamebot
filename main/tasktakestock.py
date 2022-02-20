@@ -1,7 +1,6 @@
 #
 # Copyright 2021-2022 by angry-kitten
-# Look at the video at startup and see what the current screen is.
-# Move to the main playing screen.
+# Gather information about the current playing state.
 #
 
 import cv2
@@ -16,6 +15,7 @@ import taskupdatephonemap
 import tasktakeinventory
 import taskcheckforinterrupt
 import tasksaverestart
+import taskrecipeinv
 
 class TaskTakeStock(taskobject.Task):
     """TaskTakeStock Object"""
@@ -49,6 +49,7 @@ class TaskTakeStock(taskobject.Task):
         # push tasks in reverse order
         #self.parent.Push(tasksay.TaskSay("gamebot"))
         self.parent.Push(taskcheckforinterrupt.TaskCheckForInterrupt())
+        #self.parent.Push(taskrecipeinv.TaskRecipeInv())
         self.parent.Push(tasktakeinventory.TaskTakeInventory())
         self.parent.Push(taskupdatephonemap.TaskUpdatePhoneMap())
         self.parent.Push(taskupdatemini.TaskUpdateMini())

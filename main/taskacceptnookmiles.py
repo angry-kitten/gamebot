@@ -1,7 +1,6 @@
 #
 # Copyright 2021-2022 by angry-kitten
-# Look at the current screen and capture the phone map and
-# determine player location from the pin.
+# Open up nook miles on the phone and accept points.
 #
 
 import time

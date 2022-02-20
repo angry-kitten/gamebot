@@ -510,8 +510,15 @@ nook_miles_plus_hand_locations=[
     (985,407),
     (1223,430)
 ]
-noom_miles_screen_color=[195,203,239] # rgb 5
-noom_miles_screen_banner_color=[249,246,224] # rgb 5
+nook_miles_screen_color=[195,203,239] # rgb 5
+nook_miles_screen_banner_color=[249,246,224] # rgb 5
+
+phone_diy_color_list=[
+    [227,147,103], # rgb
+]
+diy_screen_color_list=[
+    [228,221,193], # rgb 5
+]
 
 # this is the background color of the phone map screen
 #phone_map_background=[130,224,195] # rgb 8
@@ -1022,9 +1029,17 @@ ocr_to_inventory={
 
     'White cosmos':'InvWhiteCosmos',
 
+    'Red roses':'InvRedRose',
+    'White roses':'InvWhiteRose',
+    'Yellow roses':'InvYellowRose',
+    'Black roses':'InvBlackRose',
+    'Gold roses':'InvGoldRose',
+
     'Old tire':'InvOldTire',
     'Message bottle':'InvMessageBottle',
     'Present':'InvPresent',
+    'Recipe':'InvRecipe',
+    'Snowflake':'InvSnowflake',
 }
 
 item_keep=[
@@ -1067,6 +1082,7 @@ item_store=[
     'InvCowrie',
     'InvLeaf',
     'InvOldTire',
+    'InvSnowflake',
 ]
 
 item_sell=[
@@ -1077,6 +1093,11 @@ item_sell=[
     'InvYellowPansy',
     'InvBluePansy',
     'InvWhiteCosmos',
+    'InvRedRose',
+    'InvWhiteRose',
+    'InvYellowRose',
+    'InvBlackRose',
+    'InvGoldRose',
 ]
 
 item_museum_assess=[
@@ -1090,6 +1111,9 @@ item_museum_donate=[
 item_activate=[
     'InvMessageBottle',
     'InvPresent',
+    'InvRecipe',
+    'InvBellBagStar',
+    'InvBellBag',
 ]
 
 ocr_inv_menu_lane_x1=749
@@ -1244,7 +1268,7 @@ win_scale_b=1.000
 # value, negative limit, positive limit
 hsv_default_limit=10
 h_p1_e=[119,25,11] # water
-h_p2a_e=[84,24,36] # grass0
+h_p2a_e=[84,30,36] # grass0
 h_p2b_e=[84,8,6] # grass1
 h_p3_e=[38,21,28] # sand
 h_p4_e=[78,5,7] # grass2
@@ -1258,7 +1282,7 @@ s_p1_e=[109,hsv_default_limit,hsv_default_limit]
 s_p2_e=[80,hsv_default_limit,hsv_default_limit]
 s_p3_e=[120,hsv_default_limit,hsv_default_limit]
 
-v_p1_e=[213,41,22] # water
+v_p1_e=[213,41,28] # water
 v_p2_e=[236,31,18] # sand
 v_p3_e=[120,42,20] # grass0
 v_p4_e=[160,9,14] # grass1
@@ -1267,7 +1291,7 @@ v_p6_e=[162,11,9] # dock
 v_p7_e=[196,9,11] # grass2
 v_p8_e=[200,hsv_default_limit,hsv_default_limit]
 v_p9_e=[176,2,2] # plaza
-v_p10_e=[136,27,51] # rock
+v_p10_e=[136,27,57] # rock
 #    gbstate.hvtt.append((gbstate.h_p1,gbstate.v_p1,MapTypeWater))
 #    gbstate.hvtt.append((gbstate.h_p2,gbstate.v_p3,MapTypeGrass0))
 #    gbstate.hvtt.append((gbstate.h_p3,gbstate.v_p2,MapTypeSand))
@@ -1279,3 +1303,22 @@ v_p10_e=[136,27,51] # rock
 #    gbstate.hvtt.append((gbstate.h_p1,gbstate.v_p1,MapTypeWater))
 #    gbstate.hvtt.append((gbstate.h_p1,gbstate.v_p1,MapTypeWater))
 #    gbstate.hvtt.append((gbstate.h_p1,gbstate.v_p1,MapTypeWater))
+
+ocr_recipe_lane_x1=731
+ocr_recipe_lane_x2=1261
+ocr_recipe_lane_y1=121
+ocr_recipe_lane_y2=666
+ocr_recipe_title_y=146
+ocr_recipe_size_y=196
+ocr_recipe_ingredients_y=[
+    260, # 246,276 # 261
+    334, # 318,350 # 334 # 74
+    408, # 389,428 # 408.5 # 74
+    480, # # # 72
+    553, # # # 73
+    628, # # # 75
+]
+ocr_recipe_ingredients_y_within=36
+ocr_recipe_count_x=1206 # 1208,1213
+ocr_recipe_slash_x=1194
+ocr_recipe_avail_x=1143

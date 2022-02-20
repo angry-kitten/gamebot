@@ -125,6 +125,20 @@ class TaskGoToMain(taskobject.Task):
             self.parent.Push(taskpress.TaskPress('B',1.0))
             self.parent.Push(taskpress.TaskPress('B',1.0))
             return
+        if gbscreen.is_nook_miles_screen():
+            print("nook miles screen")
+            self.parent.Push(taskdetect.TaskDetect())
+            # press B two times to close nook miles and phone
+            self.parent.Push(taskpress.TaskPress('B',1.0))
+            self.parent.Push(taskpress.TaskPress('B',1.0))
+            return
+        if gbscreen.is_diy_screen():
+            print("diy screen")
+            self.parent.Push(taskdetect.TaskDetect())
+            # press B two times to close diy and phone
+            self.parent.Push(taskpress.TaskPress('B',1.0))
+            self.parent.Push(taskpress.TaskPress('B',1.0))
+            return
 
         if gbscreen.is_inside_building_screen():
             print("maybe inside building")

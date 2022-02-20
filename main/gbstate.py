@@ -222,6 +222,9 @@ ocr_detections=None
 ocr_detections_set_time=0
 ocr_frame=None
 ocr_reader=None
+ocr_name=None
+ocr_name_within=30
+ocr_menu=None
 
 hand_slot=0
 
@@ -292,3 +295,7 @@ hvtt=None
 house_color_xy=[]
 
 category_index=None
+
+recipe_name_match=0.85
+all_recipes=[]
+character_recipes=[]

@@ -589,6 +589,10 @@ def is_grass_sand_pair(mx1,my1,mx2,my2):
     t1=gbstate.mainmap[mx1][my1].phonemap2
     t2=gbstate.mainmap[mx2][my2].phonemap2
     #print("t1 t2",t1,t2)
+    if gbmap.MapTypeUnknown == t1:
+        return True
+    if gbmap.MapTypeUnknown == t2:
+        return True
     if gbmap.MapTypeGrass0 == t1:
         if gbmap.MapTypeSand == t2:
             #print("transition")

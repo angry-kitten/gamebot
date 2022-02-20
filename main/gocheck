@@ -12,4 +12,4 @@ scan()
         pylint --rcfile=pylint_rc $f
     done
 }
-scan 2>&1 | tee e0
+scan 2>&1 | tee e3
